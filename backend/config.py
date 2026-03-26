@@ -12,8 +12,8 @@ class Settings(BaseSettings):
 
     # 서버 설정
     host: str = "0.0.0.0"
-    port: int = 8000
-    cors_origins: list[str] = ["http://localhost:3000", "http://localhost:5173"]
+    port: int = 8000  # Railway는 $PORT 환경변수로 자동 override
+    cors_origins: list[str] = ["*"]  # 배포 환경에서 전체 허용
 
     class Config:
         env_file = ".env"
