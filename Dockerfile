@@ -13,7 +13,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # 소스 코드 복사
 COPY backend/ ./backend/
-COPY frontend/dist/ ./frontend/dist/
+COPY public/ ./public/
 
 # 포트 노출
 EXPOSE 8000
