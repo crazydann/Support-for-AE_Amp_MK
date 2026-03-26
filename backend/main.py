@@ -30,11 +30,13 @@ async def health():
     return {"status": "ok", "service": "AE Automation Service"}
 
 
-# 프론트엔드 정적 파일 서빙
-FRONTEND_DIST = Path(__file__).parent.parent / "frontend" / "dist"
-if FRONTEND_DIST.exists():
-    app.mount("/assets", StaticFiles(directory=FRONTEND_DIST / "assets"), name="assets")
+# 프론트엔드 정적 파일 서빙 (public/ 우선, 없으면 frontend/dist/ fallback)
+_root = Path(__file__).parent.parent
+STATIC_DIR = _root / "public" if (_root / "public").exists() else _root / "frontend" / "dist"
+
+if STATIC_DIR.exists():
+    app.mount("/assets", StaticFiles(directory=STATIC_DIR / "assets"), name="assets")
 
     @app.get("/{full_path:path}")
     async def serve_frontend(full_path: str):
-        return FileResponse(FRONTEND_DIST / "index.html")
+        return FileResponse(STATIC_DIR / "index.html")
