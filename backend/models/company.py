@@ -32,6 +32,8 @@ class OrgNode(BaseModel):
     amplitude_status: str = "unknown"      # active | not_used | unknown
     amplitude_plan: Optional[str] = None   # Enterprise, Growth, Starter
     amplitude_note: Optional[str] = None   # 사용 현황 메모
+    arr: Optional[str] = None              # Annual Recurring Revenue (USD)
+    subscription_end: Optional[str] = None # 계약 만료일 YYYY-MM-DD
 
     # 하위 조직 (재귀)
     children: list['OrgNode'] = []
@@ -97,6 +99,8 @@ class CompanyBlueprint(BaseModel):
     amplitude_status: str = "unknown"       # active | not_used | unknown
     amplitude_plan: Optional[str] = None
     amplitude_note: Optional[str] = None
+    arr: Optional[str] = None              # Annual Recurring Revenue (USD)
+    subscription_end: Optional[str] = None # 계약 만료일 YYYY-MM-DD
 
     # AI 분석
     ai_analysis: Optional[str] = None

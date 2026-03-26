@@ -204,6 +204,20 @@ function OverviewTab({ blueprint, onTabChange }) {
   )
 }
 
+function ContractStatus({ subEnd }) {
+  if (!subEnd) return null
+  const end = new Date(subEnd)
+  const now = new Date()
+  const diffDays = Math.ceil((end - now) / (1000 * 60 * 60 * 24))
+  if (diffDays < 0) {
+    return <span className="inline-flex items-center gap-1 text-xs text-red-600 bg-red-50 border border-red-200 px-2 py-0.5 rounded-full font-medium">⚠ 계약 만료 ({subEnd})</span>
+  }
+  if (diffDays <= 90) {
+    return <span className="inline-flex items-center gap-1 text-xs text-orange-600 bg-orange-50 border border-orange-200 px-2 py-0.5 rounded-full font-medium">⚠ D-{diffDays} 만료임박 ({subEnd})</span>
+  }
+  return <span className="inline-flex items-center gap-1 text-xs text-gray-500 bg-gray-50 border border-gray-200 px-2 py-0.5 rounded-full">만료: {subEnd}</span>
+}
+
 function AmplitudeStatusCard({ blueprint, onTabChange }) {
   const STATUS = {
     active:   { bg: 'bg-purple-50', border: 'border-purple-200', title: 'text-purple-700', icon: '🟣' },
@@ -231,6 +245,19 @@ function AmplitudeStatusCard({ blueprint, onTabChange }) {
           </button>
         )}
       </div>
+
+      {/* 계약 정보 (ARR + 만료일) */}
+      {(blueprint.arr || blueprint.subscription_end) && (
+        <div className="flex flex-wrap items-center gap-2 mb-2">
+          {blueprint.arr && (
+            <span className="inline-flex items-center gap-1 text-sm font-semibold text-gray-800">
+              💰 ARR: <span className="text-purple-700">${Number(blueprint.arr.replace(/,/g, '')).toLocaleString()}</span>
+            </span>
+          )}
+          {blueprint.subscription_end && <ContractStatus subEnd={blueprint.subscription_end} />}
+        </div>
+      )}
+
       {blueprint.amplitude_note && (
         <p className="text-sm text-gray-600">{blueprint.amplitude_note}</p>
       )}

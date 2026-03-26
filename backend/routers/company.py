@@ -42,6 +42,10 @@ async def get_blueprint(company_name: str):
                 blueprint.amplitude_status = fields["amplitude_status"]
                 blueprint.amplitude_plan = fields["amplitude_plan"]
                 blueprint.amplitude_note = fields["amplitude_note"]
+                if fields.get("arr"):
+                    blueprint.arr = fields["arr"]
+                if fields.get("subscription_end"):
+                    blueprint.subscription_end = fields["subscription_end"]
                 if "Google Sheets" not in blueprint.data_sources:
                     blueprint.data_sources.append("Google Sheets (Amplitude CRM)")
         except Exception as sheets_err:
