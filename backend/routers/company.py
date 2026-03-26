@@ -3,8 +3,10 @@ from pydantic import BaseModel
 
 from ..models.company import CompanyBlueprint
 from ..services.mock_service import get_mock_blueprint, get_mock_search_results
+from ..services.sheets_service import SheetsService
 
 router = APIRouter(prefix="/api/company", tags=["company"])
+_sheets = SheetsService()
 
 
 class RefineStrategyRequest(BaseModel):
@@ -29,7 +31,48 @@ async def search_company(q: str):
 async def get_blueprint(company_name: str):
     """기업 청사진 생성"""
     try:
-        return get_mock_blueprint(company_name)
+        blueprint = get_mock_blueprint(company_name)
+
+        # Google Sheets에서 Amplitude 실제 데이터로 보완
+        try:
+            accounts = await _sheets.fetch_korea_accounts()
+            account = _sheets.find_account(accounts, company_name)
+            if account:
+                fields = _sheets.to_amplitude_fields(account)
+                blueprint.amplitude_status = fields["amplitude_status"]
+                blueprint.amplitude_plan = fields["amplitude_plan"]
+                blueprint.amplitude_note = fields["amplitude_note"]
+                if "Google Sheets" not in blueprint.data_sources:
+                    blueprint.data_sources.append("Google Sheets (Amplitude CRM)")
+        except Exception as sheets_err:
+            # Sheets 실패해도 mock 데이터로 계속 서비스
+            import logging
+            logging.getLogger(__name__).warning(f"Sheets 데이터 로드 실패, mock 사용: {sheets_err}")
+
+        return blueprint
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/sheets/accounts")
+async def get_sheets_accounts():
+    """Google Sheets에서 Korea Amplitude 고객 목록 조회"""
+    try:
+        accounts = await _sheets.fetch_korea_accounts()
+        return {
+            "count": len(accounts),
+            "accounts": [
+                {
+                    "name": v["account_name"],
+                    "plan": v["plan"],
+                    "arr": v["arr"],
+                    "health": v["health"],
+                    "active_users_4wk": v["active_users_4wk"],
+                    "account_owner": v["account_owner"],
+                }
+                for v in accounts.values()
+            ],
+        }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
