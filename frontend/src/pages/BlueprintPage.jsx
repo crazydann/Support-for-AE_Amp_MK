@@ -7,12 +7,13 @@ import SubsidiariesPanel from '../components/SubsidiariesPanel'
 import ServicesPanel from '../components/ServicesPanel'
 import NewsPanel from '../components/NewsPanel'
 import AIStrategyPanel from '../components/AIStrategyPanel'
+import OrgChartPanel from '../components/OrgChartPanel'
 import LoadingBlueprint from '../components/LoadingBlueprint'
 
 const TABS = [
   { id: 'overview', label: '개요' },
+  { id: 'orgchart', label: '그룹 조직도' },
   { id: 'executives', label: '임원진' },
-  { id: 'subsidiaries', label: '계열사' },
   { id: 'services', label: '서비스' },
   { id: 'news', label: '최신 뉴스' },
   { id: 'strategy', label: 'AI 전략' },
@@ -83,15 +84,12 @@ export default function BlueprintPage({ companyName }) {
         {/* Tab Content */}
         <div className="p-6">
           {activeTab === 'overview' && <OverviewTab blueprint={data} onTabChange={setActiveTab} />}
+          {activeTab === 'orgchart' && <OrgChartPanel orgChart={data.org_chart} companyName={companyName} />}
           {activeTab === 'executives' && <ExecutivesPanel executives={data.executives} />}
-          {activeTab === 'subsidiaries' && <SubsidiariesPanel subsidiaries={data.subsidiaries} />}
           {activeTab === 'services' && <ServicesPanel services={data.web_services} apps={data.apps} />}
           {activeTab === 'news' && <NewsPanel news={data.recent_news} />}
           {activeTab === 'strategy' && (
-            <AIStrategyPanel
-              blueprint={data}
-              companyName={companyName}
-            />
+            <AIStrategyPanel blueprint={data} companyName={companyName} />
           )}
         </div>
       </div>
@@ -108,6 +106,11 @@ function OverviewTab({ blueprint, onTabChange }) {
           <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2">기업 소개</h3>
           <p className="text-gray-700 leading-relaxed">{blueprint.description}</p>
         </div>
+      )}
+
+      {/* Amplitude 현황 카드 */}
+      {blueprint.amplitude_status && (
+        <AmplitudeStatusCard blueprint={blueprint} onTabChange={onTabChange} />
       )}
 
       {/* Key Stats Grid */}
@@ -201,11 +204,45 @@ function OverviewTab({ blueprint, onTabChange }) {
   )
 }
 
+function AmplitudeStatusCard({ blueprint, onTabChange }) {
+  const STATUS = {
+    active:   { bg: 'bg-purple-50', border: 'border-purple-200', title: 'text-purple-700', icon: '🟣' },
+    not_used: { bg: 'bg-gray-50',   border: 'border-gray-200',   title: 'text-gray-600',   icon: '⚪' },
+    unknown:  { bg: 'bg-amber-50',  border: 'border-amber-200',  title: 'text-amber-700',  icon: '🟡' },
+  }
+  const s = STATUS[blueprint.amplitude_status] || STATUS.unknown
+  const labels = { active: 'Amplitude 도입 완료', not_used: 'Amplitude 미도입', unknown: 'Amplitude 도입 여부 미확인' }
+
+  return (
+    <div className={`rounded-xl p-4 border ${s.border} ${s.bg}`}>
+      <div className="flex items-center justify-between mb-2">
+        <h3 className={`text-sm font-semibold flex items-center gap-2 ${s.title}`}>
+          <span>{s.icon}</span>
+          {labels[blueprint.amplitude_status]}
+          {blueprint.amplitude_plan && (
+            <span className="bg-purple-600 text-white text-xs px-2 py-0.5 rounded-full font-medium">
+              {blueprint.amplitude_plan} Plan
+            </span>
+          )}
+        </h3>
+        {blueprint.org_chart?.length > 0 && (
+          <button onClick={() => onTabChange('orgchart')} className={`text-xs hover:underline ${s.title}`}>
+            그룹 전체 현황 →
+          </button>
+        )}
+      </div>
+      {blueprint.amplitude_note && (
+        <p className="text-sm text-gray-600">{blueprint.amplitude_note}</p>
+      )}
+    </div>
+  )
+}
+
 function getTabCount(tabId, data) {
   if (!data) return 0
   const counts = {
+    orgchart:  (data.org_chart?.length || 0) > 0 ? '조직도' : 0,
     executives: data.executives?.length || 0,
-    subsidiaries: data.subsidiaries?.length || 0,
     services: (data.web_services?.length || 0) + (data.apps?.length || 0),
     news: data.recent_news?.length || 0,
   }

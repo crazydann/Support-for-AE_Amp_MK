@@ -10,11 +10,33 @@ class Executive(BaseModel):
     notes: Optional[str] = None
 
 
-class Subsidiary(BaseModel):
+class ServiceInfo(BaseModel):
     name: str
-    business_type: Optional[str] = None
+    type: str  # web, app_ios, app_android
+    url: Optional[str] = None
+    mau: Optional[str] = None  # "1,200만", "500K" 등
+
+
+class OrgNode(BaseModel):
+    """조직도 노드 - 계열사/자회사 하나"""
+    name: str
+    relation: Optional[str] = None        # 자회사, 관계사, 계열사
     website: Optional[str] = None
-    relation: Optional[str] = None  # 자회사, 관계사, 계열사 등
+    industry: Optional[str] = None
+
+    # 서비스 현황
+    services: list[ServiceInfo] = []
+    mau: Optional[str] = None              # 대표 MAU (통합)
+
+    # Amplitude 현황
+    amplitude_status: str = "unknown"      # active | not_used | unknown
+    amplitude_plan: Optional[str] = None   # Enterprise, Growth, Starter
+    amplitude_note: Optional[str] = None   # 사용 현황 메모
+
+    # 하위 조직 (재귀)
+    children: list['OrgNode'] = []
+
+OrgNode.model_rebuild()
 
 
 class AppInfo(BaseModel):
@@ -44,7 +66,7 @@ class NewsItem(BaseModel):
 class CompanyBlueprint(BaseModel):
     # 기본 정보
     company_name: str
-    corp_code: Optional[str] = None  # DART 기업코드
+    corp_code: Optional[str] = None
     stock_code: Optional[str] = None
     ceo: Optional[str] = None
     founded: Optional[str] = None
@@ -55,14 +77,14 @@ class CompanyBlueprint(BaseModel):
     description: Optional[str] = None
 
     # 비즈니스 형태
-    business_type: Optional[str] = None  # B2B, B2C, B2B2C
-    online_offline_ratio: Optional[str] = None  # 온라인/오프라인 비중
+    business_type: Optional[str] = None
+    online_offline_ratio: Optional[str] = None
 
     # 임원진
     executives: list[Executive] = []
 
-    # 계열사/자회사
-    subsidiaries: list[Subsidiary] = []
+    # 조직도 (그룹사용)
+    org_chart: list[OrgNode] = []
 
     # 서비스
     web_services: list[BusinessService] = []
@@ -71,9 +93,14 @@ class CompanyBlueprint(BaseModel):
     # 최신 뉴스
     recent_news: list[NewsItem] = []
 
+    # Amplitude 현황 (본사)
+    amplitude_status: str = "unknown"       # active | not_used | unknown
+    amplitude_plan: Optional[str] = None
+    amplitude_note: Optional[str] = None
+
     # AI 분석
     ai_analysis: Optional[str] = None
-    amplitude_opportunity: Optional[str] = None  # Amplitude 세일즈 기회 분석
+    amplitude_opportunity: Optional[str] = None
     recommended_strategy: Optional[str] = None
 
     # 메타

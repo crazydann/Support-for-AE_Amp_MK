@@ -176,5 +176,44 @@ class SearchService:
 
         return apps[:5]
 
+    async def detect_amplitude(self, company_name: str, website_url: Optional[str] = None) -> dict:
+        """Amplitude 도입 여부 감지 (웹소스 + 채용공고 검색)"""
+        result = {"status": "unknown", "plan": None, "note": None}
+        signals = []
+
+        # 1. 웹사이트 소스코드에서 Amplitude SDK 감지
+        if website_url:
+            try:
+                url = website_url if website_url.startswith("http") else f"https://{website_url}"
+                resp = await self.client.get(url, timeout=10.0)
+                src = resp.text.lower()
+                if "cdn.amplitude.com" in src or "amplitude.getInstance" in src or "amplitude.init" in src:
+                    signals.append("웹사이트 SDK 감지")
+                    result["status"] = "active"
+                elif "amplitude" in src:
+                    signals.append("웹사이트 언급")
+            except Exception:
+                pass
+
+        # 2. 채용공고/뉴스에서 Amplitude 언급 검색
+        try:
+            search_results = await self.search_web(
+                f"{company_name} amplitude analytics 채용 도입", num=5
+            )
+            for r in search_results:
+                text = (r.get("title", "") + r.get("snippet", "")).lower()
+                if "amplitude" in text:
+                    if any(kw in text for kw in ["도입", "사용", "활용", "채용", "engineer"]):
+                        signals.append("채용/도입 언급")
+                        if result["status"] == "unknown":
+                            result["status"] = "active"
+                        break
+        except Exception:
+            pass
+
+        if signals:
+            result["note"] = " · ".join(signals)
+        return result
+
     async def close(self):
         await self.client.aclose()

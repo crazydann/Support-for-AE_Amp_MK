@@ -1,7 +1,14 @@
-import { Building2, Globe, MapPin, Users, ExternalLink } from 'lucide-react'
+import { Globe, MapPin, Users, ExternalLink, Zap } from 'lucide-react'
+
+const AMP_STATUS = {
+  active:   { label: 'Amplitude 고객', cls: 'bg-purple-100 text-purple-700 border-purple-200' },
+  not_used: { label: 'Amplitude 미도입', cls: 'bg-gray-100 text-gray-500 border-gray-200' },
+  unknown:  { label: 'Amplitude 미확인', cls: 'bg-amber-50 text-amber-600 border-amber-200' },
+}
 
 export default function CompanyHeader({ blueprint }) {
   const initials = blueprint.company_name.slice(0, 2)
+  const ampInfo = AMP_STATUS[blueprint.amplitude_status] || AMP_STATUS.unknown
 
   return (
     <div className="bg-white rounded-xl border border-gray-200 p-6">
@@ -29,6 +36,12 @@ export default function CompanyHeader({ blueprint }) {
                     {blueprint.business_type}
                   </span>
                 )}
+                {/* Amplitude 현황 뱃지 */}
+                <span className={`flex items-center gap-1 text-xs px-2 py-0.5 rounded border font-medium ${ampInfo.cls}`}>
+                  <Zap size={10} />
+                  {ampInfo.label}
+                  {blueprint.amplitude_plan && ` · ${blueprint.amplitude_plan}`}
+                </span>
               </div>
             </div>
 

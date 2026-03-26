@@ -2,10 +2,136 @@
 모의 데이터 서비스 - API 키 없이 UI 확인용
 """
 from ..models.company import (
-    CompanyBlueprint, Executive, Subsidiary,
+    CompanyBlueprint, Executive, OrgNode, ServiceInfo,
     BusinessService, AppInfo, NewsItem
 )
 
+# ── 카카오 그룹 조직도 ──────────────────────────────────────────
+KAKAO_ORG = [
+    OrgNode(
+        name="카카오",
+        relation="지주/본사",
+        website="https://www.kakao.com",
+        industry="플랫폼",
+        mau="4,800만",
+        amplitude_status="active",
+        amplitude_plan="Enterprise",
+        amplitude_note="카카오톡·다음 통합 분석, 2019년 도입",
+        services=[
+            ServiceInfo(name="카카오톡", type="app_android", mau="4,800만"),
+            ServiceInfo(name="다음(Daum)", type="web", mau="2,100만"),
+            ServiceInfo(name="카카오맵", type="app_android", mau="1,300만"),
+        ],
+        children=[
+            OrgNode(
+                name="카카오페이",
+                relation="자회사",
+                website="https://pay.kakao.com",
+                industry="핀테크",
+                mau="2,400만",
+                amplitude_status="active",
+                amplitude_plan="Enterprise",
+                amplitude_note="결제 퍼널 분석, A/B 테스트 활발히 사용 중",
+                services=[
+                    ServiceInfo(name="카카오페이 앱", type="app_android", mau="2,400만"),
+                    ServiceInfo(name="카카오페이 웹", type="web"),
+                ],
+            ),
+            OrgNode(
+                name="카카오뱅크",
+                relation="관계사",
+                website="https://www.kakaobank.com",
+                industry="인터넷은행",
+                mau="1,800만",
+                amplitude_status="not_used",
+                amplitude_note="자체 데이터 플랫폼 운영 (금융 규제 이슈)",
+                services=[
+                    ServiceInfo(name="카카오뱅크 앱", type="app_android", mau="1,800만"),
+                ],
+            ),
+            OrgNode(
+                name="카카오엔터테인먼트",
+                relation="자회사",
+                website="https://www.kakaoent.com",
+                industry="콘텐츠/엔터",
+                mau="3,200만",
+                amplitude_status="active",
+                amplitude_plan="Growth",
+                amplitude_note="웹툰·음원 리텐션 분석에 활용",
+                services=[
+                    ServiceInfo(name="카카오웹툰", type="app_android", mau="1,100만"),
+                    ServiceInfo(name="멜론", type="app_android", mau="2,100만"),
+                    ServiceInfo(name="카카오페이지", type="app_android", mau="900만"),
+                ],
+                children=[
+                    OrgNode(
+                        name="카카오픽코마",
+                        relation="자회사",
+                        website="https://piccoma.com",
+                        industry="일본 웹툰",
+                        mau="650만 (일본)",
+                        amplitude_status="unknown",
+                        amplitude_note="일본 법인, 별도 트래킹 도구 사용 추정",
+                        services=[
+                            ServiceInfo(name="Piccoma 앱", type="app_android", mau="650만"),
+                        ],
+                    ),
+                ],
+            ),
+            OrgNode(
+                name="카카오모빌리티",
+                relation="자회사",
+                website="https://www.kakaomobility.com",
+                industry="모빌리티",
+                mau="3,600만",
+                amplitude_status="active",
+                amplitude_plan="Enterprise",
+                amplitude_note="카카오T 앱 사용자 여정 분석, 드라이버/라이더 양면 분석",
+                services=[
+                    ServiceInfo(name="카카오T", type="app_android", mau="3,600만"),
+                    ServiceInfo(name="카카오내비", type="app_android", mau="1,400만"),
+                ],
+            ),
+            OrgNode(
+                name="카카오게임즈",
+                relation="자회사",
+                website="https://www.kakaogames.com",
+                industry="게임",
+                mau="820만",
+                amplitude_status="not_used",
+                amplitude_note="GameAnalytics 사용 중, Amplitude 미도입",
+                services=[
+                    ServiceInfo(name="오딘: 발할라 라이징", type="app_android", mau="340만"),
+                    ServiceInfo(name="카카오게임즈 포털", type="web"),
+                ],
+            ),
+            OrgNode(
+                name="카카오엔터프라이즈",
+                relation="자회사",
+                website="https://kakaoenterprise.com",
+                industry="B2B SaaS/AI",
+                amplitude_status="unknown",
+                amplitude_note="B2B 서비스, 내부 분석 도구 보유",
+                services=[
+                    ServiceInfo(name="카카오 i 클라우드", type="web"),
+                    ServiceInfo(name="카카오워크", type="app_android"),
+                ],
+            ),
+            OrgNode(
+                name="카카오헬스케어",
+                relation="자회사",
+                website="https://kakaohealth.com",
+                industry="헬스케어",
+                mau="210만",
+                amplitude_status="unknown",
+                amplitude_note="2023년 설립 초기, 분석 도구 미확인",
+                services=[
+                    ServiceInfo(name="파스타(PASTA)", type="app_android", mau="210만"),
+                ],
+            ),
+        ],
+    )
+]
 
 MOCK_DATA = {
     "카카오": CompanyBlueprint(
@@ -21,6 +147,9 @@ MOCK_DATA = {
         description="카카오는 모바일 메신저 카카오톡을 기반으로 다양한 디지털 서비스를 제공하는 플랫폼 기업입니다. 검색, 쇼핑, 금융, 콘텐츠, 모빌리티 등 일상의 모든 영역에서 서비스를 운영하고 있습니다.",
         business_type="B2C",
         online_offline_ratio="온라인 중심 (90% 이상)",
+        amplitude_status="active",
+        amplitude_plan="Enterprise",
+        amplitude_note="2019년 도입, 카카오톡·다음 통합 분석 환경 구축. 현재 데이터 분석팀 50명+ 사용 중",
         executives=[
             Executive(name="정신아", title="대표이사"),
             Executive(name="배재현", title="최고투자책임자(CIO)"),
@@ -30,26 +159,12 @@ MOCK_DATA = {
             Executive(name="김성수", title="사외이사"),
             Executive(name="이진수", title="사내이사"),
         ],
-        subsidiaries=[
-            Subsidiary(name="카카오페이", relation="자회사", business_type="핀테크/간편결제"),
-            Subsidiary(name="카카오뱅크", relation="관계사", business_type="인터넷전문은행"),
-            Subsidiary(name="카카오엔터테인먼트", relation="자회사", business_type="콘텐츠/엔터"),
-            Subsidiary(name="카카오모빌리티", relation="자회사", business_type="모빌리티"),
-            Subsidiary(name="카카오게임즈", relation="자회사", business_type="게임"),
-            Subsidiary(name="카카오헬스케어", relation="자회사", business_type="헬스케어"),
-            Subsidiary(name="카카오스타일", relation="자회사", business_type="패션커머스"),
-            Subsidiary(name="카카오엔터프라이즈", relation="자회사", business_type="B2B 클라우드/AI"),
-            Subsidiary(name="카카오브레인", relation="자회사", business_type="AI 연구"),
-            Subsidiary(name="카카오인베스트먼트", relation="자회사", business_type="투자"),
-            Subsidiary(name="카카오픽코마", relation="자회사", business_type="일본 웹툰"),
-            Subsidiary(name="카카오페이지", relation="자회사", business_type="웹툰/웹소설"),
-        ],
+        org_chart=KAKAO_ORG,
         web_services=[
             BusinessService(name="카카오톡", url="https://www.kakaotalk.com", type="web", description="모바일 메신저"),
             BusinessService(name="다음(Daum)", url="https://www.daum.net", type="web", description="포털/검색"),
             BusinessService(name="카카오쇼핑", url="https://shopping.kakao.com", type="web", description="커머스"),
             BusinessService(name="카카오맵", url="https://map.kakao.com", type="web", description="지도/내비"),
-            BusinessService(name="카카오스토리", url="https://story.kakao.com", type="web", description="SNS"),
             BusinessService(name="카카오TV", url="https://tv.kakao.com", type="web", description="동영상 플랫폼"),
         ],
         apps=[
@@ -60,51 +175,35 @@ MOCK_DATA = {
         ],
         recent_news=[
             NewsItem(title="카카오, AI 서비스 '카나나' 정식 출시…카카오톡 연동 강화", date="2025.03.20", source="매일경제", summary="카카오가 자체 개발한 AI 서비스 카나나를 정식 출시하며 카카오톡과의 연동을 대폭 강화했다고 밝혔다."),
-            NewsItem(title="카카오페이, 1분기 흑자전환 성공…결제 GMV 20% 성장", date="2025.03.18", source="한국경제", summary="카카오페이가 올해 1분기 흑자전환에 성공하며 실적 개선세를 이어가고 있다."),
-            NewsItem(title="카카오모빌리티, 자율주행 택시 서울 시범 운영 시작", date="2025.03.15", source="조선비즈", summary="카카오모빌리티가 서울 강남 일대에서 자율주행 택시 시범 서비스를 시작했다."),
+            NewsItem(title="카카오페이, 1분기 흑자전환 성공…결제 GMV 20% 성장", date="2025.03.18", source="한국경제"),
+            NewsItem(title="카카오모빌리티, 자율주행 택시 서울 시범 운영 시작", date="2025.03.15", source="조선비즈"),
             NewsItem(title="카카오엔터, 웹툰 IP 기반 드라마 제작 확대…글로벌 공략", date="2025.03.12", source="스포츠조선"),
             NewsItem(title="카카오, 데이터센터 AI 전용 인프라 투자 3000억 규모", date="2025.03.10", source="전자신문"),
         ],
-        ai_analysis="""카카오는 국내 최대 모바일 플랫폼 기업으로, 카카오톡 4,800만 MAU를 핵심 자산으로 다양한 버티컬 서비스를 운영하고 있습니다.
+        ai_analysis="""카카오는 국내 최대 모바일 플랫폼 기업으로, 카카오톡 4,800만 MAU를 핵심 자산으로 다양한 버티컬 서비스를 운영합니다.
 
-**비즈니스 구조**: 광고·커머스(매출 60%) + 콘텐츠(25%) + 신사업(15%)으로 구성되며, 전형적인 플랫폼 비즈니스 모델입니다.
+**비즈니스 구조**: 광고·커머스(매출 60%) + 콘텐츠(25%) + 신사업(15%)으로 구성된 플랫폼 비즈니스.
 
-**디지털 성숙도**: 높음 (Level 4/5). 자체 데이터팀 보유, AI 서비스 카나나 출시, 데이터 기반 개인화 광고 운영 중.
+**Amplitude 도입 현황**: 본사 및 카카오페이, 카카오엔터, 카카오모빌리티 등 주요 계열사에 도입 완료. 카카오뱅크·카카오게임즈는 미도입 상태로 확장 기회 존재.""",
+        amplitude_opportunity="""**기존 고객 확장 전략**
 
-**현재 분석 도구 추정**: 내부 자체 개발 도구 + Google Analytics + 일부 서드파티 가능성 있음.""",
-        amplitude_opportunity="""**핵심 기회 포인트**
-
-1. **카카오쇼핑/커머스** - 구매 퍼널 최적화, A/B 테스트 니즈 높음. GMV 성장 압박으로 전환율 개선 시급
-2. **카카오페이/뱅크** - 금융 앱 온보딩 퍼널, 기능 활성화율 분석 필요
-3. **신규 AI 서비스(카나나)** - 신규 앱 출시 → 사용자 행동 분석 Amplitude 최적 타이밍
-4. **카카오게임즈** - 게임 리텐션 분석, 인앱 구매 전환 최적화
-
-**예상 페인 포인트**
-- 계열사 간 데이터 사일로 문제
-- 자체 개발 도구의 유지보수 비용
-- 빠른 실험 사이클 부재""",
-        recommended_strategy="""**추천 접근 전략**
-
-1. **진입점**: 카카오엔터프라이즈(B2B) 또는 카카오쇼핑 팀 → 데이터 분석 담당 임원
-2. **첫 미팅 어젠다**: 카나나 AI 서비스 런칭 이후 사용자 행동 분석 사례 공유
-3. **차별화 포인트**: Amplitude의 그룹 분석 기능으로 계열사 간 사용자 여정 통합 분석 가능성 제시
-4. **레퍼런스**: 국내 유사 플랫폼 기업(네이버, 쿠팡) 성공 사례 준비
-
-**다음 액션**
-- [ ] 카카오 데이터 분석 관련 채용공고 확인 (pain point 파악)
-- [ ] 카나나 앱 직접 사용해보고 분석 인사이트 준비
-- [ ] 정신아 대표 최근 인터뷰/컨퍼런스 발언 확인""",
+현재 Enterprise 계약 중이나 미도입 계열사 3개사 대상 확장 기회:
+- **카카오뱅크** (MAU 1,800만): 금융 규제 이슈 해소 시 최우선 타겟
+- **카카오게임즈** (MAU 820만): GameAnalytics 대체 가능성, 게임 리텐션 분석 강점 어필
+- **카카오헬스케어** (MAU 210만): 초기 스타트업 단계, 빠른 실험 문화 정착에 Amplitude 최적""",
+        recommended_strategy="""**즉시 실행 액션**
+1. 카카오 본사 담당자 통해 카카오게임즈 PM팀 인트로 요청
+2. 카카오뱅크 — 금융권 Amplitude 도입 사례(해외 핀테크) 자료 준비
+3. 카카오헬스케어 — 헬스케어 앱 온보딩 개선 케이스 스터디 공유""",
         last_updated="2025-03-26T10:00:00",
-        data_sources=["DART(금감원 전자공시)", "네이버뉴스", "공식 홈페이지", "구글플레이스토어"]
+        data_sources=["DART(금감원 전자공시)", "네이버뉴스", "공식 홈페이지", "구글플레이스토어", "채용공고 분석"]
     )
 }
 
 
 def get_mock_blueprint(company_name: str) -> CompanyBlueprint:
-    """모의 데이터 반환 (정확히 일치 or 첫 번째)"""
     if company_name in MOCK_DATA:
         return MOCK_DATA[company_name]
-    # 기본 모의 데이터
     return CompanyBlueprint(
         company_name=company_name,
         ceo="홍길동",
@@ -115,30 +214,36 @@ def get_mock_blueprint(company_name: str) -> CompanyBlueprint:
         description=f"{company_name}은 다양한 디지털 서비스를 제공하는 기업입니다. (모의 데이터)",
         business_type="B2C",
         online_offline_ratio="온/오프라인 혼합",
+        amplitude_status="unknown",
+        amplitude_note="Amplitude 도입 여부 확인 필요",
         executives=[
             Executive(name="홍길동", title="대표이사"),
             Executive(name="김철수", title="최고기술책임자(CTO)"),
             Executive(name="이영희", title="최고재무책임자(CFO)"),
-            Executive(name="박지수", title="최고마케팅책임자(CMO)"),
         ],
-        subsidiaries=[
-            Subsidiary(name=f"{company_name}페이", relation="자회사", business_type="핀테크"),
-            Subsidiary(name=f"{company_name}커머스", relation="자회사", business_type="이커머스"),
-        ],
-        web_services=[
-            BusinessService(name="메인 서비스", url="https://example.com", type="web"),
-            BusinessService(name="쇼핑몰", url="https://shop.example.com", type="web"),
-        ],
-        apps=[
-            AppInfo(name=f"{company_name} 앱", platform="Android", rating=4.1, downloads="100만+"),
+        org_chart=[
+            OrgNode(
+                name=company_name,
+                relation="본사",
+                mau="미확인",
+                amplitude_status="unknown",
+                services=[ServiceInfo(name="메인 서비스", type="web")],
+                children=[
+                    OrgNode(
+                        name=f"{company_name}페이",
+                        relation="자회사",
+                        amplitude_status="unknown",
+                        services=[ServiceInfo(name=f"{company_name}페이 앱", type="app_android")],
+                    ),
+                ],
+            )
         ],
         recent_news=[
             NewsItem(title=f"{company_name}, 신규 서비스 출시 발표", date="2025.03.20", source="전자신문"),
-            NewsItem(title=f"{company_name} 작년 매출 전년 대비 15% 성장", date="2025.03.15", source="매일경제"),
         ],
-        ai_analysis=f"{company_name}은 디지털 전환을 적극 추진 중인 기업으로 Amplitude 도입 가능성이 높습니다. (모의 데이터)",
-        amplitude_opportunity="이커머스 퍼널 분석, 앱 온보딩 최적화, A/B 테스트 니즈가 예상됩니다. (모의 데이터)",
-        recommended_strategy="데이터 분석 담당 임원을 통한 접근을 추천합니다. (모의 데이터)",
+        ai_analysis=f"{company_name} 분석 중... (모의 데이터)",
+        amplitude_opportunity="확인 필요 (모의 데이터)",
+        recommended_strategy="데이터 분석 담당 임원 접근 추천 (모의 데이터)",
         last_updated="2025-03-26T10:00:00",
         data_sources=["모의 데이터"]
     )
@@ -149,17 +254,17 @@ def get_mock_search_results(query: str) -> list[dict]:
         {"corp_code": "032640", "corp_name": "카카오", "stock_code": "035720"},
         {"corp_code": "005930", "corp_name": "삼성전자", "stock_code": "005930"},
         {"corp_code": "035420", "corp_name": "NAVER", "stock_code": "035420"},
-        {"corp_code": "051910", "corp_name": "LG화학", "stock_code": "051910"},
         {"corp_code": "005380", "corp_name": "현대자동차", "stock_code": "005380"},
         {"corp_code": "017670", "corp_name": "SK텔레콤", "stock_code": "017670"},
         {"corp_code": "030200", "corp_name": "KT", "stock_code": "030200"},
-        {"corp_code": "035720", "corp_name": "카카오뱅크", "stock_code": "323410"},
         {"corp_code": "377300", "corp_name": "카카오페이", "stock_code": "377300"},
         {"corp_code": "293490", "corp_name": "카카오게임즈", "stock_code": "293490"},
         {"corp_code": "259960", "corp_name": "크래프톤", "stock_code": "259960"},
-        {"corp_code": "251270", "corp_name": "넷마블", "stock_code": "251270"},
-        {"corp_code": "036570", "corp_name": "엔씨소프트", "stock_code": "036570"},
-        {"corp_code": "112040", "corp_name": "위메이드", "stock_code": "112040"},
         {"corp_code": "000660", "corp_name": "SK하이닉스", "stock_code": "000660"},
+        {"corp_code": "051900", "corp_name": "LG생활건강", "stock_code": "051900"},
+        {"corp_code": "068270", "corp_name": "셀트리온", "stock_code": "068270"},
+        {"corp_code": "028260", "corp_name": "삼성물산", "stock_code": "028260"},
+        {"corp_code": "096770", "corp_name": "SK이노베이션", "stock_code": "096770"},
+        {"corp_code": "003550", "corp_name": "LG", "stock_code": "003550"},
     ]
     return [c for c in companies if query.lower() in c["corp_name"].lower()]
