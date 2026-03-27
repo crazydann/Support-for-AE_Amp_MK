@@ -72,9 +72,8 @@ export default function App() {
               <div className="w-7 h-7 bg-purple-600 rounded-lg flex items-center justify-center">
                 <span className="text-white font-bold text-xs">A</span>
               </div>
-              <div className="hidden sm:block">
+              <div>
                 <h1 className="text-sm font-bold text-gray-900 leading-none">{t('appName')}</h1>
-                <p className="text-xs text-gray-400 leading-none mt-0.5">{t('appSub')}</p>
               </div>
             </div>
           </div>

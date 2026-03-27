@@ -1,8 +1,7 @@
 const translations = {
   ko: {
     // App / Header
-    appName: 'AE Intelligence',
-    appSub: '한국 계정',
+    appName: 'Team Korea - AE Intelligence - MK',
     backToList: '← 목록',
     tabHome: '홈',
     tabCompanies: '기업',
@@ -67,8 +66,7 @@ const translations = {
 
   en: {
     // App / Header
-    appName: 'AE Intelligence',
-    appSub: 'Korea Accounts',
+    appName: 'Team Korea - AE Intelligence - MK',
     backToList: '← List',
     tabHome: 'Home',
     tabCompanies: 'Companies',
