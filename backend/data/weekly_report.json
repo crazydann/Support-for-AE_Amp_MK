@@ -1,9 +1,9 @@
 {
-  "generated_at": null,
-  "period": null,
-  "period_en": null,
-  "summary": "아직 주간 리포트가 생성되지 않았습니다. Claude Code에서 '주간보고 해줘'라고 입력하면 자동으로 생성됩니다.",
-  "summary_en": "Weekly report not yet generated. Type 'weekly report' in Claude Code to auto-generate.",
+  "generated_at": "2026-03-27T09:00:00+09:00",
+  "period": "2026-03-27 (KST 주간보고)",
+  "period_en": "2026-03-27 (KST Weekly Report)",
+  "summary": "LG Uplus D-34 긴급 갱신, TVING D-65 Stage5 진행중, CJ Olive Young $450K Upsell Proposal, Starbucks 갱신 Closed Won, SPC Land Closed Won.",
+  "summary_en": "LG Uplus D-34 urgent renewal, TVING D-65 at Stage 5, CJ Olive Young $450K Upsell Proposal, Starbucks renewal Closed Won, SPC Land Closed Won.",
   "accounts": [
     {
       "group": "CJ",
@@ -12,14 +12,14 @@
       "subscription_end": "2026-07-31",
       "amplitude_plan": "Enterprise",
       "status": "active",
-      "deal_stage": "Renewal 협의중",
-      "deal_stage_en": "Renewal In Progress",
-      "deal_amount": 480000,
+      "deal_stage": "Renewal+Expand Stage5 Proposal ($450K)",
+      "deal_stage_en": "Renewal+Expand Stage 5 Proposal ($450K)",
+      "deal_amount": 450000,
       "health": "yellow",
-      "notes_summary": "",
-      "notes_summary_en": "",
-      "next_action": "갱신 계약서 협의",
-      "next_action_en": "Negotiate renewal contract terms"
+      "notes_summary": "갱신+수직확장 딜 Stage5 진행중. 목표 ARR $450K (현재 $240K 대비 +$210K Upsell). D-126.",
+      "notes_summary_en": "Renewal+Expand deal at Stage 5. Target ARR $450K (+$210K upsell from $240K). D-126.",
+      "next_action": "Stage6 클로징 준비 - 계약서 초안 협의",
+      "next_action_en": "Prepare Stage 6 close - negotiate contract draft"
     },
     {
       "group": "CJ",
@@ -28,14 +28,14 @@
       "subscription_end": "2026-05-31",
       "amplitude_plan": "Enterprise",
       "status": "active",
-      "deal_stage": "Renewal Stage 5",
-      "deal_stage_en": "Renewal Stage 5",
-      "deal_amount": 390000,
-      "health": "red",
-      "notes_summary": "",
-      "notes_summary_en": "",
-      "next_action": "갱신 미팅 일정 확정",
-      "next_action_en": "Schedule renewal meeting ASAP"
+      "deal_stage": "Renewal+Expand Stage5 Proposal ($420K)",
+      "deal_stage_en": "Renewal+Expand Stage 5 Proposal ($420K)",
+      "deal_amount": 420000,
+      "health": "orange",
+      "notes_summary": "갱신+확장 $420K Stage5. 계약 만료 D-65. 딜 클로징 속도가 만료일보다 늦어질 위험.",
+      "notes_summary_en": "Renewal+Expand $420K at Stage 5. Contract expires D-65. Risk of deal close lagging behind expiry.",
+      "next_action": "클로징 가속화 - Stage6 조건 협의 및 EB 컨펌 요청",
+      "next_action_en": "Accelerate close - negotiate Stage 6 terms and request EB confirmation"
     },
     {
       "group": "Shinsegae",
@@ -44,14 +44,14 @@
       "subscription_end": "2029-02-28",
       "amplitude_plan": "Growth",
       "status": "active",
-      "deal_stage": "Expand 논의",
-      "deal_stage_en": "Expansion Discussion",
-      "deal_amount": 2000000,
+      "deal_stage": "갱신 Closed Won + Expand $204K Stage2",
+      "deal_stage_en": "Renewal Closed Won + Expand $204K Stage 2",
+      "deal_amount": 189579,
       "health": "green",
-      "notes_summary": "",
-      "notes_summary_en": "",
-      "next_action": "Experiment 기능 확장 제안",
-      "next_action_en": "Propose Experiment feature expansion"
+      "notes_summary": "2026-01 갱신 Closed Won (3년 계약, $189.6K). 신규 Expand $204K Stage2 Qualification 시작.",
+      "notes_summary_en": "Renewal Closed Won Jan 2026 (3-year, $189.6K). New Expand $204K now in Stage 2 Qualification.",
+      "next_action": "Expand $204K 딜 Stage3 진입 - QBR 준비",
+      "next_action_en": "Move Expand $204K to Stage 3 - prepare QBR on usage"
     },
     {
       "group": "Shinsegae",
@@ -60,14 +60,14 @@
       "subscription_end": "2026-12-31",
       "amplitude_plan": "Growth",
       "status": "active",
-      "deal_stage": "정상",
+      "deal_stage": "정상 운영",
       "deal_stage_en": "Healthy",
       "deal_amount": 55000,
       "health": "green",
       "notes_summary": "",
       "notes_summary_en": "",
-      "next_action": "갱신 준비 (Q4)",
-      "next_action_en": "Prepare renewal (Q4)"
+      "next_action": "갱신 준비 (Q4) - 사용률 점검",
+      "next_action_en": "Prepare Q4 renewal - review usage metrics"
     },
     {
       "group": "Lotte",
@@ -76,7 +76,7 @@
       "subscription_end": "2027-01-31",
       "amplitude_plan": "Growth",
       "status": "active",
-      "deal_stage": "정상",
+      "deal_stage": "정상 운영",
       "deal_stage_en": "Healthy",
       "deal_amount": 170000,
       "health": "green",
@@ -92,7 +92,7 @@
       "subscription_end": "2027-02-28",
       "amplitude_plan": "Growth",
       "status": "active",
-      "deal_stage": "정상",
+      "deal_stage": "정상 운영",
       "deal_stage_en": "Healthy",
       "deal_amount": 126360,
       "health": "green",
@@ -114,8 +114,8 @@
       "health": "green",
       "notes_summary": "",
       "notes_summary_en": "",
-      "next_action": "2027 계약 조기 논의",
-      "next_action_en": "Early discussion for 2027 contract"
+      "next_action": "2027 계약 조기 논의 + Expand 제안",
+      "next_action_en": "Early discussion for 2027 contract + Expand proposal"
     },
     {
       "group": "LG",
@@ -124,14 +124,14 @@
       "subscription_end": "2026-04-30",
       "amplitude_plan": "Growth",
       "status": "active",
-      "deal_stage": "Renewal 준비",
-      "deal_stage_en": "Renewal Preparation",
+      "deal_stage": "Renewal Stage2 Qualification (D-34)",
+      "deal_stage_en": "Renewal Stage 2 Qualification (D-34)",
       "deal_amount": 24000,
-      "health": "orange",
-      "notes_summary": "",
-      "notes_summary_en": "",
-      "next_action": "갱신 + Upsell 제안",
-      "next_action_en": "Renewal + Upsell proposal"
+      "health": "red",
+      "notes_summary": "갱신 딜 Stage2. 만료 D-34로 극도 긴급. infiniSTAR 갱신은 Closed Lost. Upsell 병행 제안 필요.",
+      "notes_summary_en": "Renewal at Stage 2. Expires D-34, extremely urgent. infiniSTAR renewal was Closed Lost. Need parallel Upsell proposal.",
+      "next_action": "즉시 EB 연락 - 갱신 조건 확정 및 주문 제출",
+      "next_action_en": "Contact EB immediately - confirm renewal terms and submit order"
     },
     {
       "group": "NOL",
@@ -140,14 +140,14 @@
       "subscription_end": "2026-05-31",
       "amplitude_plan": "Growth",
       "status": "active",
-      "deal_stage": "Renewal 준비",
-      "deal_stage_en": "Renewal Preparation",
-      "deal_amount": 25920,
-      "health": "yellow",
-      "notes_summary": "",
-      "notes_summary_en": "",
-      "next_action": "사용률 저조 개선 지원",
-      "next_action_en": "Support low usage improvement"
+      "deal_stage": "Renewal+Expand Stage2 Qualification (D-65)",
+      "deal_stage_en": "Renewal+Expand Stage 2 Qualification (D-65)",
+      "deal_amount": 27994,
+      "health": "orange",
+      "notes_summary": "갱신 $27.9K Stage2 진행중. D-65. 사용률 BL 33% (매우 저조). 이탈 리스크 높음.",
+      "notes_summary_en": "Renewal $27.9K at Stage 2. D-65. Usage BL 33% (very low). High churn risk.",
+      "next_action": "사용률 개선 CS 지원 + Stage3 진입 위해 가치 제시",
+      "next_action_en": "CS support for usage improvement + demonstrate value for Stage 3"
     },
     {
       "group": "Golfzon",
@@ -156,14 +156,14 @@
       "subscription_end": "2027-01-31",
       "amplitude_plan": "Growth",
       "status": "active",
-      "deal_stage": "정상",
+      "deal_stage": "정상 운영",
       "deal_stage_en": "Healthy",
       "deal_amount": 46000,
       "health": "yellow",
       "notes_summary": "",
       "notes_summary_en": "",
-      "next_action": "온보딩 지원 강화",
-      "next_action_en": "Strengthen onboarding support"
+      "next_action": "온보딩 지원 강화 - 활성 사용자 증대",
+      "next_action_en": "Strengthen onboarding - increase active user count"
     },
     {
       "group": "KT",
@@ -172,14 +172,14 @@
       "subscription_end": "2027-06-30",
       "amplitude_plan": "Growth",
       "status": "active",
-      "deal_stage": "정상",
+      "deal_stage": "정상 운영",
       "deal_stage_en": "Healthy",
       "deal_amount": 24000,
-      "health": "yellow",
+      "health": "green",
       "notes_summary": "",
       "notes_summary_en": "",
-      "next_action": "KT Corp 확장 탐색",
-      "next_action_en": "Explore KT Corp expansion"
+      "next_action": "KT Corp 그룹사 확장 탐색",
+      "next_action_en": "Explore KT Corp group expansion"
     },
     {
       "group": "SK",
@@ -204,14 +204,14 @@
       "subscription_end": "2026-11-30",
       "amplitude_plan": "Enterprise",
       "status": "active",
-      "deal_stage": "정상",
+      "deal_stage": "정상 운영",
       "deal_stage_en": "Healthy",
       "deal_amount": 100000,
       "health": "green",
       "notes_summary": "",
       "notes_summary_en": "",
-      "next_action": "삼성 그룹사 확장 기회 탐색",
-      "next_action_en": "Explore Samsung group expansion"
+      "next_action": "삼성 그룹사 확장 기회 탐색 (Cheil Worldwide 딜 연계)",
+      "next_action_en": "Explore Samsung group expansion (leverage Cheil Worldwide deal)"
     },
     {
       "group": "SPC",
@@ -220,14 +220,14 @@
       "subscription_end": "2026-12-31",
       "amplitude_plan": "Growth",
       "status": "active",
-      "deal_stage": "갱신 준비",
-      "deal_stage_en": "Renewal Preparation",
+      "deal_stage": "Land Closed Won - 온보딩 진행중",
+      "deal_stage_en": "Land Closed Won - Onboarding In Progress",
       "deal_amount": 86000,
       "health": "green",
-      "notes_summary": "",
-      "notes_summary_en": "",
-      "next_action": "갱신 + 파리바게뜨 앱 확장 제안",
-      "next_action_en": "Renewal + Paris Baguette app expansion"
+      "notes_summary": "2026-01 Land $86K Closed Won 확정. 파리바게뜨·배스킨라빈스·쉐이크쉑 계열사 확장 잠재력 높음.",
+      "notes_summary_en": "Land $86K Closed Won Jan 2026. High expansion potential to Paris Baguette, Baskin-Robbins, Shake Shack.",
+      "next_action": "계열사(파리바게뜨, 배스킨라빈스) Expand 논의 시작",
+      "next_action_en": "Initiate Expand discussion with affiliates (Paris Baguette, Baskin-Robbins)"
     },
     {
       "group": "Naver",
@@ -281,70 +281,83 @@
   "action_items": [
     {
       "priority": "urgent",
-      "account": "TVING",
-      "group": "CJ",
-      "action": "갱신 미팅 일정 잡기 - 계약 만료 65일 전",
-      "action_en": "Schedule renewal meeting - 65 days until contract expiry",
-      "due": "2026-04-15"
+      "account": "LG Uplus (CTO)",
+      "group": "LG",
+      "action": "갱신 즉시 착수 - D-34, EB 연락 및 주문 제출 목표",
+      "action_en": "Immediate renewal action - D-34, contact EB and target order submission",
+      "due": "2026-04-03"
     },
     {
       "priority": "urgent",
-      "account": "LG Uplus (CTO)",
-      "group": "LG",
-      "action": "갱신 + Upsell 제안 - 계약 만료 34일 전",
-      "action_en": "Renewal + Upsell proposal - 34 days until contract expiry",
+      "account": "TVING",
+      "group": "CJ",
+      "action": "갱신 Stage5→6 클로징 가속 - D-65, EB 컨펌 및 계약 조건 확정",
+      "action_en": "Accelerate Stage 5→6 close - D-65, confirm EB and finalize contract terms",
       "due": "2026-04-10"
     },
     {
-      "priority": "high",
+      "priority": "urgent",
       "account": "Nolbal",
       "group": "NOL",
-      "action": "낮은 사용률 원인 파악 및 CS 지원 요청",
-      "action_en": "Investigate low usage and request CS support",
-      "due": "2026-04-05"
+      "action": "갱신 미팅 확정 - D-65, 사용률 33% 개선 방안 제시 필수",
+      "action_en": "Confirm renewal meeting - D-65, must present plan to improve 33% usage rate",
+      "due": "2026-04-10"
     },
     {
       "priority": "high",
       "account": "CJ Olive Young",
       "group": "CJ",
-      "action": "갱신 계약 조건 협의 - Experiment 추가 upsell",
-      "action_en": "Negotiate renewal terms - Experiment feature upsell",
-      "due": "2026-05-01"
-    },
-    {
-      "priority": "medium",
-      "account": "SK Telecom",
-      "group": "SK",
-      "action": "SK Adot 팀 새로운 Land 기회 미팅",
-      "action_en": "Meeting with SK Adot team for new Land opportunity",
+      "action": "Renewal+Expand $450K Stage5→6 클로징 준비 - D-126",
+      "action_en": "Push $450K Renewal+Expand from Stage 5 to Stage 6 close - D-126",
       "due": "2026-04-30"
     },
     {
-      "priority": "medium",
-      "account": "Starbucks Korea",
-      "group": "Shinsegae",
-      "action": "$2M+ Expand 제안서 준비",
-      "action_en": "Prepare $2M+ Expand proposal",
-      "due": "2026-05-15"
-    }
-  ],
-  "strategy_summary": "이번 분기 핵심 목표: TVING·LG Uplus 조기 갱신 확보, Starbucks Korea Expand 클로징. SK 재유치 파이프라인 구축.",
-  "strategy_summary_en": "Q2 key goals: Secure early renewal for TVING & LG Uplus, close Starbucks Korea Expand deal. Build SK win-back pipeline.",
-  "risks": [
-    {
-      "account": "TVING",
-      "risk": "계약 만료 65일 - Stage 5에서 지연 중",
-      "risk_en": "65 days to expiry - stalled at Stage 5"
+      "priority": "high",
+      "account": "SPC (Secta9ine)",
+      "group": "SPC",
+      "action": "파리바게뜨·배스킨라빈스 계열사 Expand 논의 착수 (Land Closed Won 후속)",
+      "action_en": "Initiate affiliate Expand discussion - Paris Baguette & Baskin-Robbins (post Land close)",
+      "due": "2026-04-15"
     },
     {
-      "account": "LG Uplus",
-      "risk": "계약 만료 34일 - ARR 하락 위험",
-      "risk_en": "34 days to expiry - ARR downgrade risk"
+      "priority": "high",
+      "account": "Starbucks Korea",
+      "group": "Shinsegae",
+      "action": "Expand $204K Stage2→3 진입 - QBR 및 가치 제시 미팅 일정 확정",
+      "action_en": "Move $204K Expand to Stage 3 - schedule QBR and value demonstration meeting",
+      "due": "2026-04-20"
+    },
+    {
+      "priority": "medium",
+      "account": "SK Telecom (IFLAND)",
+      "group": "SK",
+      "action": "SK Adot 팀 재유치 미팅 - T world 신규 Land 기회 탐색",
+      "action_en": "Win-back meeting with SK Adot - explore new Land with T world",
+      "due": "2026-04-30"
+    }
+  ],
+  "strategy_summary": "【이번 주 최우선】LG Uplus D-34 즉각 갱신 착수. TVING·Nolbal D-65 클로징 가속. 【긍정 모멘텀】Starbucks 갱신 Closed Won + Expand $204K 신규 파이프라인, SPC Land $86K 확정 후 계열사 확장 논의 시작. CJ Olive Young $450K 대규모 Upsell Stage5 진행중. 관리 총 ARR ~$1.68M.",
+  "strategy_summary_en": "【Top Priority This Week】 LG Uplus D-34: immediate renewal required. TVING & Nolbal D-65: accelerate close. 【Positive Momentum】 Starbucks renewal Closed Won + new $204K Expand pipeline. SPC Land $86K confirmed → initiate affiliate expansion. CJ Olive Young $450K upsell at Stage 5. Total managed ARR ~$1.68M.",
+  "risks": [
+    {
+      "account": "LG Uplus (CTO)",
+      "risk": "D-34 만료 - 갱신 Stage2에 불과, EB 미컨펌. infiniSTAR 갱신 Closed Lost 선례 있음",
+      "risk_en": "D-34 expiry - only at Stage 2, EB not confirmed. Precedent: infiniSTAR renewal Closed Lost"
+    },
+    {
+      "account": "TVING",
+      "risk": "D-65 만료 - Stage5 딜 진행중이나 클로징이 만료일보다 늦어질 위험",
+      "risk_en": "D-65 expiry - Stage 5 deal in progress but at risk of close lagging behind contract expiry"
     },
     {
       "account": "Nolbal",
-      "risk": "사용률 저조 (44%) - 갱신 리스크",
-      "risk_en": "Low usage (44%) - renewal risk"
+      "risk": "D-65 만료 + 사용률 BL 33% (매우 저조) - 갱신 협상력 약화 및 이탈 리스크",
+      "risk_en": "D-65 expiry + usage BL 33% (very low) - weakens renewal leverage, high churn risk"
+    },
+    {
+      "account": "SK Telecom (IFLAND)",
+      "risk": "해지 고객 - SK Adot / T world 재유치 파이프라인 부재",
+      "risk_en": "Churned - no active win-back pipeline for SK Adot / T world"
     }
   ]
 }
