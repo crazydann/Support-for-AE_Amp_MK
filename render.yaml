@@ -2,13 +2,11 @@ services:
   - type: web
     name: ae-intelligence
     runtime: python
-    buildCommand: pip install -r requirements.txt
+    buildCommand: pip install -r backend/requirements.txt
     startCommand: python -m uvicorn backend.main:app --host 0.0.0.0 --port $PORT
     plan: free
     envVars:
-      - key: DART_API_KEY
-        sync: false
-      - key: ANTHROPIC_API_KEY
-        sync: false
-      - key: SERPAPI_KEY
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: GOOGLE_SERVICE_ACCOUNT_JSON
         sync: false
