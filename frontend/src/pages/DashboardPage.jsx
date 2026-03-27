@@ -1,46 +1,49 @@
 import { useState, useEffect } from 'react'
+import { useLang } from '../contexts/LanguageContext'
 
 const API = import.meta.env.VITE_API_URL || ''
 
-// 상태별 색상/라벨
-const healthConfig = {
-  red:    { bg: 'bg-red-50',    border: 'border-red-300',    badge: 'bg-red-100 text-red-700',    dot: 'bg-red-500',    label: '긴급' },
-  orange: { bg: 'bg-orange-50', border: 'border-orange-300', badge: 'bg-orange-100 text-orange-700', dot: 'bg-orange-500', label: '주의' },
-  yellow: { bg: 'bg-yellow-50', border: 'border-yellow-200', badge: 'bg-yellow-100 text-yellow-700', dot: 'bg-yellow-500', label: '모니터링' },
-  green:  { bg: 'bg-green-50',  border: 'border-green-200',  badge: 'bg-green-100 text-green-700',  dot: 'bg-green-500',  label: '정상' },
-  gray:   { bg: 'bg-gray-50',   border: 'border-gray-200',   badge: 'bg-gray-100 text-gray-600',    dot: 'bg-gray-400',   label: 'Prospect' },
+function getHealthConfig(t) {
+  return {
+    red:    { bg: 'bg-red-50',    border: 'border-red-300',    badge: 'bg-red-100 text-red-700',       dot: 'bg-red-500',    label: t('healthRed') },
+    orange: { bg: 'bg-orange-50', border: 'border-orange-300', badge: 'bg-orange-100 text-orange-700', dot: 'bg-orange-500', label: t('healthOrange') },
+    yellow: { bg: 'bg-yellow-50', border: 'border-yellow-200', badge: 'bg-yellow-100 text-yellow-700', dot: 'bg-yellow-500', label: t('healthYellow') },
+    green:  { bg: 'bg-green-50',  border: 'border-green-200',  badge: 'bg-green-100 text-green-700',   dot: 'bg-green-500',  label: t('healthGreen') },
+    gray:   { bg: 'bg-gray-50',   border: 'border-gray-200',   badge: 'bg-gray-100 text-gray-600',     dot: 'bg-gray-400',   label: t('healthGray') },
+  }
 }
 
-const priorityConfig = {
-  urgent: { color: 'text-red-600',    bg: 'bg-red-50 border-red-200',    label: '긴급' },
-  high:   { color: 'text-orange-600', bg: 'bg-orange-50 border-orange-200', label: '높음' },
-  medium: { color: 'text-blue-600',   bg: 'bg-blue-50 border-blue-200',   label: '보통' },
+function getPriorityConfig(t) {
+  return {
+    urgent: { color: 'text-red-600',    bg: 'bg-red-50 border-red-200',       label: t('priorityUrgent') },
+    high:   { color: 'text-orange-600', bg: 'bg-orange-50 border-orange-200', label: t('priorityHigh') },
+    medium: { color: 'text-blue-600',   bg: 'bg-blue-50 border-blue-200',     label: t('priorityMedium') },
+  }
 }
 
 function daysUntil(dateStr) {
   if (!dateStr) return null
-  const diff = Math.ceil((new Date(dateStr) - new Date()) / (1000 * 60 * 60 * 24))
-  return diff
+  return Math.ceil((new Date(dateStr) - new Date()) / (1000 * 60 * 60 * 24))
 }
 
-function ContractBadge({ subscriptionEnd, status }) {
+function ContractBadge({ subscriptionEnd, status, t }) {
   if (status === 'churned') return (
-    <span className="text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded-full font-medium">해지</span>
+    <span className="text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded-full font-medium">{t('churned')}</span>
   )
   if (status === 'prospect') return (
     <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">Prospect</span>
   )
   if (!subscriptionEnd) return null
   const days = daysUntil(subscriptionEnd)
-  if (days < 0) return <span className="text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded-full font-medium">만료됨</span>
-  if (days <= 60) return <span className="text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded-full font-medium">D-{days}</span>
-  if (days <= 90) return <span className="text-xs bg-orange-100 text-orange-600 px-2 py-0.5 rounded-full font-medium">D-{days}</span>
+  if (days < 0)   return <span className="text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded-full font-medium">{t('expired')}</span>
+  if (days <= 60)  return <span className="text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded-full font-medium">D-{days}</span>
+  if (days <= 90)  return <span className="text-xs bg-orange-100 text-orange-600 px-2 py-0.5 rounded-full font-medium">D-{days}</span>
   return <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">{subscriptionEnd?.slice(0, 7)}</span>
 }
 
-function AccountCard({ account }) {
+function AccountCard({ account, t }) {
+  const healthConfig = getHealthConfig(t)
   const cfg = healthConfig[account.health] || healthConfig.gray
-  const days = daysUntil(account.subscription_end)
   const arrNum = account.arr ? parseInt(account.arr) : 0
 
   return (
@@ -53,7 +56,7 @@ function AccountCard({ account }) {
           </div>
           <p className="font-semibold text-gray-900 mt-0.5 text-sm leading-tight">{account.key_account}</p>
         </div>
-        <ContractBadge subscriptionEnd={account.subscription_end} status={account.status} />
+        <ContractBadge subscriptionEnd={account.subscription_end} status={account.status} t={t} />
       </div>
 
       <div className="flex items-center justify-between">
@@ -64,14 +67,14 @@ function AccountCard({ account }) {
               <span className="text-xs font-normal text-gray-400 ml-1">ARR</span>
             </p>
           ) : (
-            <p className="text-sm text-gray-400">계약 없음</p>
+            <p className="text-sm text-gray-400">{t('noContract')}</p>
           )}
           {account.amplitude_plan && (
             <span className="text-xs text-purple-600 font-medium">{account.amplitude_plan}</span>
           )}
         </div>
         {account.deal_stage && (
-          <span className="text-xs text-gray-500 bg-white border border-gray-200 px-2 py-1 rounded-lg max-w-[120px] text-right leading-tight">
+          <span className="text-xs text-gray-500 bg-white border border-gray-200 px-2 py-1 rounded-lg max-w-[130px] text-right leading-tight">
             {account.deal_stage}
           </span>
         )}
@@ -79,9 +82,7 @@ function AccountCard({ account }) {
 
       {account.next_action && (
         <div className="pt-1 border-t border-gray-200">
-          <p className="text-xs text-gray-600">
-            <span className="text-gray-400">→ </span>{account.next_action}
-          </p>
+          <p className="text-xs text-gray-600">{t('nextAction')}{account.next_action}</p>
         </div>
       )}
       {account.notes_summary && (
@@ -91,14 +92,15 @@ function AccountCard({ account }) {
   )
 }
 
-function ActionItem({ item }) {
+function ActionItem({ item, t }) {
+  const priorityConfig = getPriorityConfig(t)
   const cfg = priorityConfig[item.priority] || priorityConfig.medium
   return (
     <div className={`rounded-xl border ${cfg.bg} p-3 flex gap-3 items-start`}>
       <span className={`text-xs font-bold ${cfg.color} mt-0.5 shrink-0`}>{cfg.label}</span>
       <div className="flex-1 min-w-0">
         <p className="text-sm font-medium text-gray-900 leading-snug">{item.action}</p>
-        <div className="flex items-center gap-2 mt-1">
+        <div className="flex items-center gap-2 mt-1 flex-wrap">
           <span className="text-xs text-gray-400">{item.group} · {item.account}</span>
           {item.due && <span className="text-xs text-gray-400">· {item.due}</span>}
         </div>
@@ -108,9 +110,10 @@ function ActionItem({ item }) {
 }
 
 export default function DashboardPage() {
+  const { t } = useLang()
   const [report, setReport] = useState(null)
   const [loading, setLoading] = useState(true)
-  const [filter, setFilter] = useState('all')  // all | urgent | active | prospect
+  const [filter, setFilter] = useState('all')
 
   useEffect(() => {
     fetch(`${API}/api/intel/report`)
@@ -123,51 +126,56 @@ export default function DashboardPage() {
     <div className="flex items-center justify-center h-64">
       <div className="text-center space-y-2">
         <div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin mx-auto"/>
-        <p className="text-sm text-gray-500">데이터 로딩 중...</p>
+        <p className="text-sm text-gray-500">{t('loadingData')}</p>
       </div>
     </div>
   )
 
   if (!report) return (
-    <div className="text-center py-16 text-gray-400">데이터를 불러올 수 없습니다</div>
+    <div className="text-center py-16 text-gray-400">{t('loadError')}</div>
   )
 
   const accounts = report.accounts || []
-  const actions = report.action_items || []
-  const risks = report.risks || []
+  const actions  = report.action_items || []
+  const risks    = report.risks || []
 
-  // 통계
   const stats = {
     total_arr: accounts.filter(a => a.arr).reduce((s, a) => s + parseInt(a.arr || 0), 0),
-    active: accounts.filter(a => a.status === 'active').length,
-    urgent: accounts.filter(a => a.health === 'red').length,
-    churned: accounts.filter(a => a.status === 'churned').length,
-    prospect: accounts.filter(a => a.status === 'prospect').length,
+    active:    accounts.filter(a => a.status === 'active').length,
+    urgent:    accounts.filter(a => a.health === 'red').length,
+    prospect:  accounts.filter(a => a.status === 'prospect').length,
   }
 
+  const filterMap = { urgent: ['red','orange'], active: ['active'], prospect: ['prospect','churned'] }
   const filtered = accounts.filter(a => {
-    if (filter === 'urgent') return a.health === 'red' || a.health === 'orange'
-    if (filter === 'active') return a.status === 'active'
-    if (filter === 'prospect') return a.status === 'prospect' || a.status === 'churned'
+    if (filter === 'urgent')  return ['red','orange'].includes(a.health)
+    if (filter === 'active')  return a.status === 'active'
+    if (filter === 'prospect') return ['prospect','churned'].includes(a.status)
     return true
   })
-
-  const sortedAccounts = [...filtered].sort((a, b) => {
+  const sorted = [...filtered].sort((a, b) => {
     const order = { red: 0, orange: 1, yellow: 2, green: 3, gray: 4 }
     return (order[a.health] ?? 5) - (order[b.health] ?? 5)
   })
 
+  const filters = [
+    ['all',     t('filterAll')],
+    ['urgent',  t('filterUrgent')],
+    ['active',  t('filterActive')],
+    ['prospect',t('filterProspect')],
+  ]
+
   return (
     <div className="space-y-5 pb-24">
-      {/* 리포트 생성 시간 */}
+      {/* 리포트 상태 */}
       {report.generated_at ? (
-        <div className="text-xs text-gray-400 text-center">
-          마지막 업데이트: {new Date(report.generated_at).toLocaleString('ko-KR')}
-        </div>
+        <p className="text-xs text-gray-400 text-center">
+          {t('lastUpdated')}: {new Date(report.generated_at).toLocaleString(undefined, { dateStyle: 'short', timeStyle: 'short' })}
+        </p>
       ) : (
         <div className="bg-purple-50 border border-purple-200 rounded-xl p-4 text-sm text-purple-700">
-          <p className="font-medium">주간 리포트가 아직 생성되지 않았습니다</p>
-          <p className="text-xs mt-1 text-purple-500">Claude Code에서 "주간보고 해줘"라고 입력하면 자동 생성됩니다</p>
+          <p className="font-medium">{t('noReport')}</p>
+          <p className="text-xs mt-1 text-purple-500">{t('noReportSub')}</p>
         </div>
       )}
 
@@ -175,28 +183,26 @@ export default function DashboardPage() {
       <div className="grid grid-cols-4 gap-2">
         <div className="bg-white rounded-xl border border-gray-200 p-3 text-center">
           <p className="text-xl font-bold text-gray-900">{stats.active}</p>
-          <p className="text-xs text-gray-500 mt-0.5">활성</p>
+          <p className="text-xs text-gray-500 mt-0.5">{t('statActive')}</p>
         </div>
         <div className="bg-red-50 rounded-xl border border-red-200 p-3 text-center">
           <p className="text-xl font-bold text-red-600">{stats.urgent}</p>
-          <p className="text-xs text-red-500 mt-0.5">긴급</p>
+          <p className="text-xs text-red-500 mt-0.5">{t('statUrgent')}</p>
         </div>
         <div className="bg-white rounded-xl border border-gray-200 p-3 text-center">
           <p className="text-xl font-bold text-gray-900">{stats.prospect}</p>
-          <p className="text-xs text-gray-500 mt-0.5">Prospect</p>
+          <p className="text-xs text-gray-500 mt-0.5">{t('statProspect')}</p>
         </div>
         <div className="bg-purple-50 rounded-xl border border-purple-200 p-3 text-center">
-          <p className="text-lg font-bold text-purple-700">
-            ${Math.round(stats.total_arr / 1000)}K
-          </p>
-          <p className="text-xs text-purple-500 mt-0.5">총 ARR</p>
+          <p className="text-lg font-bold text-purple-700">${Math.round(stats.total_arr / 1000)}K</p>
+          <p className="text-xs text-purple-500 mt-0.5">{t('statTotalArr')}</p>
         </div>
       </div>
 
       {/* 전략 요약 */}
       {report.strategy_summary && (
         <div className="bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-xl p-4">
-          <p className="text-xs font-semibold text-purple-600 mb-1">전략 요약</p>
+          <p className="text-xs font-semibold text-purple-600 mb-1">{t('strategySummary')}</p>
           <p className="text-sm text-gray-700 leading-relaxed">{report.strategy_summary}</p>
         </div>
       )}
@@ -205,26 +211,24 @@ export default function DashboardPage() {
       {actions.length > 0 && (
         <div className="space-y-2">
           <h2 className="text-sm font-bold text-gray-900 flex items-center gap-2">
-            <span>할 일</span>
+            {t('actionItems')}
             <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">{actions.length}</span>
           </h2>
-          {actions.map((item, i) => <ActionItem key={i} item={item} />)}
+          {actions.map((item, i) => <ActionItem key={i} item={item} t={t} />)}
         </div>
       )}
 
       {/* 계정 현황 */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <h2 className="text-sm font-bold text-gray-900">계정 현황</h2>
-          <div className="flex gap-1">
-            {[['all','전체'], ['urgent','긴급'], ['active','활성'], ['prospect','잠재']].map(([val, label]) => (
+          <h2 className="text-sm font-bold text-gray-900">{t('accountStatus')}</h2>
+          <div className="flex gap-1 flex-wrap justify-end">
+            {filters.map(([val, label]) => (
               <button
                 key={val}
                 onClick={() => setFilter(val)}
                 className={`text-xs px-2.5 py-1 rounded-full transition-colors ${
-                  filter === val
-                    ? 'bg-purple-600 text-white'
-                    : 'bg-gray-100 text-gray-600'
+                  filter === val ? 'bg-purple-600 text-white' : 'bg-gray-100 text-gray-600'
                 }`}
               >
                 {label}
@@ -232,15 +236,13 @@ export default function DashboardPage() {
             ))}
           </div>
         </div>
-        {sortedAccounts.map((account, i) => (
-          <AccountCard key={i} account={account} />
-        ))}
+        {sorted.map((account, i) => <AccountCard key={i} account={account} t={t} />)}
       </div>
 
       {/* 리스크 */}
       {risks.length > 0 && (
         <div className="space-y-2">
-          <h2 className="text-sm font-bold text-gray-900">리스크</h2>
+          <h2 className="text-sm font-bold text-gray-900">{t('risks')}</h2>
           {risks.map((r, i) => (
             <div key={i} className="bg-red-50 border border-red-200 rounded-xl p-3 flex gap-2 items-start">
               <span className="text-red-500 text-sm shrink-0">⚠</span>

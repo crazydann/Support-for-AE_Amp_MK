@@ -1,0 +1,131 @@
+const translations = {
+  ko: {
+    // App / Header
+    appName: 'AE Intelligence',
+    appSub: '한국 계정',
+    backToList: '← 목록',
+    tabHome: '홈',
+    tabCompanies: '기업',
+    tabMemo: '메모',
+
+    // Dashboard
+    noReport: '주간 리포트가 아직 생성되지 않았습니다',
+    noReportSub: 'Claude Code에서 "주간보고 해줘"라고 입력하면 자동 생성됩니다',
+    lastUpdated: '마지막 업데이트',
+    statActive: '활성',
+    statUrgent: '긴급',
+    statProspect: 'Prospect',
+    statTotalArr: '총 ARR',
+    strategySummary: '전략 요약',
+    actionItems: '할 일',
+    accountStatus: '계정 현황',
+    risks: '리스크',
+    filterAll: '전체',
+    filterUrgent: '긴급',
+    filterActive: '활성',
+    filterProspect: '잠재',
+    noContract: '계약 없음',
+    expired: '만료됨',
+    churned: '해지',
+    nextAction: '→ ',
+    loadingData: '데이터 로딩 중...',
+    loadError: '데이터를 불러올 수 없습니다',
+
+    // Health labels
+    healthRed: '긴급',
+    healthOrange: '주의',
+    healthYellow: '모니터링',
+    healthGreen: '정상',
+    healthGray: 'Prospect',
+
+    // Priority labels
+    priorityUrgent: '긴급',
+    priorityHigh: '높음',
+    priorityMedium: '보통',
+
+    // Memo page
+    addMemo: '메모 추가',
+    selectAccount: '계정 선택 (선택사항)',
+    memoPlaceholder: '미팅 내용, 전략, 메모를 자유롭게 입력하세요',
+    listeningPlaceholder: '🎙️ 듣는 중...',
+    recording: '녹음중',
+    stopVoice: '중지',
+    startVoice: '음성',
+    saving: '저장 중...',
+    save: '저장',
+    voiceNotSupported: '음성 인식은 Chrome/Safari에서 지원됩니다',
+    memoTitle: '메모',
+    filterAllMemo: '전체',
+    noMemo: '메모가 없습니다',
+    noMemoSub: '음성이나 텍스트로 메모를 추가하세요',
+    showMore: '더 보기',
+    collapse: '접기',
+    voiceBadge: '음성',
+  },
+
+  en: {
+    // App / Header
+    appName: 'AE Intelligence',
+    appSub: 'Korea Accounts',
+    backToList: '← List',
+    tabHome: 'Home',
+    tabCompanies: 'Companies',
+    tabMemo: 'Memo',
+
+    // Dashboard
+    noReport: 'Weekly report not yet generated',
+    noReportSub: 'Type "weekly report" in Claude Code to auto-generate',
+    lastUpdated: 'Last updated',
+    statActive: 'Active',
+    statUrgent: 'Urgent',
+    statProspect: 'Prospect',
+    statTotalArr: 'Total ARR',
+    strategySummary: 'Strategy Summary',
+    actionItems: 'Action Items',
+    accountStatus: 'Account Status',
+    risks: 'Risks',
+    filterAll: 'All',
+    filterUrgent: 'Urgent',
+    filterActive: 'Active',
+    filterProspect: 'Prospect',
+    noContract: 'No contract',
+    expired: 'Expired',
+    churned: 'Churned',
+    nextAction: '→ ',
+    loadingData: 'Loading data...',
+    loadError: 'Unable to load data',
+
+    // Health labels
+    healthRed: 'Urgent',
+    healthOrange: 'Caution',
+    healthYellow: 'Monitor',
+    healthGreen: 'Healthy',
+    healthGray: 'Prospect',
+
+    // Priority labels
+    priorityUrgent: 'Urgent',
+    priorityHigh: 'High',
+    priorityMedium: 'Medium',
+
+    // Memo page
+    addMemo: 'Add Memo',
+    selectAccount: 'Select Account (Optional)',
+    memoPlaceholder: 'Enter meeting notes, strategy, or any memo',
+    listeningPlaceholder: '🎙️ Listening...',
+    recording: 'Recording',
+    stopVoice: 'Stop',
+    startVoice: 'Voice',
+    saving: 'Saving...',
+    save: 'Save',
+    voiceNotSupported: 'Voice recognition supported on Chrome/Safari',
+    memoTitle: 'Memo',
+    filterAllMemo: 'All',
+    noMemo: 'No memos yet',
+    noMemoSub: 'Add a memo using voice or text',
+    showMore: 'Show more',
+    collapse: 'Collapse',
+    voiceBadge: 'Voice',
+  },
+}
+
+export default translations

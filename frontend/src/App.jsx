@@ -1,33 +1,31 @@
 import { useState } from 'react'
+import { useLang } from './contexts/LanguageContext'
 import DashboardPage from './pages/DashboardPage'
 import SearchPage from './pages/SearchPage'
 import BlueprintPage from './pages/BlueprintPage'
 import MemoPage from './pages/MemoPage'
 
-const TABS = [
-  { id: 'dashboard', label: '홈', icon: HomeIcon },
-  { id: 'companies', label: '기업', icon: BuildingIcon },
-  { id: 'memo',      label: '메모', icon: PencilIcon },
-]
-
 export default function App() {
+  const { lang, setLang, t } = useLang()
   const [tab, setTab] = useState('dashboard')
   const [currentCompany, setCurrentCompany] = useState(null)
+
+  const TABS = [
+    { id: 'dashboard', label: t('tabHome'),      icon: HomeIcon },
+    { id: 'companies', label: t('tabCompanies'), icon: BuildingIcon },
+    { id: 'memo',      label: t('tabMemo'),      icon: PencilIcon },
+  ]
 
   function handleSelectCompany(name) {
     setCurrentCompany(name)
     setTab('companies')
   }
 
-  function handleBack() {
-    setCurrentCompany(null)
-  }
-
   const renderContent = () => {
     if (tab === 'dashboard') return <DashboardPage onSelectCompany={handleSelectCompany} />
     if (tab === 'companies') {
       return currentCompany
-        ? <BlueprintPage companyName={currentCompany} onBack={handleBack} />
+        ? <BlueprintPage companyName={currentCompany} onBack={() => setCurrentCompany(null)} />
         : <SearchPage onSelectCompany={handleSelectCompany} />
     }
     if (tab === 'memo') return <MemoPage />
@@ -39,25 +37,54 @@ export default function App() {
       {/* 상단 헤더 */}
       <header className="bg-white border-b border-gray-200 px-4 py-3 sticky top-0 z-10">
         <div className="max-w-lg mx-auto flex items-center justify-between">
-          <div
-            className="flex items-center gap-2 cursor-pointer"
-            onClick={() => { setTab('dashboard'); setCurrentCompany(null) }}
-          >
-            <div className="w-7 h-7 bg-purple-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-xs">A</span>
+          {/* 왼쪽: 언어 토글 + 로고 */}
+          <div className="flex items-center gap-3">
+            {/* 언어 선택 - 항상 왼쪽 최상단 */}
+            <div className="flex items-center bg-gray-100 rounded-lg p-0.5">
+              <button
+                onClick={() => setLang('ko')}
+                className={`text-xs font-semibold px-2 py-1 rounded-md transition-all ${
+                  lang === 'ko'
+                    ? 'bg-white text-purple-700 shadow-sm'
+                    : 'text-gray-400 hover:text-gray-600'
+                }`}
+              >
+                KO
+              </button>
+              <button
+                onClick={() => setLang('en')}
+                className={`text-xs font-semibold px-2 py-1 rounded-md transition-all ${
+                  lang === 'en'
+                    ? 'bg-white text-purple-700 shadow-sm'
+                    : 'text-gray-400 hover:text-gray-600'
+                }`}
+              >
+                EN
+              </button>
             </div>
-            <div>
-              <h1 className="text-sm font-bold text-gray-900 leading-none">AE Intelligence</h1>
-              <p className="text-xs text-gray-400 leading-none mt-0.5">Korea Accounts</p>
+
+            {/* 로고 */}
+            <div
+              className="flex items-center gap-2 cursor-pointer"
+              onClick={() => { setTab('dashboard'); setCurrentCompany(null) }}
+            >
+              <div className="w-7 h-7 bg-purple-600 rounded-lg flex items-center justify-center">
+                <span className="text-white font-bold text-xs">A</span>
+              </div>
+              <div className="hidden sm:block">
+                <h1 className="text-sm font-bold text-gray-900 leading-none">{t('appName')}</h1>
+                <p className="text-xs text-gray-400 leading-none mt-0.5">{t('appSub')}</p>
+              </div>
             </div>
           </div>
 
+          {/* 오른쪽: 뒤로가기 */}
           {tab === 'companies' && currentCompany && (
             <button
-              onClick={handleBack}
+              onClick={() => setCurrentCompany(null)}
               className="text-sm text-gray-500 flex items-center gap-1 px-3 py-1.5 rounded-lg bg-gray-100"
             >
-              ← 목록
+              {t('backToList')}
             </button>
           )}
         </div>
@@ -89,7 +116,6 @@ export default function App() {
   )
 }
 
-// 아이콘
 function HomeIcon({ active }) {
   return (
     <svg width="22" height="22" viewBox="0 0 24 24" fill={active ? 'currentColor' : 'none'}
