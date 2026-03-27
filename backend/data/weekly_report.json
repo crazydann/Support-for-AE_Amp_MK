@@ -1,7 +1,9 @@
 {
   "generated_at": null,
   "period": null,
+  "period_en": null,
   "summary": "아직 주간 리포트가 생성되지 않았습니다. Claude Code에서 '주간보고 해줘'라고 입력하면 자동으로 생성됩니다.",
+  "summary_en": "Weekly report not yet generated. Type 'weekly report' in Claude Code to auto-generate.",
   "accounts": [
     {
       "group": "CJ",
@@ -11,10 +13,13 @@
       "amplitude_plan": "Enterprise",
       "status": "active",
       "deal_stage": "Renewal 협의중",
+      "deal_stage_en": "Renewal In Progress",
       "deal_amount": 480000,
       "health": "yellow",
       "notes_summary": "",
-      "next_action": "갱신 계약서 협의"
+      "notes_summary_en": "",
+      "next_action": "갱신 계약서 협의",
+      "next_action_en": "Negotiate renewal contract terms"
     },
     {
       "group": "CJ",
@@ -24,10 +29,13 @@
       "amplitude_plan": "Enterprise",
       "status": "active",
       "deal_stage": "Renewal Stage 5",
+      "deal_stage_en": "Renewal Stage 5",
       "deal_amount": 390000,
       "health": "red",
       "notes_summary": "",
-      "next_action": "갱신 미팅 일정 확정"
+      "notes_summary_en": "",
+      "next_action": "갱신 미팅 일정 확정",
+      "next_action_en": "Schedule renewal meeting ASAP"
     },
     {
       "group": "Shinsegae",
@@ -37,10 +45,13 @@
       "amplitude_plan": "Growth",
       "status": "active",
       "deal_stage": "Expand 논의",
+      "deal_stage_en": "Expansion Discussion",
       "deal_amount": 2000000,
       "health": "green",
       "notes_summary": "",
-      "next_action": "Experiment 기능 확장 제안"
+      "notes_summary_en": "",
+      "next_action": "Experiment 기능 확장 제안",
+      "next_action_en": "Propose Experiment feature expansion"
     },
     {
       "group": "Shinsegae",
@@ -50,10 +61,13 @@
       "amplitude_plan": "Growth",
       "status": "active",
       "deal_stage": "정상",
+      "deal_stage_en": "Healthy",
       "deal_amount": 55000,
       "health": "green",
       "notes_summary": "",
-      "next_action": "갱신 준비 (Q4)"
+      "notes_summary_en": "",
+      "next_action": "갱신 준비 (Q4)",
+      "next_action_en": "Prepare renewal (Q4)"
     },
     {
       "group": "Lotte",
@@ -63,10 +77,13 @@
       "amplitude_plan": "Growth",
       "status": "active",
       "deal_stage": "정상",
+      "deal_stage_en": "Healthy",
       "deal_amount": 170000,
       "health": "green",
       "notes_summary": "",
-      "next_action": "Expand 기회 탐색"
+      "notes_summary_en": "",
+      "next_action": "Expand 기회 탐색",
+      "next_action_en": "Explore expansion opportunities"
     },
     {
       "group": "Lotte",
@@ -76,10 +93,13 @@
       "amplitude_plan": "Growth",
       "status": "active",
       "deal_stage": "정상",
+      "deal_stage_en": "Healthy",
       "deal_amount": 126360,
       "health": "green",
       "notes_summary": "",
-      "next_action": "사용률 점검"
+      "notes_summary_en": "",
+      "next_action": "사용률 점검",
+      "next_action_en": "Review usage metrics"
     },
     {
       "group": "GS",
@@ -89,10 +109,13 @@
       "amplitude_plan": "Enterprise",
       "status": "active",
       "deal_stage": "Expand 논의중",
+      "deal_stage_en": "Expansion Discussion",
       "deal_amount": 207900,
       "health": "green",
       "notes_summary": "",
-      "next_action": "2027 계약 조기 논의"
+      "notes_summary_en": "",
+      "next_action": "2027 계약 조기 논의",
+      "next_action_en": "Early discussion for 2027 contract"
     },
     {
       "group": "LG",
@@ -102,10 +125,13 @@
       "amplitude_plan": "Growth",
       "status": "active",
       "deal_stage": "Renewal 준비",
+      "deal_stage_en": "Renewal Preparation",
       "deal_amount": 24000,
       "health": "orange",
       "notes_summary": "",
-      "next_action": "갱신 + Upsell 제안"
+      "notes_summary_en": "",
+      "next_action": "갱신 + Upsell 제안",
+      "next_action_en": "Renewal + Upsell proposal"
     },
     {
       "group": "NOL",
@@ -115,10 +141,13 @@
       "amplitude_plan": "Growth",
       "status": "active",
       "deal_stage": "Renewal 준비",
+      "deal_stage_en": "Renewal Preparation",
       "deal_amount": 25920,
       "health": "yellow",
       "notes_summary": "",
-      "next_action": "사용률 저조 개선 지원"
+      "notes_summary_en": "",
+      "next_action": "사용률 저조 개선 지원",
+      "next_action_en": "Support low usage improvement"
     },
     {
       "group": "Golfzon",
@@ -128,10 +157,13 @@
       "amplitude_plan": "Growth",
       "status": "active",
       "deal_stage": "정상",
+      "deal_stage_en": "Healthy",
       "deal_amount": 46000,
       "health": "yellow",
       "notes_summary": "",
-      "next_action": "온보딩 지원 강화"
+      "notes_summary_en": "",
+      "next_action": "온보딩 지원 강화",
+      "next_action_en": "Strengthen onboarding support"
     },
     {
       "group": "KT",
@@ -141,10 +173,13 @@
       "amplitude_plan": "Growth",
       "status": "active",
       "deal_stage": "정상",
+      "deal_stage_en": "Healthy",
       "deal_amount": 24000,
       "health": "yellow",
       "notes_summary": "",
-      "next_action": "KT Corp 확장 탐색"
+      "notes_summary_en": "",
+      "next_action": "KT Corp 확장 탐색",
+      "next_action_en": "Explore KT Corp expansion"
     },
     {
       "group": "SK",
@@ -154,10 +189,13 @@
       "amplitude_plan": "Growth",
       "status": "churned",
       "deal_stage": "재유치 탐색",
+      "deal_stage_en": "Win-back Exploration",
       "deal_amount": 0,
       "health": "red",
       "notes_summary": "",
-      "next_action": "SK Adot / T world 신규 Land 추진"
+      "notes_summary_en": "",
+      "next_action": "SK Adot / T world 신규 Land 추진",
+      "next_action_en": "Pursue new Land with SK Adot / T world"
     },
     {
       "group": "Samsung",
@@ -167,10 +205,13 @@
       "amplitude_plan": "Enterprise",
       "status": "active",
       "deal_stage": "정상",
+      "deal_stage_en": "Healthy",
       "deal_amount": 100000,
       "health": "green",
       "notes_summary": "",
-      "next_action": "삼성 그룹사 확장 기회 탐색"
+      "notes_summary_en": "",
+      "next_action": "삼성 그룹사 확장 기회 탐색",
+      "next_action_en": "Explore Samsung group expansion"
     },
     {
       "group": "SPC",
@@ -180,10 +221,13 @@
       "amplitude_plan": "Growth",
       "status": "active",
       "deal_stage": "갱신 준비",
+      "deal_stage_en": "Renewal Preparation",
       "deal_amount": 86000,
       "health": "green",
       "notes_summary": "",
-      "next_action": "갱신 + 파리바게뜨 앱 확장 제안"
+      "notes_summary_en": "",
+      "next_action": "갱신 + 파리바게뜨 앱 확장 제안",
+      "next_action_en": "Renewal + Paris Baguette app expansion"
     },
     {
       "group": "Naver",
@@ -193,10 +237,13 @@
       "amplitude_plan": null,
       "status": "prospect",
       "deal_stage": "Land 기회 탐색",
+      "deal_stage_en": "Land Opportunity",
       "deal_amount": 0,
       "health": "gray",
       "notes_summary": "",
-      "next_action": "네이버 쇼핑/파이낸셜 담당자 접촉"
+      "notes_summary_en": "",
+      "next_action": "네이버 쇼핑/파이낸셜 담당자 접촉",
+      "next_action_en": "Contact Naver Shopping/Financial team"
     },
     {
       "group": "Hyundai Motors",
@@ -206,10 +253,13 @@
       "amplitude_plan": null,
       "status": "prospect",
       "deal_stage": "Prospect",
+      "deal_stage_en": "Prospect",
       "deal_amount": 0,
       "health": "gray",
       "notes_summary": "",
-      "next_action": "현대캐피탈 / 제네시스 앱 담당자 접촉"
+      "notes_summary_en": "",
+      "next_action": "현대캐피탈 / 제네시스 앱 담당자 접촉",
+      "next_action_en": "Contact Hyundai Capital / Genesis app team"
     },
     {
       "group": "Hyundai Department",
@@ -219,10 +269,13 @@
       "amplitude_plan": null,
       "status": "prospect",
       "deal_stage": "Prospect",
+      "deal_stage_en": "Prospect",
       "deal_amount": 0,
       "health": "gray",
       "notes_summary": "",
-      "next_action": "H.Point 앱 담당자 접촉"
+      "notes_summary_en": "",
+      "next_action": "H.Point 앱 담당자 접촉",
+      "next_action_en": "Contact H.Point app team"
     }
   ],
   "action_items": [
@@ -231,6 +284,7 @@
       "account": "TVING",
       "group": "CJ",
       "action": "갱신 미팅 일정 잡기 - 계약 만료 65일 전",
+      "action_en": "Schedule renewal meeting - 65 days until contract expiry",
       "due": "2026-04-15"
     },
     {
@@ -238,6 +292,7 @@
       "account": "LG Uplus (CTO)",
       "group": "LG",
       "action": "갱신 + Upsell 제안 - 계약 만료 34일 전",
+      "action_en": "Renewal + Upsell proposal - 34 days until contract expiry",
       "due": "2026-04-10"
     },
     {
@@ -245,6 +300,7 @@
       "account": "Nolbal",
       "group": "NOL",
       "action": "낮은 사용률 원인 파악 및 CS 지원 요청",
+      "action_en": "Investigate low usage and request CS support",
       "due": "2026-04-05"
     },
     {
@@ -252,6 +308,7 @@
       "account": "CJ Olive Young",
       "group": "CJ",
       "action": "갱신 계약 조건 협의 - Experiment 추가 upsell",
+      "action_en": "Negotiate renewal terms - Experiment feature upsell",
       "due": "2026-05-01"
     },
     {
@@ -259,6 +316,7 @@
       "account": "SK Telecom",
       "group": "SK",
       "action": "SK Adot 팀 새로운 Land 기회 미팅",
+      "action_en": "Meeting with SK Adot team for new Land opportunity",
       "due": "2026-04-30"
     },
     {
@@ -266,13 +324,27 @@
       "account": "Starbucks Korea",
       "group": "Shinsegae",
       "action": "$2M+ Expand 제안서 준비",
+      "action_en": "Prepare $2M+ Expand proposal",
       "due": "2026-05-15"
     }
   ],
   "strategy_summary": "이번 분기 핵심 목표: TVING·LG Uplus 조기 갱신 확보, Starbucks Korea Expand 클로징. SK 재유치 파이프라인 구축.",
+  "strategy_summary_en": "Q2 key goals: Secure early renewal for TVING & LG Uplus, close Starbucks Korea Expand deal. Build SK win-back pipeline.",
   "risks": [
-    {"account": "TVING", "risk": "계약 만료 65일 - Stage 5에서 지연 중"},
-    {"account": "LG Uplus", "risk": "계약 만료 34일 - ARR 하락 위험"},
-    {"account": "Nolbal", "risk": "사용률 저조 (44%) - 갱신 리스크"}
+    {
+      "account": "TVING",
+      "risk": "계약 만료 65일 - Stage 5에서 지연 중",
+      "risk_en": "65 days to expiry - stalled at Stage 5"
+    },
+    {
+      "account": "LG Uplus",
+      "risk": "계약 만료 34일 - ARR 하락 위험",
+      "risk_en": "34 days to expiry - ARR downgrade risk"
+    },
+    {
+      "account": "Nolbal",
+      "risk": "사용률 저조 (44%) - 갱신 리스크",
+      "risk_en": "Low usage (44%) - renewal risk"
+    }
   ]
 }

@@ -1,6 +1,11 @@
 import { useState, useEffect } from 'react'
 import { useLang } from '../contexts/LanguageContext'
 
+// lang에 따라 ko/en 필드 선택 헬퍼
+function pick(obj, key, lang) {
+  return (lang === 'en' && obj[`${key}_en`]) ? obj[`${key}_en`] : obj[key]
+}
+
 const API = import.meta.env.VITE_API_URL || ''
 
 function getHealthConfig(t) {
@@ -41,10 +46,13 @@ function ContractBadge({ subscriptionEnd, status, t }) {
   return <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">{subscriptionEnd?.slice(0, 7)}</span>
 }
 
-function AccountCard({ account, t }) {
+function AccountCard({ account, t, lang }) {
   const healthConfig = getHealthConfig(t)
   const cfg = healthConfig[account.health] || healthConfig.gray
   const arrNum = account.arr ? parseInt(account.arr) : 0
+  const dealStage   = pick(account, 'deal_stage', lang)
+  const nextAction  = pick(account, 'next_action', lang)
+  const notesSummary = pick(account, 'notes_summary', lang)
 
   return (
     <div className={`rounded-xl border ${cfg.border} ${cfg.bg} p-4 space-y-2`}>
@@ -73,33 +81,34 @@ function AccountCard({ account, t }) {
             <span className="text-xs text-purple-600 font-medium">{account.amplitude_plan}</span>
           )}
         </div>
-        {account.deal_stage && (
+        {dealStage && (
           <span className="text-xs text-gray-500 bg-white border border-gray-200 px-2 py-1 rounded-lg max-w-[130px] text-right leading-tight">
-            {account.deal_stage}
+            {dealStage}
           </span>
         )}
       </div>
 
-      {account.next_action && (
+      {nextAction && (
         <div className="pt-1 border-t border-gray-200">
-          <p className="text-xs text-gray-600">{t('nextAction')}{account.next_action}</p>
+          <p className="text-xs text-gray-600">{t('nextAction')}{nextAction}</p>
         </div>
       )}
-      {account.notes_summary && (
-        <p className="text-xs text-gray-500 italic">"{account.notes_summary}"</p>
+      {notesSummary && (
+        <p className="text-xs text-gray-500 italic">"{notesSummary}"</p>
       )}
     </div>
   )
 }
 
-function ActionItem({ item, t }) {
+function ActionItem({ item, t, lang }) {
   const priorityConfig = getPriorityConfig(t)
   const cfg = priorityConfig[item.priority] || priorityConfig.medium
+  const action = pick(item, 'action', lang)
   return (
     <div className={`rounded-xl border ${cfg.bg} p-3 flex gap-3 items-start`}>
       <span className={`text-xs font-bold ${cfg.color} mt-0.5 shrink-0`}>{cfg.label}</span>
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-gray-900 leading-snug">{item.action}</p>
+        <p className="text-sm font-medium text-gray-900 leading-snug">{action}</p>
         <div className="flex items-center gap-2 mt-1 flex-wrap">
           <span className="text-xs text-gray-400">{item.group} · {item.account}</span>
           {item.due && <span className="text-xs text-gray-400">· {item.due}</span>}
@@ -110,7 +119,7 @@ function ActionItem({ item, t }) {
 }
 
 export default function DashboardPage() {
-  const { t } = useLang()
+  const { t, lang } = useLang()
   const [report, setReport] = useState(null)
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState('all')
@@ -200,10 +209,12 @@ export default function DashboardPage() {
       </div>
 
       {/* 전략 요약 */}
-      {report.strategy_summary && (
+      {(report.strategy_summary || report.strategy_summary_en) && (
         <div className="bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-xl p-4">
           <p className="text-xs font-semibold text-purple-600 mb-1">{t('strategySummary')}</p>
-          <p className="text-sm text-gray-700 leading-relaxed">{report.strategy_summary}</p>
+          <p className="text-sm text-gray-700 leading-relaxed">
+            {pick(report, 'strategy_summary', lang)}
+          </p>
         </div>
       )}
 
@@ -214,7 +225,7 @@ export default function DashboardPage() {
             {t('actionItems')}
             <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">{actions.length}</span>
           </h2>
-          {actions.map((item, i) => <ActionItem key={i} item={item} t={t} />)}
+          {actions.map((item, i) => <ActionItem key={i} item={item} t={t} lang={lang} />)}
         </div>
       )}
 
@@ -236,7 +247,7 @@ export default function DashboardPage() {
             ))}
           </div>
         </div>
-        {sorted.map((account, i) => <AccountCard key={i} account={account} t={t} />)}
+        {sorted.map((account, i) => <AccountCard key={i} account={account} t={t} lang={lang} />)}
       </div>
 
       {/* 리스크 */}
@@ -248,7 +259,7 @@ export default function DashboardPage() {
               <span className="text-red-500 text-sm shrink-0">⚠</span>
               <div>
                 <p className="text-xs font-semibold text-red-700">{r.account}</p>
-                <p className="text-xs text-red-600 mt-0.5">{r.risk}</p>
+                <p className="text-xs text-red-600 mt-0.5">{pick(r, 'risk', lang)}</p>
               </div>
             </div>
           ))}
