@@ -9,7 +9,7 @@ export default function App() {
   const { lang, setLang, t } = useLang()
   const [tab, setTab] = useState('dashboard')
   const [currentCompany, setCurrentCompany] = useState(null)
-  const [dashView, setDashView] = useState('todo')  // 'todo' | 'account'
+  const [dashView, setDashView] = useState('todo')  // 'todo' | 'account' | 'weekly'
 
   const TABS = [
     { id: 'dashboard', label: t('tabHome'),      icon: HomeIcon },
@@ -100,6 +100,16 @@ export default function App() {
                 }`}
               >
                 {t('viewAccount')}
+              </button>
+              <button
+                onClick={() => setDashView('weekly')}
+                className={`text-xs font-semibold px-2.5 py-1 rounded-md transition-all ${
+                  dashView === 'weekly'
+                    ? 'bg-white text-purple-700 shadow-sm'
+                    : 'text-gray-400 hover:text-gray-600'
+                }`}
+              >
+                {t('viewWeekly')}
               </button>
             </div>
           )}

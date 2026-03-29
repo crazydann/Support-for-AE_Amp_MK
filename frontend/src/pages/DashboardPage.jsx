@@ -625,6 +625,233 @@ function AccountView({ report, t, lang }) {
   )
 }
 
+// ─── WEEKLY VIEW ──────────────────────────────────────────────────────────────
+
+function WeeklyView({ report, t, lang }) {
+  const accounts   = report.accounts   || []
+  const actions    = report.action_items || []
+  const risks      = report.risks       || []
+  const priorityConfig = getPriorityConfig(t)
+
+  // 날짜 범위 계산
+  const today = new Date()
+  const weekStart = new Date(today)
+  weekStart.setDate(today.getDate() - today.getDay() + (today.getDay() === 0 ? -6 : 1)) // 이번 주 월요일
+  const lastWeekStart = new Date(weekStart)
+  lastWeekStart.setDate(weekStart.getDate() - 7)
+  const lastWeekEnd = new Date(weekStart)
+  lastWeekEnd.setDate(weekStart.getDate() - 1)
+
+  const fmt = (d) => d.toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' })
+  const lastWeekLabel = `${fmt(lastWeekStart)} ~ ${fmt(lastWeekEnd)}`
+  const thisWeekLabel = `${fmt(weekStart)} ~`
+
+  // 지난주 활동 수집: 모든 계정의 activity_history에서 지난 14일치 (last_week ~ today)
+  const cutoff = new Date(today)
+  cutoff.setDate(today.getDate() - 14)
+  const cutoffStr = cutoff.toISOString().slice(0, 10)
+
+  const recentActivities = []
+  accounts.forEach(acc => {
+    (acc.activity_history || []).forEach(item => {
+      if (item.date >= cutoffStr) {
+        recentActivities.push({ ...item, _account: acc.key_account, _group: acc.group })
+      }
+    })
+  })
+  recentActivities.sort((a, b) => b.date.localeCompare(a.date))
+
+  // 날짜별로 그룹핑
+  const byDate = {}
+  recentActivities.forEach(item => {
+    if (!byDate[item.date]) byDate[item.date] = []
+    byDate[item.date].push(item)
+  })
+  const sortedDates = Object.keys(byDate).sort((a, b) => b.localeCompare(a))
+
+  // 이번 주 할 일: due가 이번 주 이내이거나 urgent/high 우선
+  const thisWeekActions = [...actions].sort((a, b) => {
+    const order = { urgent: 0, high: 1, medium: 2 }
+    return (order[a.priority] ?? 3) - (order[b.priority] ?? 3)
+  })
+
+  // 총 ARR 통계
+  const totalArr = accounts.filter(a => a.arr).reduce((s, a) => s + parseInt(a.arr || 0), 0)
+  const activeCount = accounts.filter(a => a.status === 'active').length
+  const renewalRisk = accounts.filter(a => ['red', 'orange'].includes(a.health) && a.status === 'active').length
+
+  return (
+    <div className="space-y-5 pb-24">
+      {/* 주간 보고 헤더 */}
+      <div className="bg-gradient-to-r from-purple-600 to-blue-600 rounded-2xl p-4 text-white">
+        <p className="text-xs font-medium opacity-80 mb-1">
+          {lang === 'en' ? 'Weekly Report' : '주간 보고'} · {today.toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })}
+        </p>
+        <h2 className="text-lg font-bold leading-snug">
+          {lang === 'en' ? 'AE MK — Weekly Summary' : 'AE MK 주간 업무 요약'}
+        </h2>
+        <div className="flex gap-4 mt-3 pt-3 border-t border-white/20">
+          <div className="text-center">
+            <p className="text-xl font-bold">${Math.round(totalArr / 1000)}K</p>
+            <p className="text-xs opacity-70">{lang === 'en' ? 'Managed ARR' : '관리 ARR'}</p>
+          </div>
+          <div className="text-center">
+            <p className="text-xl font-bold">{activeCount}</p>
+            <p className="text-xs opacity-70">{lang === 'en' ? 'Active' : '활성 계정'}</p>
+          </div>
+          <div className="text-center">
+            <p className="text-xl font-bold text-red-200">{renewalRisk}</p>
+            <p className="text-xs opacity-70">{lang === 'en' ? 'At Risk' : '리스크'}</p>
+          </div>
+          <div className="text-center">
+            <p className="text-xl font-bold text-yellow-200">{thisWeekActions.filter(a => a.priority === 'urgent').length}</p>
+            <p className="text-xs opacity-70">{lang === 'en' ? 'Urgent' : '긴급 할 일'}</p>
+          </div>
+        </div>
+      </div>
+
+      {/* 전략 요약 */}
+      {(report.strategy_summary || report.strategy_summary_en) && (
+        <div className="bg-purple-50 border border-purple-200 rounded-xl p-4">
+          <p className="text-xs font-bold text-purple-600 mb-2 flex items-center gap-1.5">
+            <span>✦</span>
+            {lang === 'en' ? 'This Week\'s Highlights' : '이번 주 하이라이트'}
+          </p>
+          <p className="text-sm text-gray-700 leading-relaxed">{pick(report, 'strategy_summary', lang)}</p>
+        </div>
+      )}
+
+      {/* ── 지난주 한 일 ── */}
+      <div className="space-y-3">
+        <div className="flex items-center gap-2">
+          <h2 className="text-sm font-bold text-gray-900">
+            {lang === 'en' ? '📋 Last Week' : '📋 지난주 한 일'}
+          </h2>
+          <span className="text-xs text-gray-400">{lastWeekLabel}</span>
+          <span className="ml-auto text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">
+            {recentActivities.length}{lang === 'en' ? ' activities' : '건'}
+          </span>
+        </div>
+
+        {sortedDates.length === 0 ? (
+          <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 text-center text-xs text-gray-400">
+            {lang === 'en' ? 'No activities recorded in the past 2 weeks' : '최근 2주간 기록된 활동이 없습니다'}
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {sortedDates.map(date => (
+              <div key={date} className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                {/* 날짜 헤더 */}
+                <div className="bg-gray-50 border-b border-gray-100 px-3 py-2">
+                  <span className="text-xs font-bold text-gray-600">
+                    {new Date(date + 'T00:00:00').toLocaleDateString(lang === 'en' ? 'en-US' : 'ko-KR', {
+                      month: 'long', day: 'numeric', weekday: 'short'
+                    })}
+                  </span>
+                </div>
+                {/* 해당 날짜 활동들 */}
+                <div className="divide-y divide-gray-50">
+                  {byDate[date].map((item, i) => {
+                    const cfg = activityTypeConfig[item.type] || activityTypeConfig.memo
+                    return (
+                      <div key={i} className="px-3 py-2.5 flex gap-2.5 items-start">
+                        <div className={`${cfg.bg} rounded-full w-6 h-6 flex items-center justify-center text-xs shrink-0 mt-0.5`}>
+                          {cfg.icon}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-1.5 mb-0.5 flex-wrap">
+                            <span className={`text-xs font-semibold ${cfg.color}`}>
+                              {lang === 'en' ? cfg.label_en : cfg.label}
+                            </span>
+                            <span className="text-xs text-gray-400">·</span>
+                            <span className="text-xs font-medium text-gray-600">{item._account}</span>
+                          </div>
+                          <p className="text-xs text-gray-700 leading-relaxed">
+                            {lang === 'en' ? (item.summary_en || item.summary) : item.summary}
+                          </p>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* ── 이번 주 할 일 ── */}
+      <div className="space-y-2">
+        <div className="flex items-center gap-2">
+          <h2 className="text-sm font-bold text-gray-900">
+            {lang === 'en' ? '✅ This Week' : '✅ 이번 주 할 일'}
+          </h2>
+          <span className="text-xs text-gray-400">{thisWeekLabel}</span>
+          <span className="ml-auto text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">
+            {thisWeekActions.length}{lang === 'en' ? ' items' : '건'}
+          </span>
+        </div>
+
+        {thisWeekActions.length === 0 ? (
+          <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 text-center text-xs text-gray-400">
+            {lang === 'en' ? 'No action items' : '등록된 할 일이 없습니다'}
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {thisWeekActions.map((item, i) => {
+              const cfg = priorityConfig[item.priority] || priorityConfig.medium
+              const action = pick(item, 'action', lang)
+              const days = item.due ? daysUntil(item.due) : null
+              return (
+                <div key={i} className={`rounded-xl border ${cfg.bg} p-3`}>
+                  <div className="flex gap-2.5 items-start">
+                    <span className={`text-xs font-bold ${cfg.color} shrink-0 mt-0.5`}>{cfg.label}</span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-gray-900 leading-snug">{action}</p>
+                      <div className="flex items-center gap-2 mt-1 flex-wrap">
+                        <span className="text-xs text-gray-400">{item.group} · {item.account}</span>
+                        {item.due && (
+                          <span className={`text-xs font-medium px-1.5 py-0.5 rounded-full ${
+                            days !== null && days <= 3
+                              ? 'bg-red-100 text-red-600'
+                              : days !== null && days <= 7
+                              ? 'bg-orange-100 text-orange-600'
+                              : 'bg-gray-100 text-gray-500'
+                          }`}>
+                            {item.due}{days !== null ? ` (D-${days})` : ''}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* ── 리스크 ── */}
+      {risks.length > 0 && (
+        <div className="space-y-2">
+          <h2 className="text-sm font-bold text-gray-900">
+            {lang === 'en' ? '⚠ Risks to Watch' : '⚠ 주의 리스크'}
+          </h2>
+          {risks.map((r, i) => (
+            <div key={i} className="bg-red-50 border border-red-200 rounded-xl p-3 flex gap-2 items-start">
+              <span className="text-red-400 text-sm shrink-0">⚠</span>
+              <div>
+                <p className="text-xs font-semibold text-red-700">{r.account}</p>
+                <p className="text-xs text-red-600 mt-0.5 leading-relaxed">{pick(r, 'risk', lang)}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 // ─── MAIN DASHBOARD ───────────────────────────────────────────────────────────
 
 export default function DashboardPage({ dashView = 'todo' }) {
@@ -668,6 +895,8 @@ export default function DashboardPage({ dashView = 'todo' }) {
 
       {dashView === 'todo'
         ? <TodoView report={report} t={t} lang={lang} />
+        : dashView === 'weekly'
+        ? <WeeklyView report={report} t={t} lang={lang} />
         : <AccountView report={report} t={t} lang={lang} />
       }
     </div>
