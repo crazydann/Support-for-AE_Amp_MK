@@ -91,16 +91,28 @@ def fetch_recent_meetings(days_back: int = 14, processed_ids: set = None) -> lis
                 attendee_str += f" 외 {len(external_attendees)-3}명"
 
             short_title = summary[:50] + ("..." if len(summary) > 50 else "")
-            summary_ko = f"[미팅] {short_title}" + (f" ({attendee_str})" if attendee_str else "")
-            summary_en = f"[Meeting] {short_title}" + (f" ({attendee_str})" if attendee_str else "")
+            attendee_part = f" ({attendee_str})" if attendee_str else ""
+
+            # description에서 핵심 텍스트 추출 (HTML 태그 제거, 첫 200자)
+            desc_clean = ""
+            if description:
+                import re as _re
+                desc_clean = _re.sub(r"<[^>]+>", "", description).strip()
+                desc_clean = " ".join(desc_clean.split())[:200]
+
+            summary_ko = f"[미팅] {short_title}{attendee_part}"
+            summary_en = f"[Meeting] {short_title}{attendee_part}"
+            if desc_clean:
+                summary_ko += f" — {desc_clean}"
+                summary_en += f" — {desc_clean}"
 
             activities.append({
                 "account": account,
                 "date": date_str,
                 "type": "meeting",
                 "source_id": source_id,
-                "summary": summary_ko,
-                "summary_en": summary_en,
+                "summary": summary_ko[:300],
+                "summary_en": summary_en[:300],
             })
 
         logger.info(f"Calendar sync: {len(activities)}개 미팅 추출 (총 {len(events)}개 이벤트 검색)")
