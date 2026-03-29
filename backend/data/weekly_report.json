@@ -2,8 +2,8 @@
   "generated_at": "2026-03-29T18:00:00+09:00",
   "period": "2026-03-29 (KST 주간보고)",
   "period_en": "2026-03-29 (KST Weekly Report)",
-  "summary": "Kcar 신규 Land Closed Won (3/29). Naver·Samsung Galaxy Store PoC 전면 중단. Samsung Shop·KakaoBank 신규 파이프라인. 현대백화점 내부 승인 완료. LG Uplus D-31 긴급.",
-  "summary_en": "Kcar new Land Closed Won (3/29). Naver & Samsung Galaxy Store PoC fully on hold. New pipeline: Samsung Shop, KakaoBank. Hyundai Dept Store internal approval done. LG Uplus D-31 urgent.",
+  "summary": "Naver·Samsung Galaxy Store PoC 전면 중단. Samsung Shop·KakaoBank 신규 파이프라인. 현대백화점 내부 승인 완료. LG Uplus D-31 긴급.",
+  "summary_en": "Naver & Samsung Galaxy Store PoC fully on hold. New pipeline: Samsung Shop, KakaoBank. Hyundai Dept Store internal approval done. LG Uplus D-31 urgent.",
   "accounts": [
     {
       "group": "CJ",
@@ -696,33 +696,6 @@
           "summary_en": "[Internal report] KakaoBank new pipeline reported to Matt. Marketing and New Business teams independently evaluating PoC. PII-free behavioral analytics, targeting completion before summer."
         }
       ]
-    },
-    {
-      "group": "Kcar",
-      "key_account": "Kcar (케이카)",
-      "arr": null,
-      "subscription_end": null,
-      "amplitude_plan": null,
-      "status": "active",
-      "deal_stage": "Land Closed Won - 3/29 DocuSign 완료",
-      "deal_stage_en": "Land Closed Won - DocuSign completed 3/29",
-      "deal_amount": 0,
-      "health": "green",
-      "notes_summary": "국내 최대 중고차 플랫폼. 3/29 오더폼 양사 서명 완료 (DocuSign). 온보딩 킥오프 조율 필요.",
-      "notes_summary_en": "Korea's largest used car platform. Order form fully signed by both parties 3/29 (DocuSign). Onboarding kickoff coordination needed.",
-      "next_action": "온보딩 킥오프 일정 조율 + 담당 CSM/SE 배정 요청",
-      "next_action_en": "Schedule onboarding kickoff + request CSM/SE assignment",
-      "last_activity": "2026-03-29",
-      "strategy": "중고차 커머스 버티컬 신규 레퍼런스. 국내 최대 중고차 플랫폼 온보딩 성공 시 오토모티브·커머스 버티컬 확장 레버리지.",
-      "strategy_en": "New reference in used car/automotive commerce vertical. Successful onboarding of Korea's largest used car platform creates leverage for automotive/commerce vertical expansion.",
-      "activity_history": [
-        {
-          "date": "2026-03-29",
-          "type": "email",
-          "summary": "Kcar 오더폼 DocuSign 완료. 양사 서명 확인. (Donghun Choi 경유)",
-          "summary_en": "Kcar order form DocuSign completed. Both parties signed confirmed. (via Donghun Choi)"
-        }
-      ]
     }
   ],
   "action_items": [
@@ -789,14 +762,6 @@
       "action": "마케팅팀·신사업팀 PoC 타임라인 통합 조율 + PII-free 행동분석 구현 제안서 준비 (여름 전 PoC 목표)",
       "action_en": "Align PoC timelines between Marketing and New Business teams + prepare PII-free implementation proposal (target: PoC before summer)",
       "due": "2026-04-20"
-    },
-    {
-      "priority": "high",
-      "account": "Kcar (케이카)",
-      "group": "Kcar",
-      "action": "온보딩 킥오프 일정 조율 + CSM/SE 배정 요청",
-      "action_en": "Schedule onboarding kickoff + request CSM/SE assignment",
-      "due": "2026-04-07"
     },
     {
       "priority": "medium",
