@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-03-27T09:00:00+09:00",
-  "period": "2026-03-27 (KST 주간보고)",
-  "period_en": "2026-03-27 (KST Weekly Report)",
+  "generated_at": "2026-03-29T10:00:00+09:00",
+  "period": "2026-03-29 (KST 주간보고)",
+  "period_en": "2026-03-29 (KST Weekly Report)",
   "summary": "LG Uplus D-34 긴급 갱신, TVING D-65 Stage5 진행중, CJ Olive Young $450K Upsell Proposal, Starbucks 갱신 Closed Won, SPC Land Closed Won.",
   "summary_en": "LG Uplus D-34 urgent renewal, TVING D-65 at Stage 5, CJ Olive Young $450K Upsell Proposal, Starbucks renewal Closed Won, SPC Land Closed Won.",
   "accounts": [
@@ -49,31 +49,64 @@
       "deal_stage_en": "Renewal+Expand Stage 5 Proposal ($420K)",
       "deal_amount": 420000,
       "health": "orange",
-      "notes_summary": "갱신+확장 $420K Stage5. 계약 만료 D-65. 딜 클로징 속도가 만료일보다 늦어질 위험.",
-      "notes_summary_en": "Renewal+Expand $420K at Stage 5. Contract expires D-65. Risk of deal close lagging behind expiry.",
-      "next_action": "클로징 가속화 - Stage6 조건 협의 및 EB 컨펌 요청",
-      "next_action_en": "Accelerate close - negotiate Stage 6 terms and request EB confirmation",
+      "notes_summary": "갱신+확장 $420K Stage5 진행중. D-63. Experiment 데모 완료(3/23), TVING PM팀이 Sandbox 환경 요청(3/25) - 제품 engagement 상승 중.",
+      "notes_summary_en": "Renewal+Expand $420K at Stage 5. D-63. Experiment demo complete (3/23), TVING PM team requested Sandbox (3/25) - product engagement increasing.",
+      "next_action": "Sandbox 환경 제공 + Stage6 조건 협의 및 EB 컨펌 요청",
+      "next_action_en": "Provide Sandbox environment + negotiate Stage 6 terms and request EB confirmation",
       "last_activity": "2026-03-25",
-      "strategy": "OTT 업계 데이터 분석 리더십 포지셔닝. D-65 갱신 타이밍에 $420K Upsell 클로징이 핵심. 갱신 성공 시 CJ 그룹 전체 레퍼런스로 확장.",
-      "strategy_en": "Position as OTT data analytics leader. Close $420K upsell at D-65 renewal. Win enables CJ Group-wide reference.",
+      "strategy": "OTT 업계 Experiment 기능 레퍼런스 구축 + 갱신 클로징 병행 전략. PM팀의 Sandbox 요청은 제품 만족도의 신호 - 갱신 협상에 긍정적 레버리지. D-63 내 EB 컨펌 최우선.",
+      "strategy_en": "Build Experiment reference in OTT + accelerate renewal close in parallel. PM team Sandbox request signals satisfaction - positive leverage for renewal. EB confirmation within D-63 is top priority.",
       "activity_history": [
         {
           "date": "2026-03-25",
           "type": "email",
-          "summary": "갱신 조건 관련 법무팀 검토 요청 메일 수신. 계약서 초안 첨부.",
-          "summary_en": "Received email from legal team requesting review of renewal terms. Contract draft attached."
+          "summary": "이용범(TVING 서비스플래닝팀)이 Sandbox 환경 요청. 3/23 Experiment 데모 후 PM팀이 직접 테스트해볼 수 있는 환경 제공 요청.",
+          "summary_en": "Yong-Beom Lee (TVING Service Planning) requested Sandbox environment. Post 3/23 Experiment demo, PM team wants hands-on testing environment."
         },
         {
-          "date": "2026-03-20",
+          "date": "2026-03-23",
           "type": "meeting",
-          "summary": "TVING CPO와 갱신 미팅. $420K 조건 구두 합의. 공식 계약서 검토 중.",
-          "summary_en": "Renewal meeting with TVING CPO. Verbal agreement on $420K terms. Official contract under review."
+          "summary": "SE 정성화와 TVING Experiment 온라인 데모 세션 (30분). PM팀의 Experiment 기능 관심 확인. 세션 녹화본 및 슬라이드 공유 완료.",
+          "summary_en": "Online Experiment demo session with SE Seonghwa (30 min). Confirmed TVING PM team interest in Experiment. Shared recording and slides."
         },
         {
-          "date": "2026-03-15",
-          "type": "slack",
-          "summary": "CSM Jihee로부터 사용률 리포트 공유. MAU 전월 대비 12% 증가.",
-          "summary_en": "CSM Jihee shared usage report. MAU up 12% month-over-month."
+          "date": "2026-03-19",
+          "type": "email",
+          "summary": "이용범이 3/23 온라인 데모 세션 참석 확인 메일 회신. 티빙 PM팀 내부 선호 일정(월요일)으로 확정.",
+          "summary_en": "Yong-Beom Lee confirmed attendance for 3/23 online demo. Monday slot confirmed by TVING PM team."
+        }
+      ]
+    },
+    {
+      "group": "CJ",
+      "key_account": "하이마트",
+      "arr": null,
+      "subscription_end": null,
+      "amplitude_plan": "Growth",
+      "status": "active",
+      "deal_stage": "Land Closed Won - 4/1 시작 예정",
+      "deal_stage_en": "Land Closed Won - Starting April 1",
+      "deal_amount": 0,
+      "health": "green",
+      "notes_summary": "CJ OliveNetworks(Maxonomy) 파트너를 통한 신규 계약. 3/24 양사 서명 완료. 4/1 Growth Plan 시작.",
+      "notes_summary_en": "New contract via CJ OliveNetworks (Maxonomy) partner. Both parties signed 3/24. Growth Plan starting April 1.",
+      "next_action": "4/1 계약 시작 확인 + CJ OliveNetworks와 온보딩 킥오프 조율",
+      "next_action_en": "Confirm April 1 contract start + coordinate onboarding kickoff with CJ OliveNetworks",
+      "last_activity": "2026-03-24",
+      "strategy": "CJ OliveNetworks(Maxonomy) 파트너 채널을 통한 신규 Land. 하이마트 온보딩 성공 시 CJ 파트너 채널 확장 레퍼런스로 활용.",
+      "strategy_en": "New Land via CJ OliveNetworks (Maxonomy) partner channel. Successful Himart onboarding becomes reference for CJ partner channel expansion.",
+      "activity_history": [
+        {
+          "date": "2026-03-24",
+          "type": "email",
+          "summary": "양사 서명 완료된 오더폼 전달 확인. 하이마트 Growth Plan 계약 최종 확정.",
+          "summary_en": "Fully signed order form delivered. Himart Growth Plan contract officially confirmed."
+        },
+        {
+          "date": "2026-03-09",
+          "type": "email",
+          "summary": "박소현(CJ OliveNetworks/Maxonomy)이 하이마트 Amplitude Growth Plan 오더폼 접수 요청. 4월 1일 시작.",
+          "summary_en": "So-Hyun Park (CJ OliveNetworks/Maxonomy) requested Himart Amplitude Growth Plan order form. Start date: April 1."
         }
       ]
     },
@@ -84,18 +117,37 @@
       "subscription_end": "2029-02-28",
       "amplitude_plan": "Growth",
       "status": "active",
-      "deal_stage": "갱신 Closed Won + Expand $204K Stage2",
-      "deal_stage_en": "Renewal Closed Won + Expand $204K Stage 2",
+      "deal_stage": "갱신 Closed Won + Expand Vertical $204K Stage2 Quote Approved",
+      "deal_stage_en": "Renewal Closed Won + Expand Vertical $204K Stage 2 Quote Approved",
       "deal_amount": 189579,
       "health": "green",
-      "notes_summary": "2026-01 갱신 Closed Won (3년 계약, $189.6K). 신규 Expand $204K Stage2 Qualification 시작.",
-      "notes_summary_en": "Renewal Closed Won Jan 2026 (3-year, $189.6K). New Expand $204K now in Stage 2 Qualification.",
-      "next_action": "Expand $204K 딜 Stage3 진입 - QBR 준비",
-      "next_action_en": "Move Expand $204K to Stage 3 - prepare QBR on usage",
-      "last_activity": "2026-03-15",
-      "strategy": "3년 장기 파트너십 기반 F&B 데이터 분석 표준 모델 구축. Expand $204K는 앱 고도화와 멤버십 리텐션 최적화 중심. 신세계 그룹 내 확장 레퍼런스로 활용.",
-      "strategy_en": "Build F&B data analytics standard model on 3-year partnership. Expand $204K focuses on app enhancement and membership retention. Use as Shinsegae Group expansion reference.",
-      "activity_history": []
+      "notes_summary": "2026-01 갱신 Closed Won (3년, $189.6K). Expand Vertical $204K Stage2 - 3/16 Quote Approved (Q-90635). 3/19 SE 정성화 배정. 3/4 CSM 유지희 기능 Q&A 미팅.",
+      "notes_summary_en": "Renewal Closed Won Jan 2026 (3yr, $189.6K). Expand Vertical $204K Stage 2 - Quote Approved 3/16 (Q-90635). SE Seonghwa assigned 3/19. CSM Jihee Q&A meeting 3/4.",
+      "next_action": "Expand $204K Stage3 진입 - QBR 준비 및 SE 정성화와 기술 지원 조율",
+      "next_action_en": "Move Expand $204K to Stage 3 - prepare QBR and coordinate technical support with SE Seonghwa",
+      "last_activity": "2026-03-19",
+      "strategy": "3년 장기 파트너십 기반 F&B 데이터 분석 표준 모델 구축. Expand Vertical $204K Quote Approved - Stage3 진입 가속. SE 정성화 배정으로 기술 지원 강화. 신세계 그룹 내 확장 레퍼런스로 활용.",
+      "strategy_en": "Build F&B data analytics standard model on 3-year partnership. Expand Vertical $204K Quote Approved - accelerate to Stage 3. SE Seonghwa assigned for technical support. Use as Shinsegae Group expansion reference.",
+      "activity_history": [
+        {
+          "date": "2026-03-19",
+          "type": "email",
+          "summary": "Starbucks Korea Renewal 2026-01 건에 SE 정성화 배정. Expand Vertical 딜 기술 지원 본격화.",
+          "summary_en": "SE Seonghwa assigned for Starbucks Korea Renewal 2026-01. Technical support for Expand Vertical deal begins."
+        },
+        {
+          "date": "2026-03-16",
+          "type": "email",
+          "summary": "[Quote Approved] Starbucks Korea Renewal + Expand Vertical 2029-03 (Q-90635). Stage 2 Qualification, Commit 예측.",
+          "summary_en": "[Quote Approved] Starbucks Korea Renewal + Expand Vertical 2029-03 (Q-90635). Stage 2 Qualification, Commit forecast."
+        },
+        {
+          "date": "2026-03-04",
+          "type": "meeting",
+          "summary": "[Amplitude x Starbucks] CSM 유지희 미팅. Expand 관련 기능 Q&A 및 Teams 연동 안내. Q&A 문서 공유.",
+          "summary_en": "[Amplitude x Starbucks] CSM Jihee meeting. Feature Q&A for Expand and Teams integration. Q&A document shared."
+        }
+      ]
     },
     {
       "group": "Shinsegae",
@@ -124,18 +176,43 @@
       "subscription_end": "2027-01-31",
       "amplitude_plan": "Growth",
       "status": "active",
-      "deal_stage": "정상 운영",
-      "deal_stage_en": "Healthy",
+      "deal_stage": "온보딩 구현 진행중 - Phase3 Taxonomy",
+      "deal_stage_en": "Onboarding Implementation - Phase 3 Taxonomy",
       "deal_amount": 170000,
       "health": "green",
-      "notes_summary": "",
-      "notes_summary_en": "",
-      "next_action": "Expand 기회 탐색",
-      "next_action_en": "Explore expansion opportunities",
-      "last_activity": "2026-02-20",
-      "strategy": "롯데 그룹 이커머스/리테일 데이터 분석 허브. 롯데ON·롯데백화점 연계 Expand 논의로 그룹 확장. 2027 갱신 조기 전략 논의 시작.",
-      "strategy_en": "Data analytics hub for Lotte Group e-commerce and retail. Drive group expansion via Lotte ON and Lotte Department Store. Initiate early 2027 renewal strategy discussion.",
-      "activity_history": []
+      "notes_summary": "파트너사 마티니와 매주 위클리 미팅으로 Phase3 Taxonomy 구현 진행 중. 3/27 AARRR 대시보드 논의. SSG 연계 Expand 탐색 병행.",
+      "notes_summary_en": "Weekly meetings with partner Martinee for Phase 3 Taxonomy implementation. 3/27 AARRR dashboard discussion. Exploring SSG-linked Expand in parallel.",
+      "next_action": "Phase3 Taxonomy 구현 완료 지원 + SSG 연계 Expand 미팅 추진",
+      "next_action_en": "Support Phase 3 Taxonomy completion + pursue SSG-linked Expand meeting",
+      "last_activity": "2026-03-27",
+      "strategy": "롯데온 파트너 기반 구현 완성 후 그룹사 확장 전략. 매주 위클리 미팅으로 Phase3 Taxonomy+AARRR 대시보드 구축 중. 롯데온 성공 사례를 기반으로 SSG닷컴·롯데백화점 Expand 기회 발굴.",
+      "strategy_en": "Build on Lotte ON implementation to expand to group companies. Weekly meetings driving Phase 3 Taxonomy + AARRR dashboard. Leverage Lotte ON success story to unlock SSG.com and Lotte Department Store expansion.",
+      "activity_history": [
+        {
+          "date": "2026-03-27",
+          "type": "meeting",
+          "summary": "[롯데온X마티니] 위클리 미팅. Phase3 Taxonomy v3 업데이트 및 AARRR 대시보드(Acquisition) 논의.",
+          "summary_en": "[Lotte ON x Martinee] Weekly meeting. Phase 3 Taxonomy v3 update and AARRR dashboard (Acquisition) discussion."
+        },
+        {
+          "date": "2026-03-20",
+          "type": "meeting",
+          "summary": "[롯데온X마티니] 위클리 미팅. Phase3 작업 범위 확정 - 검색, 쿠폰/혜택 영역 택소노미 설계.",
+          "summary_en": "[Lotte ON x Martinee] Weekly meeting. Phase 3 scope finalized - taxonomy design for search and coupon/benefit areas."
+        },
+        {
+          "date": "2026-03-13",
+          "type": "meeting",
+          "summary": "[롯데온X마티니] 위클리 미팅. Taxonomy v2 테스트 범위 및 프로퍼티 최종 리뷰 완료.",
+          "summary_en": "[Lotte ON x Martinee] Weekly meeting. Final review of Taxonomy v2 test scope and properties completed."
+        },
+        {
+          "date": "2026-03-06",
+          "type": "meeting",
+          "summary": "[롯데온X마티니] 위클리 미팅. Taxonomy v2 Q&A 및 개발 가능 여부 확인. Braze 연동 문서 업데이트.",
+          "summary_en": "[Lotte ON x Martinee] Weekly meeting. Taxonomy v2 Q&A and development feasibility. Braze integration doc updated."
+        }
+      ]
     },
     {
       "group": "Lotte",
@@ -315,7 +392,14 @@
       "last_activity": "2026-03-10",
       "strategy": "한국 F&B 대표 그룹 레퍼런스 확보. 파리바게뜨·배스킨라빈스 계열사 멀티 오르그 확장으로 그룹 전체 Amplitude 표준화. 일상 브랜드의 디지털 CX 혁신 파트너.",
       "strategy_en": "Secure Korea's top F&B group as reference. Multi-org expansion to Paris Baguette & Baskin-Robbins standardizes Amplitude across the group. Digital CX innovation partner for daily-life brands.",
-      "activity_history": []
+      "activity_history": [
+        {
+          "date": "2026-03-10",
+          "type": "email",
+          "summary": "조형진(Secta9ine 데이터서비스팀 프로) 연락. Amplitude 설정 화면 문의 실수로 취소 요청. 담당자 관계 유지.",
+          "summary_en": "Contact from Hyung-Jin Cho (Secta9ine Data Service). Requested to cancel accidental support inquiry. Relationship maintained."
+        }
+      ]
     },
     {
       "group": "Naver",
@@ -436,8 +520,8 @@
       "due": "2026-04-30"
     }
   ],
-  "strategy_summary": "【이번 주 최우선】LG Uplus D-34 즉각 갱신 착수. TVING·Nolbal D-65 클로징 가속. 【긍정 모멘텀】Starbucks 갱신 Closed Won + Expand $204K 신규 파이프라인, SPC Land $86K 확정 후 계열사 확장 논의 시작. CJ Olive Young $450K 대규모 Upsell Stage5 진행중. 관리 총 ARR ~$1.68M.",
-  "strategy_summary_en": "【Top Priority This Week】 LG Uplus D-34: immediate renewal required. TVING & Nolbal D-65: accelerate close. 【Positive Momentum】 Starbucks renewal Closed Won + new $204K Expand pipeline. SPC Land $86K confirmed → initiate affiliate expansion. CJ Olive Young $450K upsell at Stage 5. Total managed ARR ~$1.68M.",
+  "strategy_summary": "【이번 주 하이라이트】하이마트 신규 Land Closed Won (3/24 서명, 4/1 시작). 【최우선】LG Uplus D-31 즉각 갱신 착수. TVING D-63 Experiment 어답션 활용해 갱신 가속. 【긍정 모멘텀】Lotte ON 매주 위클리로 Phase3 Taxonomy 활발 진행. Starbucks Expand $204K Quote Approved. 관리 총 ARR ~$1.68M.",
+  "strategy_summary_en": "【This Week's Highlight】Himart New Land Closed Won (signed 3/24, starts 4/1) via CJ OliveNetworks partner. 【Top Priority】LG Uplus D-31: immediate renewal required. TVING D-63: leverage Experiment adoption to accelerate renewal. 【Positive Momentum】Lotte ON weekly meetings driving Phase 3 Taxonomy. Starbucks Expand $204K Quote Approved. Total managed ARR ~$1.68M.",
   "risks": [
     {
       "account": "LG Uplus (CTO)",

@@ -1,12 +1,12 @@
 """
-Intel Router - 메모 저장/조회 + 주간 리포트 API
+Intel Router - 메모 저장/조회 + 주간 리포트 API + 자동 sync
 Claude API 없이 JSON 파일 기반으로 동작
 """
 import json
 import uuid
 from datetime import datetime
 from pathlib import Path
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, BackgroundTasks
 from pydantic import BaseModel
 from typing import Optional
 
@@ -86,10 +86,44 @@ async def delete_note(note_id: str):
     return {"ok": True}
 
 
+# ── Sync API ──────────────────────────────────────
+@router.post("/sync")
+async def trigger_sync(background_tasks: BackgroundTasks, force: bool = False):
+    """Gmail/Calendar/Slack 데이터 동기화 트리거"""
+    try:
+        from ..services.report_sync import run_sync_async
+        result = await run_sync_async(force=force)
+        return {"ok": True, **result}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/sync/status")
+async def get_sync_status():
+    """마지막 sync 상태 반환"""
+    sync_state_file = DATA_DIR / "sync_state.json"
+    if not sync_state_file.exists():
+        return {"last_sync": None, "processed_count": 0}
+    state = json.loads(sync_state_file.read_text(encoding="utf-8"))
+    return {
+        "last_sync": state.get("last_sync"),
+        "processed_count": len(state.get("processed_ids", [])),
+    }
+
+
 # ── 주간 리포트 API ────────────────────────────────
 @router.get("/report")
-async def get_report():
-    """최신 주간 리포트 반환"""
+async def get_report(background_tasks: BackgroundTasks):
+    """최신 주간 리포트 반환 (백그라운드에서 자동 sync)"""
+    # 오래된 데이터면 백그라운드 sync 트리거 (응답은 즉시)
+    def _bg_sync():
+        try:
+            from ..services.report_sync import run_sync
+            run_sync(force=False)
+        except Exception:
+            pass
+
+    background_tasks.add_task(_bg_sync)
     return _read_report()
 
 
