@@ -275,26 +275,6 @@
       "activity_history": []
     },
     {
-      "group": "Nolbal",
-      "key_account": "Nolbal",
-      "arr": "25920",
-      "subscription_end": "2026-05-31",
-      "amplitude_plan": "Growth",
-      "status": "active",
-      "deal_stage": "Renewal+Expand Stage2 Qualification (D-65)",
-      "deal_stage_en": "Renewal+Expand Stage 2 Qualification (D-65)",
-      "deal_amount": 27994,
-      "health": "orange",
-      "notes_summary": "갱신 $27.9K Stage2 진행중. D-63. 사용률 BL 33% (매우 저조). 이탈 리스크 높음. 독립 회사 (가족 여가 탐색 앱 - 놀이의발견).",
-      "notes_summary_en": "Renewal $27.9K at Stage 2. D-63. Usage BL 33% (very low). High churn risk. Independent company (family leisure discovery app - Nolbal).",
-      "next_action": "사용률 개선 CS 지원 + Stage3 진입 위해 가치 제시",
-      "next_action_en": "CS support for usage improvement + demonstrate value for Stage 3",
-      "last_activity": "2026-03-18",
-      "strategy": "가족 여가 탐색 앱(놀이의발견) 데이터 분석 내재화 지원. 사용률 33% 개선이 갱신 설득력의 핵심. CS팀 협력으로 Quick Win 사례 발굴 후 갱신 협상에 활용.",
-      "strategy_en": "Support data analytics internalization for family leisure discovery app. Improving 33% usage is key to renewal leverage. Find Quick Win cases with CS team to strengthen renewal negotiation.",
-      "activity_history": []
-    },
-    {
       "group": "Golfzon",
       "key_account": "Golfzon County",
       "arr": "46000",
@@ -567,14 +547,6 @@
       "due": "2026-04-10"
     },
     {
-      "priority": "urgent",
-      "account": "Nolbal",
-      "group": "NOL",
-      "action": "갱신 미팅 확정 - D-65, 사용률 33% 개선 방안 제시 필수",
-      "action_en": "Confirm renewal meeting - D-65, must present plan to improve 33% usage rate",
-      "due": "2026-04-10"
-    },
-    {
       "priority": "high",
       "account": "CJ Olive Young",
       "group": "CJ",
@@ -619,11 +591,6 @@
       "account": "TVING",
       "risk": "D-65 만료 - Stage5 딜 진행중이나 클로징이 만료일보다 늦어질 위험",
       "risk_en": "D-65 expiry - Stage 5 deal in progress but at risk of close lagging behind contract expiry"
-    },
-    {
-      "account": "Nolbal",
-      "risk": "D-65 만료 + 사용률 BL 33% (매우 저조) - 갱신 협상력 약화 및 이탈 리스크",
-      "risk_en": "D-65 expiry + usage BL 33% (very low) - weakens renewal leverage, high churn risk"
     },
     {
       "account": "SK Telecom (IFLAND)",
