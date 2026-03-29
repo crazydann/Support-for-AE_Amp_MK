@@ -765,7 +765,7 @@
     },
     {
       "priority": "medium",
-      "account": "현대백화점",
+      "account": "Hyundai Department Store",
       "group": "Hyundai Department",
       "action": "4월 중순 R&R/Shopify 조율 완료 후 PoC 킥오프 일정 확정",
       "action_en": "Confirm PoC kickoff after mid-April R&R/Shopify alignment",
@@ -780,8 +780,8 @@
       "due": "2026-04-30"
     }
   ],
-  "strategy_summary": "【신규 Closed Won】Kcar Land 3/29 DocuSign 완료. 【파이프라인 위기】Naver PoC 전면 중단(CTO→회장 인하우스 결정), Samsung Galaxy Store PoC 동결(MX Division 예산 동결) — Naver Shopping Q2→Q4 슬립. 【복구 전략】Q2 타겟: CJ OliveYoung Global, Wavve, Golfzon, 신세계DF 각 $100K+. 【신규 파이프라인】Samsung Shop(Samsung.com, Adobe 대체), KakaoBank(PII-free PoC), 현대백화점(GA→Amp 내부 승인 완료), NOL(PoC scoping). 【최우선】LG Uplus D-31 갱신, TVING D-62 클로징, 4/2 신세계DF 데모.",
-  "strategy_summary_en": "【New Closed Won】Kcar Land DocuSign completed 3/29. 【Pipeline Risk】Naver PoC fully frozen (CTO→Chairman in-house decision), Samsung Galaxy Store PoC paused (MX Division budget freeze) — Naver Shopping slips Q2→Q4. 【Recovery Plan】Q2 targets: Olive Young Global, Wavve, Golfzon, Shinsegae DF each $100K+. 【New Pipeline】Samsung Shop (Samsung.com, Adobe replacement), KakaoBank (PII-free PoC), Hyundai Dept Store (GA→Amp internal approval done), NOL (PoC scoping). 【Top Priority】LG Uplus D-31 renewal, TVING D-62 close, 4/2 Shinsegae DF demo.",
+  "strategy_summary": "【파이프라인 위기】Naver PoC 전면 중단(CTO→회장 인하우스 결정), Samsung Galaxy Store PoC 동결(MX Division 예산 동결) — Naver Shopping Q2→Q4 슬립. 【복구 전략】Q2 타겟: CJ OliveYoung Global, Wavve, Golfzon, 신세계DF 각 $100K+. 【신규 파이프라인】Samsung Shop(Samsung.com, Adobe 대체), KakaoBank(PII-free PoC), 현대백화점(GA→Amp 내부 승인 완료), NOL(PoC scoping). 【최우선】LG Uplus D-31 갱신, TVING D-62 클로징, 4/2 신세계DF 데모.",
+  "strategy_summary_en": "【Pipeline Risk】Naver PoC fully frozen (CTO→Chairman in-house decision), Samsung Galaxy Store PoC paused (MX Division budget freeze) — Naver Shopping slips Q2→Q4. 【Recovery Plan】Q2 targets: Olive Young Global, Wavve, Golfzon, Shinsegae DF each $100K+. 【New Pipeline】Samsung Shop (Samsung.com, Adobe replacement), KakaoBank (PII-free PoC), Hyundai Dept Store (GA→Amp internal approval done), NOL (PoC scoping). 【Top Priority】LG Uplus D-31 renewal, TVING D-62 close, 4/2 Shinsegae DF demo.",
   "risks": [
     {
       "account": "LG Uplus (CTO)",
@@ -799,7 +799,7 @@
       "risk_en": "PoC fully frozen - CTO→Chairman in-house decision. Naver Shopping Q2 deal slips to Q4. Cannot resume until summer"
     },
     {
-      "account": "Samsung Next (Galaxy Store)",
+      "account": "Samsung Next",
       "risk": "Samsung Galaxy Store PoC 동결 - MX Division 예산 동결. H2 재개 예정이나 불확실",
       "risk_en": "Samsung Galaxy Store PoC frozen - MX Division budget freeze. H2 restart planned but uncertain"
     },

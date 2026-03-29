@@ -35,9 +35,6 @@ ACCOUNT_KEYWORDS: dict[str, list[str]] = {
     "LG Uplus (CTO)": [
         "lg uplus", "uplus", "유플러스", "@uplus.co.kr", "lg유플러스",
     ],
-    "Nolbal": [
-        "nolbal", "놀발", "@nolbal",
-    ],
     "Golfzon County": [
         "golfzon", "골프존", "golfzon county",
     ],
