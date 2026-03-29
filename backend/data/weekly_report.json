@@ -275,7 +275,7 @@
       "activity_history": []
     },
     {
-      "group": "NOL",
+      "group": "Nolbal",
       "key_account": "Nolbal",
       "arr": "25920",
       "subscription_end": "2026-05-31",
@@ -285,13 +285,13 @@
       "deal_stage_en": "Renewal+Expand Stage 2 Qualification (D-65)",
       "deal_amount": 27994,
       "health": "orange",
-      "notes_summary": "갱신 $27.9K Stage2 진행중. D-65. 사용률 BL 33% (매우 저조). 이탈 리스크 높음.",
-      "notes_summary_en": "Renewal $27.9K at Stage 2. D-65. Usage BL 33% (very low). High churn risk.",
+      "notes_summary": "갱신 $27.9K Stage2 진행중. D-63. 사용률 BL 33% (매우 저조). 이탈 리스크 높음. 독립 회사 (가족 여가 탐색 앱 - 놀이의발견).",
+      "notes_summary_en": "Renewal $27.9K at Stage 2. D-63. Usage BL 33% (very low). High churn risk. Independent company (family leisure discovery app - Nolbal).",
       "next_action": "사용률 개선 CS 지원 + Stage3 진입 위해 가치 제시",
       "next_action_en": "CS support for usage improvement + demonstrate value for Stage 3",
       "last_activity": "2026-03-18",
-      "strategy": "패션 플랫폼 데이터 분석 내재화 지원. 사용률 33% 개선이 갱신 설득력의 핵심. CS팀 협력으로 Quick Win 사례 발굴 후 갱신 협상에 활용.",
-      "strategy_en": "Support data analytics internalization for fashion platform. Improving 33% usage is key to renewal leverage. Find Quick Win cases with CS team to strengthen renewal negotiation.",
+      "strategy": "가족 여가 탐색 앱(놀이의발견) 데이터 분석 내재화 지원. 사용률 33% 개선이 갱신 설득력의 핵심. CS팀 협력으로 Quick Win 사례 발굴 후 갱신 협상에 활용.",
+      "strategy_en": "Support data analytics internalization for family leisure discovery app. Improving 33% usage is key to renewal leverage. Find Quick Win cases with CS team to strengthen renewal negotiation.",
       "activity_history": []
     },
     {
@@ -400,6 +400,53 @@
           "summary_en": "Contact from Hyung-Jin Cho (Secta9ine Data Service). Requested to cancel accidental support inquiry. Relationship maintained."
         }
       ]
+    },
+    {
+      "group": "두나무",
+      "key_account": "두나무 (Dunamu)",
+      "arr": null,
+      "subscription_end": null,
+      "amplitude_plan": null,
+      "status": "active",
+      "deal_stage": "온보딩 / 운영 중",
+      "deal_stage_en": "Active / Onboarding",
+      "deal_amount": 0,
+      "health": "yellow",
+      "notes_summary": "업비트(국내 1위 가상자산거래소) 운영사. 2025.11 NAVER파이낸셜 인수 협상 중 ($10.3B). CSM 지희, SE 성화 배정 확인. 3/24 슬랙 기술 이슈 조치 확인.",
+      "notes_summary_en": "Operator of Upbit (Korea's #1 crypto exchange). NAVER Financial acquisition in progress ($10.3B, closing by June 2026). CSM Jihee and SE Seonghwa assigned. Technical issue resolved 3/24 via Slack.",
+      "next_action": "CS 상태 점검 + NAVER 인수 이후 계약 연속성 확인",
+      "next_action_en": "CS health check + confirm contract continuity post-NAVER acquisition",
+      "last_activity": "2026-03-24",
+      "strategy": "국내 1위 가상자산거래소 및 블록체인 테크 기업. NAVER파이낸셜 인수 완료 시 NAVER 그룹 내 Amplitude 확산 교두보로 활용 가능. 인수 과정에서 계약 연속성 관리 필수.",
+      "strategy_en": "Korea's #1 crypto exchange and blockchain tech company. Post-NAVER acquisition, can serve as Amplitude expansion foothold within NAVER group. Must manage contract continuity during acquisition.",
+      "activity_history": [
+        {
+          "date": "2026-03-24",
+          "type": "slack",
+          "summary": "훈빈 김(두나무)이 CSM 유지희에게 기술 이슈 조치 완료 확인 메시지. 본사 추가 문의 요청.",
+          "summary_en": "Hunbin Kim (Dunamu) confirmed technical issue resolved to CSM Jihee via Slack. Requested escalation to HQ."
+        }
+      ]
+    },
+    {
+      "group": "무신사",
+      "key_account": "무신사 (Musinsa)",
+      "arr": null,
+      "subscription_end": null,
+      "amplitude_plan": null,
+      "status": "prospect",
+      "deal_stage": "Land 기회 탐색",
+      "deal_stage_en": "Land Opportunity",
+      "deal_amount": 0,
+      "health": "gray",
+      "notes_summary": "국내 최대 패션 이커머스 플랫폼. GMV $3.3B, 매출 31% YoY 성장(2025 Q2). 500+ 브랜드, 모바일 퍼스트. 강력한 커뮤니티·콘텐츠 기반.",
+      "notes_summary_en": "Korea's largest fashion e-commerce platform. GMV $3.3B, revenue +31% YoY (Q2 2025). 500+ brands, mobile-first with strong community and content.",
+      "next_action": "무신사 데이터팀 담당자 접촉 - Growth 분석 니즈 파악",
+      "next_action_en": "Contact Musinsa data team - identify Growth analytics needs",
+      "last_activity": "2026-01-01",
+      "strategy": "국내 최대 패션 플랫폼 레퍼런스 확보. GMV $3.3B, 31% 성장 중인 모바일 커머스 플랫폼에서 유저 행동 분석·전환 최적화·콘텐츠 engagement 분석 등 Amplitude 핵심 Use Case 다수. 패션/라이프스타일 버티컬 레퍼런스로 활용.",
+      "strategy_en": "Secure Korea's largest fashion platform as reference. $3.3B GMV growing 31% - strong Amplitude use cases: user behavior analytics, conversion optimization, content engagement. Key fashion/lifestyle vertical reference.",
+      "activity_history": []
     },
     {
       "group": "Naver",
