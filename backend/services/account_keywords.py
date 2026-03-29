@@ -23,6 +23,9 @@ ACCOUNT_KEYWORDS: dict[str, list[str]] = {
     "Starbucks Korea": [
         "starbucks", "스타벅스", "@starbucks.co.kr", "sbux",
     ],
+    "SSG.com": [
+        "ssg.com", "ssg닷컴", "쓱닷컴", "@ssg.com", "ssg커머스", "ssg commerce",
+    ],
     "Shinsegae Live Shopping": [
         "신세계라이브", "shinsegae live", "쓱라이브", "ssg live",
     ],

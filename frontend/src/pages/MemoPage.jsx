@@ -11,6 +11,7 @@ const KEYWORD_MAP = {
   'Lotte Shopping':     ['롯데온', 'lotteon', 'martinee', '마티니', 'lotte shopping'],
   'Lotte Members':      ['롯데멤버스', 'lotte members', '롯데포인트'],
   'Starbucks Korea':    ['starbucks', '스타벅스', 'sbux'],
+  'SSG.com':            ['ssg.com', 'ssg닷컴', '쓱닷컴', 'ssg커머스'],
   'Shinsegae Live Shopping': ['신세계라이브', 'shinsegae live', '쓱라이브'],
   'GS Retail':          ['gs retail', 'gs리테일', 'gs25', 'gs수퍼'],
   'LG Uplus (CTO)':     ['lg uplus', 'uplus', '유플러스'],
