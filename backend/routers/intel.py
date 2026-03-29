@@ -1,6 +1,9 @@
 """
 Intel Router - 메모 저장/조회 + 주간 리포트 API + 자동 sync
-Claude API 없이 JSON 파일 기반으로 동작
+
+메모 저장 우선순위:
+  1. Google Sheets (NOTES_SPREADSHEET_ID 설정 시) → 재배포 후에도 영구 보존
+  2. notes.json (로컬 fallback - 개발환경 또는 Sheets 미설정 시)
 """
 import json
 import uuid
@@ -17,14 +20,20 @@ NOTES_FILE = DATA_DIR / "notes.json"
 REPORT_FILE = DATA_DIR / "weekly_report.json"
 
 
-def _read_notes() -> dict:
+# ── notes.json fallback 헬퍼 ──────────────────────────────
+def _read_notes_local() -> list[dict]:
     if not NOTES_FILE.exists():
-        return {"notes": []}
-    return json.loads(NOTES_FILE.read_text(encoding="utf-8"))
+        return []
+    data = json.loads(NOTES_FILE.read_text(encoding="utf-8"))
+    notes = data.get("notes", [])
+    return sorted(notes, key=lambda x: x.get("created_at", ""), reverse=True)
 
 
-def _write_notes(data: dict):
-    NOTES_FILE.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+def _write_notes_local(notes: list[dict]):
+    NOTES_FILE.write_text(
+        json.dumps({"notes": notes}, ensure_ascii=False, indent=2),
+        encoding="utf-8"
+    )
 
 
 def _read_report() -> dict:
@@ -33,39 +42,44 @@ def _read_report() -> dict:
     return json.loads(REPORT_FILE.read_text(encoding="utf-8"))
 
 
-# ── 메모 모델 ──────────────────────────────────────
+# ── 메모 모델 ──────────────────────────────────────────────
 class NoteCreate(BaseModel):
     content: str
     type: str = "text"          # text | voice
     tags: list[str] = []
-    account: Optional[str] = None   # 관련 계정 (선택)
+    account: Optional[str] = None   # 미입력 시 내용 기반 자동 감지
 
 
-class NoteUpdate(BaseModel):
-    content: str
-
-
-# ── 메모 API ───────────────────────────────────────
+# ── 메모 API ──────────────────────────────────────────────
 @router.get("/notes")
 async def get_notes():
-    """전체 메모 목록 반환 (최신순)"""
-    data = _read_notes()
-    notes = sorted(data.get("notes", []), key=lambda x: x.get("created_at", ""), reverse=True)
-    return {"notes": notes, "total": len(notes)}
+    """전체 메모 목록 반환 (최신순). Sheets 우선, fallback notes.json"""
+    from ..services import notes_sheets_service as sheets
+
+    if sheets.is_available():
+        try:
+            notes = await sheets.read_notes()
+            return {"notes": notes, "total": len(notes), "storage": "sheets"}
+        except Exception:
+            pass  # Sheets 실패 시 fallback
+
+    notes = _read_notes_local()
+    return {"notes": notes, "total": len(notes), "storage": "local"}
 
 
 @router.post("/notes")
 async def create_note(note: NoteCreate):
-    """새 메모 저장 (음성 or 텍스트). account 미지정 시 내용 기반 자동 감지."""
+    """새 메모 저장. account 미입력 시 내용 기반 자동 감지. Sheets 우선 저장."""
     from ..services.account_keywords import match_account
+    from ..services import notes_sheets_service as sheets
 
+    # 계정 자동 감지
     resolved_account = note.account
     auto_detected = False
     if not resolved_account:
         resolved_account = match_account(note.content)
         auto_detected = bool(resolved_account)
 
-    data = _read_notes()
     now = datetime.now()
     new_note = {
         "id": str(uuid.uuid4())[:8],
@@ -78,24 +92,59 @@ async def create_note(note: NoteCreate):
         "date": now.strftime("%Y-%m-%d"),
         "time": now.strftime("%H:%M"),
     }
-    data["notes"].append(new_note)
-    _write_notes(data)
-    return {"ok": True, "note": new_note, "auto_detected": auto_detected}
+
+    # Sheets에 저장
+    if sheets.is_available():
+        try:
+            ok = await sheets.append_note(new_note)
+            if ok:
+                return {"ok": True, "note": new_note, "auto_detected": auto_detected, "storage": "sheets"}
+        except Exception:
+            pass  # Sheets 실패 시 fallback
+
+    # fallback: notes.json
+    notes = _read_notes_local()
+    notes.insert(0, new_note)
+    _write_notes_local(notes)
+    return {"ok": True, "note": new_note, "auto_detected": auto_detected, "storage": "local"}
 
 
 @router.delete("/notes/{note_id}")
 async def delete_note(note_id: str):
-    """메모 삭제"""
-    data = _read_notes()
-    before = len(data["notes"])
-    data["notes"] = [n for n in data["notes"] if n.get("id") != note_id]
-    if len(data["notes"]) == before:
+    """메모 삭제. Sheets 우선, fallback notes.json"""
+    from ..services import notes_sheets_service as sheets
+
+    if sheets.is_available():
+        try:
+            ok = await sheets.delete_note(note_id)
+            if ok:
+                return {"ok": True, "storage": "sheets"}
+            # Sheets에 없으면 local도 시도
+        except Exception:
+            pass
+
+    # fallback: notes.json
+    notes = _read_notes_local()
+    before = len(notes)
+    notes = [n for n in notes if n.get("id") != note_id]
+    if len(notes) == before:
         raise HTTPException(status_code=404, detail="Note not found")
-    _write_notes(data)
-    return {"ok": True}
+    _write_notes_local(notes)
+    return {"ok": True, "storage": "local"}
 
 
-# ── Sync API ──────────────────────────────────────
+@router.get("/notes/storage")
+async def get_notes_storage():
+    """메모 저장소 상태 확인"""
+    from ..services import notes_sheets_service as sheets
+    return {
+        "sheets_available": sheets.is_available(),
+        "spreadsheet_id": bool(__import__("os").environ.get("NOTES_SPREADSHEET_ID")),
+        "service_account": bool(__import__("os").environ.get("GOOGLE_SERVICE_ACCOUNT_JSON")),
+    }
+
+
+# ── Sync API ──────────────────────────────────────────────
 @router.post("/sync")
 async def trigger_sync(background_tasks: BackgroundTasks, force: bool = False):
     """Gmail/Calendar/Slack 데이터 동기화 트리거"""
@@ -120,11 +169,10 @@ async def get_sync_status():
     }
 
 
-# ── 주간 리포트 API ────────────────────────────────
+# ── 주간 리포트 API ───────────────────────────────────────
 @router.get("/report")
 async def get_report(background_tasks: BackgroundTasks):
     """최신 주간 리포트 반환 (백그라운드에서 자동 sync)"""
-    # 오래된 데이터면 백그라운드 sync 트리거 (응답은 즉시)
     def _bg_sync():
         try:
             from ..services.report_sync import run_sync
