@@ -291,34 +291,38 @@ function AccountRow({ account, expanded, onToggle, t, lang, relatedActions, rela
       {expanded && (
         <div className={`${cfg.bg} border-t ${cfg.border} px-4 py-3 space-y-3`}>
           {/* 기본 정보 그리드 */}
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-4 gap-1.5 text-center">
             {account.amplitude_plan && (
-              <div className="bg-white rounded-lg p-2.5">
+              <div className="bg-white rounded-lg p-2">
                 <p className="text-xs text-gray-400 mb-0.5">Plan</p>
-                <p className="text-xs font-semibold text-purple-700">{account.amplitude_plan}</p>
+                <p className="text-xs font-semibold text-purple-700 truncate">{account.amplitude_plan}</p>
               </div>
             )}
             {account.subscription_end && account.status !== 'churned' && (
-              <div className="bg-white rounded-lg p-2.5">
+              <div className="bg-white rounded-lg p-2">
                 <p className="text-xs text-gray-400 mb-0.5">{lang === 'en' ? 'Expires' : '만료일'}</p>
-                <p className="text-xs font-semibold text-gray-800">{account.subscription_end}</p>
+                <p className="text-xs font-semibold text-gray-800">{account.subscription_end?.slice(0,7)}</p>
               </div>
             )}
-            {account.status && (
-              <div className="bg-white rounded-lg p-2.5">
-                <p className="text-xs text-gray-400 mb-0.5">Status</p>
-                <span className={`text-xs font-semibold px-1.5 py-0.5 rounded-full ${cfg.badge}`}>{cfg.label}</span>
-              </div>
-            )}
+            <div className="bg-white rounded-lg p-2">
+              <p className="text-xs text-gray-400 mb-0.5">Status</p>
+              <span className={`text-xs font-semibold ${cfg.badge} px-1 py-0.5 rounded-full`}>{cfg.label}</span>
+            </div>
             {arrNum > 0 && (
-              <div className="bg-white rounded-lg p-2.5">
+              <div className="bg-white rounded-lg p-2">
                 <p className="text-xs text-gray-400 mb-0.5">ARR</p>
-                <p className="text-xs font-semibold text-gray-800">
-                  ${arrNum >= 1000 ? (arrNum / 1000).toFixed(1) + 'K' : arrNum}
-                </p>
+                <p className="text-xs font-semibold text-gray-800">${arrNum >= 1000 ? (arrNum/1000).toFixed(0)+'K' : arrNum}</p>
               </div>
             )}
           </div>
+
+          {/* 전략 */}
+          {(account.strategy || account.strategy_en) && (
+            <div className="bg-purple-50 border border-purple-100 rounded-lg p-2.5">
+              <p className="text-xs font-semibold text-purple-600 mb-1">{lang === 'en' ? 'Strategy' : '전략'}</p>
+              <p className="text-xs text-gray-700 leading-relaxed">{pick(account, 'strategy', lang)}</p>
+            </div>
+          )}
 
           {/* 딜 스테이지 */}
           {dealStage && (
@@ -386,7 +390,12 @@ function AccountView({ report, t, lang }) {
 
   const accounts = (report.accounts || [])
     .slice()
-    .sort((a, b) => parseInt(b.arr || 0) - parseInt(a.arr || 0))
+    .sort((a, b) => {
+      const dateA = a.last_activity || '1900-01-01'
+      const dateB = b.last_activity || '1900-01-01'
+      if (dateB !== dateA) return dateB.localeCompare(dateA)
+      return parseInt(b.arr || 0) - parseInt(a.arr || 0)
+    })
 
   const actionItems = report.action_items || []
   const risks = report.risks || []
