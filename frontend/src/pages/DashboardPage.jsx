@@ -396,6 +396,14 @@ function SubAccountRow({ account, expanded, onToggle, t, lang, relatedActions, r
             )}
           </div>
 
+          {/* 현황 요약 */}
+          {(account.notes_summary || account.notes_summary_en) && (
+            <div className="bg-white rounded-lg p-2.5">
+              <p className="text-xs text-gray-400 mb-1">{lang === 'en' ? 'Summary' : '현황 요약'}</p>
+              <p className="text-xs text-gray-700 leading-relaxed">{pick(account, 'notes_summary', lang)}</p>
+            </div>
+          )}
+
           {/* 활동 이력 (메인) - activity_history + 메모 합산 */}
           <div className="bg-white rounded-lg p-2.5">
             <p className="text-xs font-semibold text-gray-600 mb-2 flex items-center gap-1.5">
