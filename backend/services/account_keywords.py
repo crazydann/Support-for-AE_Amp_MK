@@ -51,6 +51,13 @@ ACCOUNT_KEYWORDS: dict[str, list[str]] = {
         "spc", "secta9ine", "섹나나인", "@spc.co.kr", "파리바게뜨",
         "paris baguette", "baskin", "hyungjin.cho",
     ],
+    "야놀자 (NOL Universe)": [
+        "야놀자", "yanolja", "nol universe", "@yanolja.com", "놀유니버스",
+    ],
+    "인터파크트리플": [
+        "인터파크", "interpark", "트리플", "triple", "@interpark.com",
+        "interparktriple",
+    ],
     "두나무 (Dunamu)": [
         "두나무", "dunamu", "upbit", "업비트", "@dunamu.com",
         "lambda 256", "람다256", "stockplus", "스톡플러스",
