@@ -51,51 +51,70 @@ function AccountCard({ account, t, lang }) {
   const healthConfig = getHealthConfig(t)
   const cfg = healthConfig[account.health] || healthConfig.gray
   const arrNum = account.arr ? parseInt(account.arr) : 0
-  const dealStage   = pick(account, 'deal_stage', lang)
-  const nextAction  = pick(account, 'next_action', lang)
-  const notesSummary = pick(account, 'notes_summary', lang)
+  const nextAction = pick(account, 'next_action', lang)
+  const history = account.activity_history || []
+  const recentActivities = history.slice(0, 2)
 
   return (
-    <div className={`rounded-xl border ${cfg.border} ${cfg.bg} p-4 space-y-2`}>
+    <div className={`rounded-xl border ${cfg.border} ${cfg.bg} p-3.5 space-y-2.5`}>
+      {/* 헤더: 그룹·계정명 + D-day */}
       <div className="flex items-start justify-between gap-2">
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-xs text-gray-400 font-medium">{account.group}</span>
-            <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${cfg.badge}`}>{cfg.label}</span>
+          <div className="flex items-center gap-1.5">
+            <span className={`w-2 h-2 rounded-full shrink-0 ${cfg.dot}`} />
+            <span className="text-xs text-gray-400">{account.group}</span>
           </div>
-          <p className="font-semibold text-gray-900 mt-0.5 text-sm leading-tight">{account.key_account}</p>
+          <p className="font-semibold text-gray-900 text-sm leading-tight mt-0.5">{account.key_account}</p>
         </div>
-        <ContractBadge subscriptionEnd={account.subscription_end} status={account.status} t={t} />
-      </div>
-
-      <div className="flex items-center justify-between">
-        <div>
-          {arrNum > 0 ? (
-            <p className="text-lg font-bold text-gray-900">
-              ${arrNum >= 1000 ? (arrNum / 1000).toFixed(0) + 'K' : arrNum}
-              <span className="text-xs font-normal text-gray-400 ml-1">ARR</span>
-            </p>
-          ) : (
-            <p className="text-sm text-gray-400">{t('noContract')}</p>
-          )}
-          {account.amplitude_plan && (
-            <span className="text-xs text-purple-600 font-medium">{account.amplitude_plan}</span>
+        <div className="flex flex-col items-end gap-1">
+          <ContractBadge subscriptionEnd={account.subscription_end} status={account.status} t={t} />
+          {arrNum > 0 && (
+            <span className="text-xs text-gray-500 font-medium">
+              ${arrNum >= 1000 ? (arrNum/1000).toFixed(0)+'K' : arrNum} ARR
+            </span>
           )}
         </div>
-        {dealStage && (
-          <span className="text-xs text-gray-500 bg-white border border-gray-200 px-2 py-1 rounded-lg max-w-[130px] text-right leading-tight">
-            {dealStage}
-          </span>
-        )}
       </div>
 
-      {nextAction && (
-        <div className="pt-1 border-t border-gray-200">
-          <p className="text-xs text-gray-600">{t('nextAction')}{nextAction}</p>
+      {/* 최근 활동 이력 */}
+      {recentActivities.length > 0 ? (
+        <div className="space-y-1.5">
+          {recentActivities.map((item, i) => {
+            const acfg = activityTypeConfig[item.type] || activityTypeConfig.memo
+            return (
+              <div key={i} className="flex gap-2 items-start">
+                <div className={`${acfg.bg} rounded-full w-5 h-5 flex items-center justify-center text-xs shrink-0 mt-0.5`}>
+                  {acfg.icon}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-1.5">
+                    <span className={`text-xs font-medium ${acfg.color}`}>
+                      {lang === 'en' ? acfg.label_en : acfg.label}
+                    </span>
+                    <span className="text-xs text-gray-400">{item.date}</span>
+                  </div>
+                  <p className="text-xs text-gray-700 leading-snug truncate">
+                    {lang === 'en' ? (item.summary_en || item.summary) : item.summary}
+                  </p>
+                </div>
+              </div>
+            )
+          })}
         </div>
+      ) : (
+        <p className="text-xs text-gray-400 italic">
+          {lang === 'en' ? 'No recent activity' : '최근 활동 없음'}
+        </p>
       )}
-      {notesSummary && (
-        <p className="text-xs text-gray-500 italic">"{notesSummary}"</p>
+
+      {/* 다음 액션 */}
+      {nextAction && (
+        <div className="pt-2 border-t border-gray-200">
+          <div className="flex gap-1.5 items-start">
+            <span className="text-xs text-blue-500 shrink-0 mt-0.5">→</span>
+            <p className="text-xs text-gray-700 leading-snug">{nextAction}</p>
+          </div>
+        </div>
       )}
     </div>
   )
@@ -138,9 +157,11 @@ function TodoView({ report, t, lang }) {
     if (filter === 'prospect') return ['prospect','churned'].includes(a.status)
     return true
   })
+  // 최근 활동 내림차순 정렬 (last_activity 기준)
   const sorted = [...filtered].sort((a, b) => {
-    const order = { red: 0, orange: 1, yellow: 2, green: 3, gray: 4 }
-    return (order[a.health] ?? 5) - (order[b.health] ?? 5)
+    const da = a.last_activity || '1900-01-01'
+    const db = b.last_activity || '1900-01-01'
+    return db.localeCompare(da)
   })
 
   const filters = [
