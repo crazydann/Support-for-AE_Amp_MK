@@ -84,7 +84,7 @@
       ]
     },
     {
-      "group": "CJ",
+      "group": "Lotte",
       "key_account": "하이마트",
       "arr": null,
       "subscription_end": null,
@@ -94,13 +94,13 @@
       "deal_stage_en": "Land Closed Won - Starting April 1",
       "deal_amount": 0,
       "health": "green",
-      "notes_summary": "CJ OliveNetworks(Maxonomy) 파트너를 통한 신규 계약. 3/24 양사 서명 완료. 4/1 Growth Plan 시작.",
-      "notes_summary_en": "New contract via CJ OliveNetworks (Maxonomy) partner. Both parties signed 3/24. Growth Plan starting April 1.",
+      "notes_summary": "롯데하이마트 신규 Land. CJ OliveNetworks(Maxonomy) 파트너를 통해 계약. 3/24 양사 서명 완료. 4/1 Growth Plan 시작.",
+      "notes_summary_en": "Lotte Himart new Land. Contracted via CJ OliveNetworks (Maxonomy) partner. Both parties signed 3/24. Growth Plan starting April 1.",
       "next_action": "4/1 계약 시작 확인 + CJ OliveNetworks와 온보딩 킥오프 조율",
       "next_action_en": "Confirm April 1 contract start + coordinate onboarding kickoff with CJ OliveNetworks",
       "last_activity": "2026-03-24",
-      "strategy": "CJ OliveNetworks(Maxonomy) 파트너 채널을 통한 신규 Land. 하이마트 온보딩 성공 시 CJ 파트너 채널 확장 레퍼런스로 활용.",
-      "strategy_en": "New Land via CJ OliveNetworks (Maxonomy) partner channel. Successful Himart onboarding becomes reference for CJ partner channel expansion.",
+      "strategy": "CJ OliveNetworks(Maxonomy) 파트너 채널을 통한 롯데 계열 신규 Land. 하이마트 온보딩 성공 시 롯데 그룹 내 확장 레버리지.",
+      "strategy_en": "Lotte Group new Land via CJ OliveNetworks (Maxonomy) partner channel. Successful Himart onboarding becomes leverage for Lotte Group expansion.",
       "activity_history": [
         {
           "date": "2026-03-24",
