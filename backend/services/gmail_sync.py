@@ -70,10 +70,23 @@ def fetch_recent_emails(days_back: int = 14, processed_ids: set = None) -> list[
 
     try:
         service = build("gmail", "v1", credentials=creds)
-        query = f"after:{days_back}d"
+
+        # 날짜 계산 (Gmail 쿼리는 YYYY/MM/DD 형식)
+        from datetime import timedelta
+        since_date = (datetime.now(timezone.utc) - timedelta(days=days_back)).strftime("%Y/%m/%d")
+        # 받은 메일 + 보낸 메일 모두 포함
+        query = f"(in:inbox OR in:sent) after:{since_date}"
+
         results = service.users().messages().list(
             userId="me", q=query, maxResults=100
         ).execute()
+
+        # 내 이메일 주소 확인 (보낸 메일 판별용)
+        try:
+            profile = service.users().getProfile(userId="me").execute()
+            my_email = profile.get("emailAddress", "").lower()
+        except Exception:
+            my_email = ""
 
         messages = results.get("messages", [])
         activities = []
@@ -92,8 +105,8 @@ def fetch_recent_emails(days_back: int = 14, processed_ids: set = None) -> list[
                 headers = msg.get("payload", {}).get("headers", [])
                 subject = _get_header(headers, "Subject")
                 from_raw = _get_header(headers, "From")
-                to_raw = _get_header(headers, "To")
-                cc_raw = _get_header(headers, "Cc")
+                to_raw   = _get_header(headers, "To")
+                cc_raw   = _get_header(headers, "Cc")
                 date_raw = _get_header(headers, "Date")
 
                 # 검색 텍스트 조합
@@ -112,14 +125,24 @@ def fetch_recent_emails(days_back: int = 14, processed_ids: set = None) -> list[
                     ts = int(msg.get("internalDate", 0)) / 1000
                     date_str = datetime.fromtimestamp(ts).strftime("%Y-%m-%d")
 
-                # 발신자 이름
-                sender_name, sender_email = _parse_email_address(from_raw)
-                display_name = sender_name or sender_email.split("@")[0]
+                # 보낸 메일 여부 판별
+                _, sender_email = _parse_email_address(from_raw)
+                is_sent = my_email and sender_email == my_email
 
-                # 요약 생성 (AI 없이 템플릿)
-                short_subject = subject[:60] + ("..." if len(subject) > 60 else "")
-                summary = f"[이메일] {display_name}: {short_subject}"
-                summary_en = f"[Email] {display_name}: {short_subject}"
+                if is_sent:
+                    # 보낸 메일: 수신자 이름 표시
+                    to_name, _ = _parse_email_address(to_raw)
+                    display_name = to_name or to_raw.split("@")[0]
+                    short_subject = subject[:60] + ("..." if len(subject) > 60 else "")
+                    summary    = f"[발신] → {display_name}: {short_subject}"
+                    summary_en = f"[Sent] → {display_name}: {short_subject}"
+                else:
+                    # 받은 메일: 발신자 이름 표시
+                    sender_name, _ = _parse_email_address(from_raw)
+                    display_name = sender_name or sender_email.split("@")[0]
+                    short_subject = subject[:60] + ("..." if len(subject) > 60 else "")
+                    summary    = f"[수신] {display_name}: {short_subject}"
+                    summary_en = f"[Received] {display_name}: {short_subject}"
 
                 activities.append({
                     "account": account,
