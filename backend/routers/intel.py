@@ -56,22 +56,31 @@ async def get_notes():
 
 @router.post("/notes")
 async def create_note(note: NoteCreate):
-    """새 메모 저장 (음성 or 텍스트)"""
+    """새 메모 저장 (음성 or 텍스트). account 미지정 시 내용 기반 자동 감지."""
+    from ..services.account_keywords import match_account
+
+    resolved_account = note.account
+    auto_detected = False
+    if not resolved_account:
+        resolved_account = match_account(note.content)
+        auto_detected = bool(resolved_account)
+
     data = _read_notes()
     now = datetime.now()
     new_note = {
         "id": str(uuid.uuid4())[:8],
         "content": note.content,
         "type": note.type,
-        "tags": note.tags,
-        "account": note.account,
+        "tags": note.tags if note.tags else ([resolved_account] if resolved_account else []),
+        "account": resolved_account,
+        "auto_detected": auto_detected,
         "created_at": now.isoformat(),
         "date": now.strftime("%Y-%m-%d"),
         "time": now.strftime("%H:%M"),
     }
     data["notes"].append(new_note)
     _write_notes(data)
-    return {"ok": True, "note": new_note}
+    return {"ok": True, "note": new_note, "auto_detected": auto_detected}
 
 
 @router.delete("/notes/{note_id}")

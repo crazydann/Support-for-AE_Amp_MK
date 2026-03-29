@@ -1,26 +1,55 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 import { useLang } from '../contexts/LanguageContext'
 
 const API = import.meta.env.VITE_API_URL || ''
 
-const ACCOUNT_LIST = [
-  'CJ Olive Young', 'TVING', 'GS Retail', 'Starbucks Korea',
-  'Shinsegae Live Shopping', 'Lotte Shopping', 'Lotte Members',
-  'LG Uplus', 'Nolbal', 'Golfzon County', 'KT Alpha',
-  'SK Telecom', 'Samsung Next', 'SPC', 'Naver', 'Hyundai Motors', 'Hyundai Department',
-]
+// 클라이언트 측 키워드 매핑 (백엔드 account_keywords.py와 동기화)
+const KEYWORD_MAP = {
+  'TVING':              ['tving', '티빙', 'yb.lee10', 'cjons', '서비스플래닝'],
+  'CJ Olive Young':     ['olive young', '올리브영', 'oliveyoung'],
+  '하이마트':            ['하이마트', 'himart', 'maxonomy', '마소노미'],
+  'Lotte Shopping':     ['롯데온', 'lotteon', 'martinee', '마티니', 'lotte shopping'],
+  'Lotte Members':      ['롯데멤버스', 'lotte members', '롯데포인트'],
+  'Starbucks Korea':    ['starbucks', '스타벅스', 'sbux'],
+  'Shinsegae Live Shopping': ['신세계라이브', 'shinsegae live', '쓱라이브'],
+  'GS Retail':          ['gs retail', 'gs리테일', 'gs25', 'gs수퍼'],
+  'LG Uplus (CTO)':     ['lg uplus', 'uplus', '유플러스'],
+  'Golfzon County':     ['golfzon', '골프존'],
+  'KT Alpha':           ['kt alpha', 'kt알파'],
+  'SK Telecom (IFLAND)':['ifland', 'sk telecom', 'skt', 'sk adot'],
+  'Samsung Next':       ['samsung next', '삼성넥스트'],
+  'SPC (Secta9ine)':    ['spc', 'secta9ine', '섹나나인', '파리바게뜨', 'baskin'],
+  '야놀자 (NOL Universe)':['야놀자', 'yanolja', 'nol universe', '놀유니버스'],
+  '인터파크트리플':       ['인터파크', 'interpark', '트리플', 'triple'],
+  '두나무 (Dunamu)':     ['두나무', 'dunamu', 'upbit', '업비트', '람다256'],
+  '무신사 (Musinsa)':    ['무신사', 'musinsa'],
+  'Naver Corp':         ['naver', '네이버'],
+  'Hyundai Motor Group':['hyundai motor', '현대차', '현대자동차', 'genesis', '제네시스'],
+  'Hyundai Department Store': ['현대백화점', 'hyundai department', 'hpoint'],
+}
+
+function detectAccount(text) {
+  if (!text) return null
+  const lower = text.toLowerCase()
+  for (const [account, keywords] of Object.entries(KEYWORD_MAP)) {
+    if (keywords.some(kw => lower.includes(kw.toLowerCase()))) return account
+  }
+  return null
+}
 
 export default function MemoPage() {
   const { t } = useLang()
   const [notes, setNotes] = useState([])
   const [text, setText] = useState('')
-  const [selectedAccount, setSelectedAccount] = useState('')
   const [isListening, setIsListening] = useState(false)
   const [voiceSupported, setVoiceSupported] = useState(false)
   const [saving, setSaving] = useState(false)
   const [filter, setFilter] = useState('all')
   const recognitionRef = useRef(null)
   const textareaRef = useRef(null)
+
+  // 실시간 자동 감지 (계정 선택 UI 없음 - 내용 기반 자동)
+  const autoDetected = useMemo(() => detectAccount(text), [text])
 
   useEffect(() => {
     setVoiceSupported('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)
@@ -64,18 +93,16 @@ export default function MemoPage() {
     if (!text.trim()) return
     setSaving(true)
     try {
+      // account는 보내지 않음 → 백엔드가 내용 기반 자동 감지
       await fetch(`${API}/api/intel/notes`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           content: text.trim(),
           type: isListening ? 'voice' : 'text',
-          account: selectedAccount || null,
-          tags: selectedAccount ? [selectedAccount] : [],
         }),
       })
       setText('')
-      setSelectedAccount('')
       await loadNotes()
       textareaRef.current?.focus()
     } finally {
@@ -97,15 +124,6 @@ export default function MemoPage() {
       <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-4 space-y-3">
         <h2 className="text-sm font-bold text-gray-900">{t('addMemo')}</h2>
 
-        <select
-          value={selectedAccount}
-          onChange={e => setSelectedAccount(e.target.value)}
-          className="w-full text-sm border border-gray-200 rounded-xl px-3 py-2.5 text-gray-700 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-300"
-        >
-          <option value="">{t('selectAccount')}</option>
-          {ACCOUNT_LIST.map(a => <option key={a} value={a}>{a}</option>)}
-        </select>
-
         <div className="relative">
           <textarea
             ref={textareaRef}
@@ -124,6 +142,21 @@ export default function MemoPage() {
               <span className="text-xs text-red-500 font-medium">{t('recording')}</span>
             </div>
           )}
+        </div>
+
+        {/* 자동 계정 감지 미리보기 */}
+        <div className="flex items-center gap-2 min-h-[20px]">
+          {autoDetected ? (
+            <span className="text-xs text-green-600 flex items-center gap-1">
+              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              계정 감지됨:
+              <span className="bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full font-medium">{autoDetected}</span>
+            </span>
+          ) : text.trim() ? (
+            <span className="text-xs text-gray-400">계정 미감지 (일반 메모로 저장)</span>
+          ) : null}
         </div>
 
         <div className="flex gap-2">
@@ -216,7 +249,14 @@ function NoteCard({ note, onDelete, t }) {
             </span>
           )}
           {note.account && (
-            <span className="text-xs bg-purple-100 text-purple-600 px-2 py-0.5 rounded-full">{note.account}</span>
+            <span className="text-xs bg-purple-100 text-purple-600 px-2 py-0.5 rounded-full flex items-center gap-1">
+              {note.auto_detected && (
+                <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+              )}
+              {note.account}
+            </span>
           )}
         </div>
         <button onClick={() => onDelete(note.id)} className="text-gray-300 hover:text-red-400 transition-colors p-1">
