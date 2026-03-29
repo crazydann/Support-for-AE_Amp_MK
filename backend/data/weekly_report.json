@@ -455,18 +455,25 @@
       "subscription_end": null,
       "amplitude_plan": null,
       "status": "prospect",
-      "deal_stage": "Land 기회 탐색",
-      "deal_stage_en": "Land Opportunity",
+      "deal_stage": "Land 기회 - 챔피언 확보, EB 접근 준비 중",
+      "deal_stage_en": "Land Opportunity - Champion secured, preparing EB outreach",
       "deal_amount": 0,
-      "health": "gray",
-      "notes_summary": "국내 최대 패션 이커머스 플랫폼. GMV $3.3B, 매출 31% YoY 성장(2025 Q2). 500+ 브랜드, 모바일 퍼스트. 강력한 커뮤니티·콘텐츠 기반.",
-      "notes_summary_en": "Korea's largest fashion e-commerce platform. GMV $3.3B, revenue +31% YoY (Q2 2025). 500+ brands, mobile-first with strong community and content.",
-      "next_action": "무신사 데이터팀 담당자 접촉 - Growth 분석 니즈 파악",
-      "next_action_en": "Contact Musinsa data team - identify Growth analytics needs",
-      "last_activity": "2026-01-01",
-      "strategy": "국내 최대 패션 플랫폼 레퍼런스 확보. GMV $3.3B, 31% 성장 중인 모바일 커머스 플랫폼에서 유저 행동 분석·전환 최적화·콘텐츠 engagement 분석 등 Amplitude 핵심 Use Case 다수. 패션/라이프스타일 버티컬 레퍼런스로 활용.",
-      "strategy_en": "Secure Korea's largest fashion platform as reference. $3.3B GMV growing 31% - strong Amplitude use cases: user behavior analytics, conversion optimization, content engagement. Key fashion/lifestyle vertical reference.",
-      "activity_history": []
+      "health": "yellow",
+      "notes_summary": "챔피언 확보 완료. 향후 1~2개월 내 Global AI 성공사례를 무신사 회장에게 공유 예정. 그 후 Matt가 EB(CTO)에게 이메일 접근 계획. GMV $3.3B, 31% YoY 성장.",
+      "notes_summary_en": "Champion secured. Planning to share 1-2 strong Global AI use cases with Musinsa Chairman within 1-2 months. After that, Matt to email EB (CTO). GMV $3.3B, +31% YoY.",
+      "next_action": "챔피언과 공유할 Global AI 레퍼런스 케이스 2개 선별 + Matt 이메일 초안 준비",
+      "next_action_en": "Select 2 strong Global AI reference cases for champion + prepare Matt's email draft to EB (CTO)",
+      "last_activity": "2026-03-28",
+      "strategy": "챔피언이 회장에게 Global AI 케이스 공유 후 Matt의 EB 직접 접근으로 딜 가속화. 국내 최대 패션 플랫폼 레퍼런스 확보 시 패션/라이프스타일 버티컬 확장 레버리지.",
+      "strategy_en": "Champion shares Global AI cases with Chairman, then Matt emails EB (CTO) directly to accelerate deal. Landing Korea's largest fashion platform opens fashion/lifestyle vertical expansion.",
+      "activity_history": [
+        {
+          "date": "2026-03-28",
+          "type": "slack",
+          "summary": "[슬랙] 내부 논의: 챔피언이 향후 1~2개월 내 무신사 회장에게 Global AI 성공사례 1~2개 공유 예정. 이후 Matt가 EB(CTO)에게 이메일 접근 계획.",
+          "summary_en": "[Slack] Internal: Champion plans to share 1-2 strong Global AI use cases with Musinsa Chairman within 1-2 months. After that, thinking Matt can email EB (CTO)."
+        }
+      ]
     },
     {
       "group": "Naver",

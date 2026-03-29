@@ -1,0 +1,82 @@
+{
+  "_comment": "계정별 Slack 채널 매핑. 슬랙 검색으로 발견된 채널/DM을 계정에 연결.",
+  "_updated": "2026-03-29",
+  "channels": [
+    {
+      "account": "Lotte Shopping",
+      "workspace": "gameberrykickstart.slack.com",
+      "channel_id": "C067BTMPSCT",
+      "channel_name": "amplitude-x-martinee",
+      "type": "channel",
+      "notes": "Lotte ON / Martinee 파트너 채널. 주간 미팅 조율."
+    },
+    {
+      "account": "CJ Olive Young",
+      "workspace": "cjons.enterprise.slack.com",
+      "channel_id": "C0AEM6XUV43",
+      "channel_name": "group-dm-oliveyoung",
+      "type": "group_dm",
+      "notes": "CJ Olive Young OF 논의, 올리브영 스타트데이트 확정 등."
+    },
+    {
+      "account": "무신사 (Musinsa)",
+      "workspace": "amplitude.slack.com",
+      "channel_id": "C0ANUGEBPEX",
+      "channel_name": "group-dm-musinsa",
+      "type": "group_dm",
+      "notes": "무신사 딜 논의. 챔피언 통해 회장 접근, Matt EB 이메일 플랜."
+    },
+    {
+      "account": "두나무 (Dunamu)",
+      "workspace": "dunamu.enterprise.slack.com",
+      "channel_id": null,
+      "channel_name": "dunamu-workspace",
+      "type": "workspace",
+      "notes": "두나무 엔터프라이즈 슬랙 워크스페이스. 업비트 운영사."
+    },
+    {
+      "account": "_internal",
+      "workspace": "amplitude.slack.com",
+      "channel_id": "C0ABPCU7WQ7",
+      "channel_name": "team-korea",
+      "type": "channel",
+      "notes": "Amplitude 한국팀 내부 채널. TVING 논의 등."
+    },
+    {
+      "account": "_internal",
+      "workspace": "teamab180.slack.com",
+      "channel_id": "C0A98EH40GP",
+      "channel_name": "group-dm-ab180",
+      "type": "group_dm",
+      "notes": "박정현+DC+양관승. 엘박스/슈퍼진 OF 타이밍 논의."
+    },
+    {
+      "account": "TVING",
+      "workspace": "amplitude.slack.com",
+      "channel_id": "C0ABPCU7WQ7",
+      "channel_name": "team-korea",
+      "type": "channel",
+      "notes": "team-korea 채널에서 TVING 날짜 변경 등 내부 논의."
+    }
+  ],
+  "dm_contacts": [
+    {
+      "slack_user_id": "U06T7T2215K",
+      "name": "MyoungKyu Ho",
+      "email": "myoungkyu.ho@amplitude.com",
+      "dm_channel": "self"
+    },
+    {
+      "name": "Jihee Yoo (CSM)",
+      "dm_channel_id": "D0ACM8SSFND",
+      "workspace": "amplitude.slack.com",
+      "notes": "CSM 조율, 기술 QA 등 일반 협업."
+    },
+    {
+      "name": "DC (Donghun Choi)",
+      "dm_channel_id": "D072Q9BEVL0",
+      "workspace": "amplitude.slack.com",
+      "notes": "올리브영 스타트데이트 확정, 대시보드 링크 공유."
+    }
+  ]
+}

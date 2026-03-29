@@ -326,13 +326,23 @@ function ActivityFeed({ history, lang }) {
   )
 }
 
-function SubAccountRow({ account, expanded, onToggle, t, lang, relatedActions, relatedRisks }) {
+function SubAccountRow({ account, expanded, onToggle, t, lang, relatedActions, relatedRisks, accountNotes = [] }) {
   const healthConfig = getHealthConfig(t)
   const priorityConfig = getPriorityConfig(t)
   const cfg = healthConfig[account.health] || healthConfig.gray
   const arrNum = account.arr ? parseInt(account.arr) : 0
   const dealStage = pick(account, 'deal_stage', lang)
   const nextAction = pick(account, 'next_action', lang)
+
+  // notes.json 메모를 activity_history 형식으로 변환해 합치기
+  const noteActivities = accountNotes.map(n => ({
+    date: n.date || n.created_at?.slice(0, 10) || '',
+    type: 'memo',
+    summary: n.content,
+    summary_en: n.content,
+  }))
+  const mergedHistory = [...(account.activity_history || []), ...noteActivities]
+    .sort((a, b) => (b.date || '').localeCompare(a.date || ''))
 
   return (
     <div className={`rounded-xl border ${expanded ? cfg.border : 'border-gray-200'} overflow-hidden ml-3`}>
@@ -386,12 +396,17 @@ function SubAccountRow({ account, expanded, onToggle, t, lang, relatedActions, r
             )}
           </div>
 
-          {/* 활동 이력 (메인) */}
+          {/* 활동 이력 (메인) - activity_history + 메모 합산 */}
           <div className="bg-white rounded-lg p-2.5">
-            <p className="text-xs font-semibold text-gray-600 mb-2">
+            <p className="text-xs font-semibold text-gray-600 mb-2 flex items-center gap-1.5">
               {lang === 'en' ? 'Activity History' : '활동 이력'}
+              {noteActivities.length > 0 && (
+                <span className="text-xs bg-orange-100 text-orange-600 px-1.5 py-0.5 rounded-full font-normal">
+                  +{noteActivities.length} {lang === 'en' ? 'memo' : '메모'}
+                </span>
+              )}
             </p>
-            <ActivityFeed history={account.activity_history} lang={lang} />
+            <ActivityFeed history={mergedHistory} lang={lang} />
           </div>
 
           {/* 전략 */}
@@ -458,6 +473,32 @@ function SubAccountRow({ account, expanded, onToggle, t, lang, relatedActions, r
 function AccountView({ report, t, lang }) {
   const [expandedGroup, setExpandedGroup] = useState(null)
   const [expandedAccount, setExpandedAccount] = useState(null)
+  const [notes, setNotes] = useState([])
+  const [syncing, setSyncing] = useState(false)
+  const [syncMsg, setSyncMsg] = useState(null)
+
+  useEffect(() => {
+    fetch(`${API}/api/intel/notes`)
+      .then(r => r.json())
+      .then(d => setNotes(d.notes || []))
+      .catch(() => {})
+  }, [])
+
+  const handleSync = async () => {
+    setSyncing(true)
+    setSyncMsg(null)
+    try {
+      const res = await fetch(`${API}/api/intel/sync?force=true`, { method: 'POST' })
+      const data = await res.json()
+      setSyncMsg(lang === 'en' ? `Sync done (${data.added || 0} added)` : `동기화 완료 (${data.added || 0}건 추가)`)
+      setTimeout(() => setSyncMsg(null), 4000)
+    } catch {
+      setSyncMsg(lang === 'en' ? 'Sync failed' : '동기화 실패')
+      setTimeout(() => setSyncMsg(null), 3000)
+    } finally {
+      setSyncing(false)
+    }
+  }
 
   const accounts = report.accounts || []
   const actionItems = report.action_items || []
@@ -492,16 +533,33 @@ function AccountView({ report, t, lang }) {
 
   return (
     <div className="space-y-3 pb-24">
-      {/* 총 ARR */}
-      <div className="bg-purple-50 border border-purple-200 rounded-xl px-4 py-2.5 flex items-center justify-between">
+      {/* 총 ARR + 동기화 버튼 */}
+      <div className="bg-purple-50 border border-purple-200 rounded-xl px-4 py-2.5 flex items-center justify-between gap-2">
         <span className="text-xs text-purple-600 font-medium">
           {lang === 'en' ? 'Total Managed ARR' : '관리 총 ARR'}
           <span className="text-gray-400 font-normal ml-1">
             ({accounts.filter(a => a.arr).length} {lang === 'en' ? 'accounts' : '개'})
           </span>
         </span>
-        <span className="text-base font-bold text-purple-700">${Math.round(totalArr / 1000)}K</span>
+        <div className="flex items-center gap-2">
+          <span className="text-base font-bold text-purple-700">${Math.round(totalArr / 1000)}K</span>
+          <button
+            onClick={handleSync}
+            disabled={syncing}
+            className="flex items-center gap-1 text-xs bg-white border border-purple-200 text-purple-600 px-2 py-1 rounded-lg hover:bg-purple-100 disabled:opacity-50 transition-colors"
+          >
+            <svg className={`w-3 h-3 ${syncing ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            {syncing ? (lang === 'en' ? 'Syncing…' : '동기화 중…') : (lang === 'en' ? 'Sync' : '동기화')}
+          </button>
+        </div>
       </div>
+      {syncMsg && (
+        <div className="bg-green-50 border border-green-200 rounded-lg px-3 py-2 text-xs text-green-700 text-center">
+          {syncMsg}
+        </div>
+      )}
 
       {/* 그룹 목록 */}
       {groups.map(groupName => {
@@ -554,6 +612,7 @@ function AccountView({ report, t, lang }) {
                       lang={lang}
                       relatedActions={actionItems.filter(a => a.account === account.key_account)}
                       relatedRisks={risks.filter(r => r.account === account.key_account)}
+                      accountNotes={notes.filter(n => n.account === account.key_account)}
                     />
                   )
                 })}
