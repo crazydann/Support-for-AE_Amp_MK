@@ -74,6 +74,12 @@
           "type": "email",
           "summary": "이용범이 3/23 온라인 데모 세션 참석 확인 메일 회신. 티빙 PM팀 내부 선호 일정(월요일)으로 확정.",
           "summary_en": "Yong-Beom Lee confirmed attendance for 3/23 online demo. Monday slot confirmed by TVING PM team."
+        },
+        {
+          "date": "2026-03-05",
+          "type": "meeting",
+          "summary": "[미팅 준비] SE 정성화, Hackle 대비 Amplitude Experiment 상세 비교 데모 준비 완료. 데모 앱 직접 제작하여 Experiment 기능 시연 환경 구축.",
+          "summary_en": "[Demo Prep] SE Seonghwa prepared detailed Amplitude Experiment vs Hackle comparison demo. Built demo app to showcase Experiment capabilities hands-on."
         }
       ]
     },
@@ -453,20 +459,50 @@
       "key_account": "무신사 (Musinsa)",
       "arr": null,
       "subscription_end": null,
-      "amplitude_plan": null,
-      "status": "prospect",
-      "deal_stage": "Land 기회 - 챔피언 확보, EB 접근 준비 중",
-      "deal_stage_en": "Land Opportunity - Champion secured, preparing EB outreach",
+      "amplitude_plan": "Enterprise",
+      "status": "active",
+      "deal_stage": "Active Customer - Ask AI (Chat) Beta 진행 중 (무신사/29CM)",
+      "deal_stage_en": "Active Customer - Ask AI (Chat) Beta in Progress (Musinsa/29CM)",
       "deal_amount": 0,
-      "health": "yellow",
-      "notes_summary": "챔피언 확보 완료. 향후 1~2개월 내 Global AI 성공사례를 무신사 회장에게 공유 예정. 그 후 Matt가 EB(CTO)에게 이메일 접근 계획. GMV $3.3B, 31% YoY 성장.",
-      "notes_summary_en": "Champion secured. Planning to share 1-2 strong Global AI use cases with Musinsa Chairman within 1-2 months. After that, Matt to email EB (CTO). GMV $3.3B, +31% YoY.",
-      "next_action": "챔피언과 공유할 Global AI 레퍼런스 케이스 2개 선별 + Matt 이메일 초안 준비",
-      "next_action_en": "Select 2 strong Global AI reference cases for champion + prepare Matt's email draft to EB (CTO)",
-      "last_activity": "2026-03-28",
-      "strategy": "챔피언이 회장에게 Global AI 케이스 공유 후 Matt의 EB 직접 접근으로 딜 가속화. 국내 최대 패션 플랫폼 레퍼런스 확보 시 패션/라이프스타일 버티컬 확장 레버리지.",
-      "strategy_en": "Champion shares Global AI cases with Chairman, then Matt emails EB (CTO) directly to accelerate deal. Landing Korea's largest fashion platform opens fashion/lifestyle vertical expansion.",
+      "health": "green",
+      "notes_summary": "무신사/29CM 팀 7명이 Ask AI (Chat) Beta 채널(#musinsa-ask-ai-beta-test) 활용 중. Manager 이상 사용자 AI 접근 활성화 완료. Databricks 연동 문의 진행 중. CSM Jihee Yoo + SE 정성화 적극 지원. Global Agent white glove 요청됨. MQL: 형훈 윤(3/18), 현욱 이/29CM(3/16). GMV $3.3B, +31% YoY.",
+      "notes_summary_en": "7 Musinsa/29CM team members active in Ask AI (Chat) Beta channel (#musinsa-ask-ai-beta-test). AI access enabled for Manager-level+ users. Databricks integration inquiry in progress. CSM Jihee Yoo + SE Seonghwa actively supporting. Global Agent white glove requested. MQL: Hyunghun Yoon (3/18), Hyunwook Lee/29CM (3/16). GMV $3.3B, +31% YoY.",
+      "next_action": "Databricks 연동 지원 + Global Agent white glove 후속 조율 + Expand 기회 탐색 (29CM 별도 계약 가능성)",
+      "next_action_en": "Support Databricks integration + coordinate Global Agent white glove + explore Expand opportunity (29CM separate contract potential)",
+      "last_activity": "2026-03-27",
+      "strategy": "무신사/29CM이 이미 Ask AI Beta 활성 사용 중 - prospect가 아닌 active customer로 전환. Databricks 연동 성공 시 데이터 성숙도 높은 레퍼런스 확보. 무신사 그룹(무신사+29CM) 합산 Expand 딜로 성장 가능. 패션/라이프스타일 버티컬 레퍼런스 1순위.",
+      "strategy_en": "Musinsa/29CM already actively using Ask AI Beta - transition from prospect to active customer. Databricks integration success = high data-maturity reference. Musinsa Group (Musinsa+29CM) combined Expand deal potential. Top fashion/lifestyle vertical reference candidate.",
       "activity_history": [
+        {
+          "date": "2026-03-27",
+          "type": "slack",
+          "summary": "[슬랙] #musinsa-ask-ai-beta-test: 외부 미팅 노트 공유 - 무신사/29CM Ask AI 활용 현황 및 Databricks 연동 논의. Health check 진행.",
+          "summary_en": "[Slack] #musinsa-ask-ai-beta-test: Shared external meeting notes - Musinsa/29CM Ask AI usage status and Databricks integration discussion. Health check conducted."
+        },
+        {
+          "date": "2026-03-25",
+          "type": "meeting",
+          "summary": "[미팅] Ask AI 기능 활성화 오피스아워 세션. Manager 이상 사용자 AI 접근 설정 완료. Jihee Yoo + 정성화 지원.",
+          "summary_en": "[Meeting] Ask AI feature activation office hour session. AI access configured for Manager-level+ users. Supported by Jihee Yoo + Seonghwa."
+        },
+        {
+          "date": "2026-03-24",
+          "type": "slack",
+          "summary": "[슬랙] 무신사/29CM 팀원 7명 #musinsa-ask-ai-beta-test 채널 참여. Jihee Yoo가 Non-Admin 사용자 AI 접근 권한 부여 지원.",
+          "summary_en": "[Slack] 7 Musinsa/29CM team members joined #musinsa-ask-ai-beta-test channel. Jihee Yoo assisted with AI access provisioning for non-Admin users."
+        },
+        {
+          "date": "2026-03-18",
+          "type": "slack",
+          "summary": "[슬랙] MQL 인입: 형훈 윤 (무신사) - Ask AI 기능 관련 인바운드 문의.",
+          "summary_en": "[Slack] MQL inbound: Hyunghun Yoon (Musinsa) - inbound inquiry regarding Ask AI feature."
+        },
+        {
+          "date": "2026-03-16",
+          "type": "slack",
+          "summary": "[슬랙] MQL 인입: 현욱 이 (29CM) - Ask AI 관련 인바운드 문의.",
+          "summary_en": "[Slack] MQL inbound: Hyunwook Lee (29CM) - inbound inquiry regarding Ask AI."
+        },
         {
           "date": "2026-03-28",
           "type": "slack",
@@ -537,6 +573,14 @@
     }
   ],
   "action_items": [
+    {
+      "priority": "urgent",
+      "account": "신세계 DF",
+      "group": "Shinsegae",
+      "action": "4/2 신세계 DF 마케팅 & AI 임원 데모 (오후 2~3시) + RFP 논의 (오후 3~4시) 준비 - 핵심 Use Case 및 RFP 항목 사전 정리",
+      "action_en": "4/2 demo for Shinsegae DF Marketing & AI executives (2-3pm) + RFP discussion (3-4pm) - prepare key use cases and RFP checklist",
+      "due": "2026-04-02"
+    },
     {
       "priority": "urgent",
       "account": "LG Uplus (CTO)",
