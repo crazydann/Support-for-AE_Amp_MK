@@ -22,7 +22,21 @@
       "next_action_en": "Prepare Stage 6 close - negotiate contract draft",
       "last_activity": "2026-03-24",
       "strategy": "한국 최대 뷰티 플랫폼의 데이터 드리븐 성장 파트너. $450K Upsell은 전사 디지털 플랫폼화의 시작점. G&S 번들로 AI 개인화 추천 가능성 제시.",
-      "strategy_en": "Data-driven growth partner for Korea's largest beauty platform. $450K upsell marks start of enterprise digitalization. Present G&S bundle for AI personalization."
+      "strategy_en": "Data-driven growth partner for Korea's largest beauty platform. $450K upsell marks start of enterprise digitalization. Present G&S bundle for AI personalization.",
+      "activity_history": [
+        {
+          "date": "2026-03-24",
+          "type": "meeting",
+          "summary": "Olive Young 데이터팀 QBR. G&S 번들 제안 발표. 긍정적 반응.",
+          "summary_en": "Olive Young data team QBR. Presented G&S bundle proposal. Positive response."
+        },
+        {
+          "date": "2026-03-18",
+          "type": "email",
+          "summary": "$450K Upsell 제안서 공식 발송. 의사결정자 검토 중.",
+          "summary_en": "Officially sent $450K upsell proposal. Decision maker reviewing."
+        }
+      ]
     },
     {
       "group": "CJ",
@@ -41,7 +55,27 @@
       "next_action_en": "Accelerate close - negotiate Stage 6 terms and request EB confirmation",
       "last_activity": "2026-03-25",
       "strategy": "OTT 업계 데이터 분석 리더십 포지셔닝. D-65 갱신 타이밍에 $420K Upsell 클로징이 핵심. 갱신 성공 시 CJ 그룹 전체 레퍼런스로 확장.",
-      "strategy_en": "Position as OTT data analytics leader. Close $420K upsell at D-65 renewal. Win enables CJ Group-wide reference."
+      "strategy_en": "Position as OTT data analytics leader. Close $420K upsell at D-65 renewal. Win enables CJ Group-wide reference.",
+      "activity_history": [
+        {
+          "date": "2026-03-25",
+          "type": "email",
+          "summary": "갱신 조건 관련 법무팀 검토 요청 메일 수신. 계약서 초안 첨부.",
+          "summary_en": "Received email from legal team requesting review of renewal terms. Contract draft attached."
+        },
+        {
+          "date": "2026-03-20",
+          "type": "meeting",
+          "summary": "TVING CPO와 갱신 미팅. $420K 조건 구두 합의. 공식 계약서 검토 중.",
+          "summary_en": "Renewal meeting with TVING CPO. Verbal agreement on $420K terms. Official contract under review."
+        },
+        {
+          "date": "2026-03-15",
+          "type": "slack",
+          "summary": "CSM Jihee로부터 사용률 리포트 공유. MAU 전월 대비 12% 증가.",
+          "summary_en": "CSM Jihee shared usage report. MAU up 12% month-over-month."
+        }
+      ]
     },
     {
       "group": "Shinsegae",
@@ -60,7 +94,8 @@
       "next_action_en": "Move Expand $204K to Stage 3 - prepare QBR on usage",
       "last_activity": "2026-03-15",
       "strategy": "3년 장기 파트너십 기반 F&B 데이터 분석 표준 모델 구축. Expand $204K는 앱 고도화와 멤버십 리텐션 최적화 중심. 신세계 그룹 내 확장 레퍼런스로 활용.",
-      "strategy_en": "Build F&B data analytics standard model on 3-year partnership. Expand $204K focuses on app enhancement and membership retention. Use as Shinsegae Group expansion reference."
+      "strategy_en": "Build F&B data analytics standard model on 3-year partnership. Expand $204K focuses on app enhancement and membership retention. Use as Shinsegae Group expansion reference.",
+      "activity_history": []
     },
     {
       "group": "Shinsegae",
@@ -79,7 +114,8 @@
       "next_action_en": "Prepare Q4 renewal - review usage metrics",
       "last_activity": "2026-01-30",
       "strategy": "신세계 그룹 내 Starbucks Korea 성공 사례 활용. 라이브커머스 특화 분석으로 차별화. Q4 갱신 전 사용률 기반 가치 입증.",
-      "strategy_en": "Leverage Starbucks Korea success story within Shinsegae Group. Differentiate with live commerce-specific analytics. Prove value through usage metrics before Q4 renewal."
+      "strategy_en": "Leverage Starbucks Korea success story within Shinsegae Group. Differentiate with live commerce-specific analytics. Prove value through usage metrics before Q4 renewal.",
+      "activity_history": []
     },
     {
       "group": "Lotte",
@@ -98,7 +134,8 @@
       "next_action_en": "Explore expansion opportunities",
       "last_activity": "2026-02-20",
       "strategy": "롯데 그룹 이커머스/리테일 데이터 분석 허브. 롯데ON·롯데백화점 연계 Expand 논의로 그룹 확장. 2027 갱신 조기 전략 논의 시작.",
-      "strategy_en": "Data analytics hub for Lotte Group e-commerce and retail. Drive group expansion via Lotte ON and Lotte Department Store. Initiate early 2027 renewal strategy discussion."
+      "strategy_en": "Data analytics hub for Lotte Group e-commerce and retail. Drive group expansion via Lotte ON and Lotte Department Store. Initiate early 2027 renewal strategy discussion.",
+      "activity_history": []
     },
     {
       "group": "Lotte",
@@ -117,7 +154,8 @@
       "next_action_en": "Review usage metrics",
       "last_activity": "2026-02-15",
       "strategy": "롯데포인트 멤버십 행동 데이터 분석으로 Monetization Use Case 강화. 롯데 그룹 내 Amplitude 확산의 내부 챔피언 육성.",
-      "strategy_en": "Strengthen Monetization use case through Lotte Points membership behavior analytics. Develop internal champions to spread Amplitude within Lotte Group."
+      "strategy_en": "Strengthen Monetization use case through Lotte Points membership behavior analytics. Develop internal champions to spread Amplitude within Lotte Group.",
+      "activity_history": []
     },
     {
       "group": "GS",
@@ -136,7 +174,8 @@
       "next_action_en": "Early discussion for 2027 contract + Expand proposal",
       "last_activity": "2026-03-05",
       "strategy": "GS25·GS수퍼 멀티채널 분석 플랫폼. 2027 갱신 조기 논의로 관계 강화 및 Expand 기회 선점. 리테일 데이터 드리븐 MD 전략 지원.",
-      "strategy_en": "Multi-channel analytics platform for GS25 and GS Supermarket. Early 2027 renewal discussion strengthens relationship and secures Expand opportunity. Support data-driven retail MD strategy."
+      "strategy_en": "Multi-channel analytics platform for GS25 and GS Supermarket. Early 2027 renewal discussion strengthens relationship and secures Expand opportunity. Support data-driven retail MD strategy.",
+      "activity_history": []
     },
     {
       "group": "LG",
@@ -155,7 +194,8 @@
       "next_action_en": "Contact EB immediately - confirm renewal terms and submit order",
       "last_activity": "2026-03-20",
       "strategy": "통신사 전사 디지털 전환의 Amplitude 핵심 파트너. D-34 내 EB 컨펌 필수. infiniSTAR 이탈 교훈 반영하여 CTO 조직 내 전략적 벤더로 재포지셔닝.",
-      "strategy_en": "Core Amplitude partner for telco-wide digital transformation. Must confirm EB within D-34. Reposition as strategic vendor in CTO org, applying infiniSTAR churn lessons."
+      "strategy_en": "Core Amplitude partner for telco-wide digital transformation. Must confirm EB within D-34. Reposition as strategic vendor in CTO org, applying infiniSTAR churn lessons.",
+      "activity_history": []
     },
     {
       "group": "NOL",
@@ -174,7 +214,8 @@
       "next_action_en": "CS support for usage improvement + demonstrate value for Stage 3",
       "last_activity": "2026-03-18",
       "strategy": "패션 플랫폼 데이터 분석 내재화 지원. 사용률 33% 개선이 갱신 설득력의 핵심. CS팀 협력으로 Quick Win 사례 발굴 후 갱신 협상에 활용.",
-      "strategy_en": "Support data analytics internalization for fashion platform. Improving 33% usage is key to renewal leverage. Find Quick Win cases with CS team to strengthen renewal negotiation."
+      "strategy_en": "Support data analytics internalization for fashion platform. Improving 33% usage is key to renewal leverage. Find Quick Win cases with CS team to strengthen renewal negotiation.",
+      "activity_history": []
     },
     {
       "group": "Golfzon",
@@ -193,7 +234,8 @@
       "next_action_en": "Strengthen onboarding - increase active user count",
       "last_activity": "2026-02-10",
       "strategy": "골프 예약·콘텐츠 플랫폼 데이터 분석 레퍼런스. 온보딩 활성화로 사용 깊이 증대. 스포츠 레저 버티컬 레퍼런스로 포지셔닝.",
-      "strategy_en": "Data analytics reference for golf booking and content platform. Deepen usage through onboarding activation. Position as sports and leisure vertical reference."
+      "strategy_en": "Data analytics reference for golf booking and content platform. Deepen usage through onboarding activation. Position as sports and leisure vertical reference.",
+      "activity_history": []
     },
     {
       "group": "KT",
@@ -212,7 +254,8 @@
       "next_action_en": "Explore KT Corp group expansion",
       "last_activity": "2026-02-05",
       "strategy": "KT 그룹 디지털 커머스 교두보. KT Corp 내 다른 사업부 Land 기회 탐색. 통신 그룹 내 Amplitude 확산 전략.",
-      "strategy_en": "Digital commerce foothold within KT Group. Explore Land opportunities in other KT Corp divisions. Strategy to spread Amplitude within telecom group."
+      "strategy_en": "Digital commerce foothold within KT Group. Explore Land opportunities in other KT Corp divisions. Strategy to spread Amplitude within telecom group.",
+      "activity_history": []
     },
     {
       "group": "SK",
@@ -231,7 +274,8 @@
       "next_action_en": "Pursue new Land with SK Adot / T world",
       "last_activity": "2025-12-31",
       "strategy": "SK 그룹 내 재유치 전략. IFLAND 이탈 교훈 반영하여 SK Adot·T world 신규 Land 추진. SK 그룹 디지털 서비스 전반으로 파이프라인 재구축.",
-      "strategy_en": "Win-back strategy within SK Group. Apply IFLAND churn lessons to pursue new Land with SK Adot and T world. Rebuild pipeline across SK Group digital services."
+      "strategy_en": "Win-back strategy within SK Group. Apply IFLAND churn lessons to pursue new Land with SK Adot and T world. Rebuild pipeline across SK Group digital services.",
+      "activity_history": []
     },
     {
       "group": "Samsung",
@@ -250,7 +294,8 @@
       "next_action_en": "Explore Samsung group expansion (leverage Cheil Worldwide deal)",
       "last_activity": "2026-02-28",
       "strategy": "삼성 그룹 스타트업 투자사 랜드마크 고객. Cheil Worldwide 딜 연계로 삼성 그룹 전체 확장 교두보. Samsung Electronics Land 기회 탐색.",
-      "strategy_en": "Landmark customer as Samsung Group's startup investment arm. Leverage Cheil Worldwide deal as Samsung Group expansion foothold. Explore Samsung Electronics Land opportunity."
+      "strategy_en": "Landmark customer as Samsung Group's startup investment arm. Leverage Cheil Worldwide deal as Samsung Group expansion foothold. Explore Samsung Electronics Land opportunity.",
+      "activity_history": []
     },
     {
       "group": "SPC",
@@ -269,7 +314,8 @@
       "next_action_en": "Initiate Expand discussion with affiliates (Paris Baguette, Baskin-Robbins)",
       "last_activity": "2026-03-10",
       "strategy": "한국 F&B 대표 그룹 레퍼런스 확보. 파리바게뜨·배스킨라빈스 계열사 멀티 오르그 확장으로 그룹 전체 Amplitude 표준화. 일상 브랜드의 디지털 CX 혁신 파트너.",
-      "strategy_en": "Secure Korea's top F&B group as reference. Multi-org expansion to Paris Baguette & Baskin-Robbins standardizes Amplitude across the group. Digital CX innovation partner for daily-life brands."
+      "strategy_en": "Secure Korea's top F&B group as reference. Multi-org expansion to Paris Baguette & Baskin-Robbins standardizes Amplitude across the group. Digital CX innovation partner for daily-life brands.",
+      "activity_history": []
     },
     {
       "group": "Naver",
@@ -288,7 +334,8 @@
       "next_action_en": "Contact Naver Shopping/Financial team",
       "last_activity": "2026-01-15",
       "strategy": "한국 최대 IT 기업 레퍼런스 확보. 네이버 쇼핑·파이낸셜·웹툰 등 대규모 Land 기회. Amplitude를 네이버 성장 분석의 표준 툴로 포지셔닝.",
-      "strategy_en": "Secure Korea's largest IT company as reference. Large-scale Land opportunity across Naver Shopping, Financial, and Webtoon. Position Amplitude as standard growth analytics tool for Naver."
+      "strategy_en": "Secure Korea's largest IT company as reference. Large-scale Land opportunity across Naver Shopping, Financial, and Webtoon. Position Amplitude as standard growth analytics tool for Naver.",
+      "activity_history": []
     },
     {
       "group": "Hyundai Motors",
@@ -307,7 +354,8 @@
       "next_action_en": "Contact Hyundai Capital / Genesis app team",
       "last_activity": "2026-01-10",
       "strategy": "현대차 글로벌 앱(제네시스, 현대캐피탈) 데이터 분석. 모빌리티 버티컬 레퍼런스 확보. 현대캐피탈 앱 담당자 접촉으로 Land 기회 구체화.",
-      "strategy_en": "Data analytics for Hyundai global apps (Genesis, Hyundai Capital). Secure mobility vertical reference. Concretize Land opportunity through Hyundai Capital app team contact."
+      "strategy_en": "Data analytics for Hyundai global apps (Genesis, Hyundai Capital). Secure mobility vertical reference. Concretize Land opportunity through Hyundai Capital app team contact.",
+      "activity_history": []
     },
     {
       "group": "Hyundai Department",
@@ -326,7 +374,8 @@
       "next_action_en": "Contact H.Point app team",
       "last_activity": "2026-01-05",
       "strategy": "H.Point 멤버십 앱 기반 백화점 고객 행동 분석. 프리미엄 리테일 버티컬 레퍼런스. 현대백화점 그룹 디지털 전환 파트너로 포지셔닝.",
-      "strategy_en": "Department store customer behavior analytics based on H.Point membership app. Premium retail vertical reference. Position as Hyundai Department Store Group digital transformation partner."
+      "strategy_en": "Department store customer behavior analytics based on H.Point membership app. Premium retail vertical reference. Position as Hyundai Department Store Group digital transformation partner.",
+      "activity_history": []
     }
   ],
   "action_items": [

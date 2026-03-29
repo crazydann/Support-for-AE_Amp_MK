@@ -233,87 +233,113 @@ function TodoView({ report, t, lang }) {
 
 // ─── ACCOUNT VIEW ─────────────────────────────────────────────────────────────
 
-function AccountRow({ account, expanded, onToggle, t, lang, relatedActions, relatedRisks }) {
+// 타입별 아이콘/색상
+const activityTypeConfig = {
+  email:   { icon: '✉', color: 'text-blue-500',  bg: 'bg-blue-50',   label: '이메일', label_en: 'Email' },
+  meeting: { icon: '📅', color: 'text-purple-500', bg: 'bg-purple-50', label: '미팅',   label_en: 'Meeting' },
+  slack:   { icon: '💬', color: 'text-green-500', bg: 'bg-green-50',  label: '슬랙',   label_en: 'Slack' },
+  memo:    { icon: '📝', color: 'text-orange-500', bg: 'bg-orange-50', label: '메모',   label_en: 'Memo' },
+}
+
+function ActivityFeed({ history, lang }) {
+  if (!history || history.length === 0) return (
+    <p className="text-xs text-gray-400 text-center py-2">
+      {lang === 'en' ? 'No activity recorded yet' : '기록된 활동이 없습니다'}
+    </p>
+  )
+  return (
+    <div className="space-y-2">
+      {history.map((item, i) => {
+        const cfg = activityTypeConfig[item.type] || activityTypeConfig.memo
+        return (
+          <div key={i} className="flex gap-2 items-start">
+            <div className={`${cfg.bg} rounded-full w-6 h-6 flex items-center justify-center text-xs shrink-0 mt-0.5`}>
+              {cfg.icon}
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-1.5 mb-0.5">
+                <span className={`text-xs font-medium ${cfg.color}`}>
+                  {lang === 'en' ? cfg.label_en : cfg.label}
+                </span>
+                <span className="text-xs text-gray-400">{item.date}</span>
+              </div>
+              <p className="text-xs text-gray-700 leading-relaxed">
+                {lang === 'en' ? (item.summary_en || item.summary) : item.summary}
+              </p>
+            </div>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
+function SubAccountRow({ account, expanded, onToggle, t, lang, relatedActions, relatedRisks }) {
   const healthConfig = getHealthConfig(t)
   const priorityConfig = getPriorityConfig(t)
   const cfg = healthConfig[account.health] || healthConfig.gray
   const arrNum = account.arr ? parseInt(account.arr) : 0
-  const dealStage    = pick(account, 'deal_stage', lang)
-  const nextAction   = pick(account, 'next_action', lang)
-  const notesSummary = pick(account, 'notes_summary', lang)
+  const dealStage = pick(account, 'deal_stage', lang)
+  const nextAction = pick(account, 'next_action', lang)
 
   return (
-    <div className={`rounded-xl border ${expanded ? cfg.border : 'border-gray-200'} overflow-hidden transition-all`}>
-      {/* 헤더 행 - 항상 표시 */}
+    <div className={`rounded-xl border ${expanded ? cfg.border : 'border-gray-200'} overflow-hidden ml-3`}>
+      {/* 계열사 헤더 */}
       <button
         onClick={onToggle}
-        className={`w-full text-left px-4 py-3 flex items-center gap-3 transition-colors ${
+        className={`w-full text-left px-3 py-2.5 flex items-center gap-2.5 transition-colors ${
           expanded ? cfg.bg : 'bg-white hover:bg-gray-50'
         }`}
       >
-        {/* 헬스 dot */}
-        <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${cfg.dot}`} />
-
-        {/* 그룹 + 이름 */}
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-1.5 min-w-0">
-            <span className="text-xs text-gray-400 shrink-0">{account.group}</span>
-            <span className="text-sm font-semibold text-gray-900 truncate">{account.key_account}</span>
-          </div>
-        </div>
-
-        {/* ARR */}
-        <div className="text-right shrink-0">
-          {arrNum > 0 ? (
-            <p className="text-sm font-bold text-gray-800">
-              ${arrNum >= 1000 ? (arrNum / 1000).toFixed(0) + 'K' : arrNum}
-            </p>
-          ) : (
-            <p className="text-xs text-gray-400">-</p>
-          )}
-        </div>
-
-        {/* D-day 뱃지 */}
-        <div className="shrink-0">
-          <ContractBadge subscriptionEnd={account.subscription_end} status={account.status} t={t} />
-        </div>
-
-        {/* 펼침 화살표 */}
-        <svg
-          className={`w-4 h-4 text-gray-400 shrink-0 transition-transform duration-200 ${expanded ? 'rotate-180' : ''}`}
-          fill="none" stroke="currentColor" viewBox="0 0 24 24"
-        >
+        <span className={`w-2 h-2 rounded-full shrink-0 ${cfg.dot}`} />
+        <span className="flex-1 text-sm font-semibold text-gray-900 truncate">{account.key_account}</span>
+        {arrNum > 0 && (
+          <span className="text-xs font-bold text-gray-700 shrink-0">
+            ${arrNum >= 1000 ? (arrNum/1000).toFixed(0)+'K' : arrNum}
+          </span>
+        )}
+        <ContractBadge subscriptionEnd={account.subscription_end} status={account.status} t={t} />
+        <svg className={`w-3.5 h-3.5 text-gray-400 shrink-0 transition-transform duration-200 ${expanded ? 'rotate-180' : ''}`}
+          fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
         </svg>
       </button>
 
       {/* 확장 내용 */}
       {expanded && (
-        <div className={`${cfg.bg} border-t ${cfg.border} px-4 py-3 space-y-3`}>
-          {/* 기본 정보 그리드 */}
-          <div className="grid grid-cols-4 gap-1.5 text-center">
+        <div className={`${cfg.bg} border-t ${cfg.border} px-3 py-3 space-y-3`}>
+          {/* 기본 정보 1행 */}
+          <div className="grid grid-cols-4 gap-1 text-center">
             {account.amplitude_plan && (
-              <div className="bg-white rounded-lg p-2">
+              <div className="bg-white rounded-lg p-1.5">
                 <p className="text-xs text-gray-400 mb-0.5">Plan</p>
                 <p className="text-xs font-semibold text-purple-700 truncate">{account.amplitude_plan}</p>
               </div>
             )}
             {account.subscription_end && account.status !== 'churned' && (
-              <div className="bg-white rounded-lg p-2">
+              <div className="bg-white rounded-lg p-1.5">
                 <p className="text-xs text-gray-400 mb-0.5">{lang === 'en' ? 'Expires' : '만료일'}</p>
                 <p className="text-xs font-semibold text-gray-800">{account.subscription_end?.slice(0,7)}</p>
               </div>
             )}
-            <div className="bg-white rounded-lg p-2">
+            <div className="bg-white rounded-lg p-1.5">
               <p className="text-xs text-gray-400 mb-0.5">Status</p>
               <span className={`text-xs font-semibold ${cfg.badge} px-1 py-0.5 rounded-full`}>{cfg.label}</span>
             </div>
             {arrNum > 0 && (
-              <div className="bg-white rounded-lg p-2">
+              <div className="bg-white rounded-lg p-1.5">
                 <p className="text-xs text-gray-400 mb-0.5">ARR</p>
                 <p className="text-xs font-semibold text-gray-800">${arrNum >= 1000 ? (arrNum/1000).toFixed(0)+'K' : arrNum}</p>
               </div>
             )}
+          </div>
+
+          {/* 활동 이력 (메인) */}
+          <div className="bg-white rounded-lg p-2.5">
+            <p className="text-xs font-semibold text-gray-600 mb-2">
+              {lang === 'en' ? 'Activity History' : '활동 이력'}
+            </p>
+            <ActivityFeed history={account.activity_history} lang={lang} />
           </div>
 
           {/* 전략 */}
@@ -324,7 +350,7 @@ function AccountRow({ account, expanded, onToggle, t, lang, relatedActions, rela
             </div>
           )}
 
-          {/* 딜 스테이지 */}
+          {/* 딜 단계 */}
           {dealStage && (
             <div className="bg-white rounded-lg p-2.5">
               <p className="text-xs text-gray-400 mb-1">{lang === 'en' ? 'Deal Stage' : '딜 단계'}</p>
@@ -337,14 +363,6 @@ function AccountRow({ account, expanded, onToggle, t, lang, relatedActions, rela
             <div className="bg-white rounded-lg p-2.5">
               <p className="text-xs text-gray-400 mb-1">{lang === 'en' ? 'Next Action' : '다음 액션'}</p>
               <p className="text-xs text-gray-800 leading-relaxed">{nextAction}</p>
-            </div>
-          )}
-
-          {/* 노트 요약 */}
-          {notesSummary && (
-            <div className="bg-white rounded-lg p-2.5">
-              <p className="text-xs text-gray-400 mb-1">{lang === 'en' ? 'Notes' : '노트'}</p>
-              <p className="text-xs text-gray-600 italic leading-relaxed">"{notesSummary}"</p>
             </div>
           )}
 
@@ -386,46 +404,112 @@ function AccountRow({ account, expanded, onToggle, t, lang, relatedActions, rela
 }
 
 function AccountView({ report, t, lang }) {
-  const [expandedIdx, setExpandedIdx] = useState(null)
+  const [expandedGroup, setExpandedGroup] = useState(null)
+  const [expandedAccount, setExpandedAccount] = useState(null)
 
-  const accounts = (report.accounts || [])
-    .slice()
-    .sort((a, b) => {
-      const dateA = a.last_activity || '1900-01-01'
-      const dateB = b.last_activity || '1900-01-01'
-      if (dateB !== dateA) return dateB.localeCompare(dateA)
-      return parseInt(b.arr || 0) - parseInt(a.arr || 0)
-    })
-
+  const accounts = report.accounts || []
   const actionItems = report.action_items || []
   const risks = report.risks || []
+
+  // 그룹별로 묶기
+  const groupMap = {}
+  accounts.forEach(acc => {
+    const g = acc.group || 'etc'
+    if (!groupMap[g]) groupMap[g] = []
+    groupMap[g].push(acc)
+  })
+
+  // 계열사 정렬: last_activity 내림차순, 동일 시 ARR 내림차순
+  Object.keys(groupMap).forEach(g => {
+    groupMap[g].sort((a, b) => {
+      const da = a.last_activity || '1900-01-01'
+      const db = b.last_activity || '1900-01-01'
+      if (db !== da) return db.localeCompare(da)
+      return parseInt(b.arr || 0) - parseInt(a.arr || 0)
+    })
+  })
+
+  // 그룹 정렬: 그룹 내 가장 최근 last_activity 기준
+  const groups = Object.keys(groupMap).sort((a, b) => {
+    const latestA = groupMap[a][0]?.last_activity || '1900-01-01'
+    const latestB = groupMap[b][0]?.last_activity || '1900-01-01'
+    return latestB.localeCompare(latestA)
+  })
 
   const totalArr = accounts.reduce((s, a) => s + parseInt(a.arr || 0), 0)
 
   return (
     <div className="space-y-3 pb-24">
-      {/* 총 ARR 요약 */}
+      {/* 총 ARR */}
       <div className="bg-purple-50 border border-purple-200 rounded-xl px-4 py-2.5 flex items-center justify-between">
         <span className="text-xs text-purple-600 font-medium">
           {lang === 'en' ? 'Total Managed ARR' : '관리 총 ARR'}
-          <span className="text-gray-400 font-normal ml-1">({accounts.filter(a => a.arr).length} {lang === 'en' ? 'accounts' : '개'})</span>
+          <span className="text-gray-400 font-normal ml-1">
+            ({accounts.filter(a => a.arr).length} {lang === 'en' ? 'accounts' : '개'})
+          </span>
         </span>
         <span className="text-base font-bold text-purple-700">${Math.round(totalArr / 1000)}K</span>
       </div>
 
-      {/* 계정 목록 */}
-      {accounts.map((account, i) => (
-        <AccountRow
-          key={i}
-          account={account}
-          expanded={expandedIdx === i}
-          onToggle={() => setExpandedIdx(expandedIdx === i ? null : i)}
-          t={t}
-          lang={lang}
-          relatedActions={actionItems.filter(a => a.account === account.key_account)}
-          relatedRisks={risks.filter(r => r.account === account.key_account)}
-        />
-      ))}
+      {/* 그룹 목록 */}
+      {groups.map(groupName => {
+        const groupAccounts = groupMap[groupName]
+        const groupArr = groupAccounts.reduce((s, a) => s + parseInt(a.arr || 0), 0)
+        const isGroupExpanded = expandedGroup === groupName
+        // 그룹 헬스: 가장 나쁜 계열사 기준
+        const healthOrder = { red: 0, orange: 1, yellow: 2, green: 3, gray: 4 }
+        const worstHealth = groupAccounts.reduce((worst, a) => {
+          return (healthOrder[a.health] ?? 5) < (healthOrder[worst] ?? 5) ? a.health : worst
+        }, 'gray')
+        const healthConfig = getHealthConfig(t)
+        const gcfg = healthConfig[worstHealth] || healthConfig.gray
+
+        return (
+          <div key={groupName} className={`rounded-xl border ${isGroupExpanded ? gcfg.border : 'border-gray-200'} overflow-hidden`}>
+            {/* 그룹 헤더 */}
+            <button
+              onClick={() => { setExpandedGroup(isGroupExpanded ? null : groupName); setExpandedAccount(null) }}
+              className={`w-full text-left px-4 py-3 flex items-center gap-3 transition-colors ${
+                isGroupExpanded ? gcfg.bg : 'bg-white hover:bg-gray-50'
+              }`}
+            >
+              <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${gcfg.dot}`} />
+              <span className="flex-1 text-sm font-bold text-gray-900">{groupName}</span>
+              <span className="text-xs text-gray-400 shrink-0">{groupAccounts.length}개</span>
+              {groupArr > 0 && (
+                <span className="text-sm font-bold text-gray-800 shrink-0">
+                  ${Math.round(groupArr / 1000)}K
+                </span>
+              )}
+              <svg className={`w-4 h-4 text-gray-400 shrink-0 transition-transform duration-200 ${isGroupExpanded ? 'rotate-180' : ''}`}
+                fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+
+            {/* 계열사 목록 */}
+            {isGroupExpanded && (
+              <div className={`${gcfg.bg} border-t ${gcfg.border} p-2 space-y-2`}>
+                {groupAccounts.map((account, i) => {
+                  const key = `${groupName}-${i}`
+                  return (
+                    <SubAccountRow
+                      key={key}
+                      account={account}
+                      expanded={expandedAccount === key}
+                      onToggle={() => setExpandedAccount(expandedAccount === key ? null : key)}
+                      t={t}
+                      lang={lang}
+                      relatedActions={actionItems.filter(a => a.account === account.key_account)}
+                      relatedRisks={risks.filter(r => r.account === account.key_account)}
+                    />
+                  )
+                })}
+              </div>
+            )}
+          </div>
+        )
+      })}
     </div>
   )
 }
