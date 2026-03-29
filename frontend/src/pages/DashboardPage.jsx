@@ -139,7 +139,6 @@ function ActionItem({ item, t, lang }) {
 }
 
 function TodoView({ report, t, lang }) {
-  const [filter, setFilter] = useState('all')
   const accounts = report.accounts || []
   const actions  = report.action_items || []
   const risks    = report.risks || []
@@ -151,25 +150,12 @@ function TodoView({ report, t, lang }) {
     prospect:  accounts.filter(a => a.status === 'prospect').length,
   }
 
-  const filtered = accounts.filter(a => {
-    if (filter === 'urgent')   return ['red','orange'].includes(a.health)
-    if (filter === 'active')   return a.status === 'active'
-    if (filter === 'prospect') return ['prospect','churned'].includes(a.status)
-    return true
-  })
-  // 최근 활동 내림차순 정렬 (last_activity 기준)
-  const sorted = [...filtered].sort((a, b) => {
-    const da = a.last_activity || '1900-01-01'
-    const db = b.last_activity || '1900-01-01'
-    return db.localeCompare(da)
-  })
+  // 최근 활동 피드: activity_history 있는 계정을 last_activity 내림차순
+  const activityFeedAccounts = [...accounts]
+    .filter(a => (a.activity_history || []).length > 0)
+    .sort((a, b) => (b.last_activity || '').localeCompare(a.last_activity || ''))
 
-  const filters = [
-    ['all',      t('filterAll')],
-    ['urgent',   t('filterUrgent')],
-    ['active',   t('filterActive')],
-    ['prospect', t('filterProspect')],
-  ]
+  const priorityConfig = getPriorityConfig(t)
 
   return (
     <div className="space-y-5 pb-24">
@@ -193,45 +179,90 @@ function TodoView({ report, t, lang }) {
         </div>
       </div>
 
-      {/* 전략 요약 */}
+      {/* 이번 주 요약 */}
       {(report.strategy_summary || report.strategy_summary_en) && (
         <div className="bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-xl p-4">
-          <p className="text-xs font-semibold text-purple-600 mb-1">{t('strategySummary')}</p>
+          <p className="text-xs font-semibold text-purple-600 mb-1.5">{t('strategySummary')}</p>
           <p className="text-sm text-gray-700 leading-relaxed">{pick(report, 'strategy_summary', lang)}</p>
         </div>
       )}
 
-      {/* Action Items */}
+      {/* 할 일 */}
       {actions.length > 0 && (
         <div className="space-y-2">
           <h2 className="text-sm font-bold text-gray-900 flex items-center gap-2">
             {t('actionItems')}
             <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">{actions.length}</span>
           </h2>
-          {actions.map((item, i) => <ActionItem key={i} item={item} t={t} lang={lang} />)}
+          {actions.map((item, i) => {
+            const cfg = priorityConfig[item.priority] || priorityConfig.medium
+            const action = pick(item, 'action', lang)
+            return (
+              <div key={i} className={`rounded-xl border ${cfg.bg} p-3 flex gap-3 items-start`}>
+                <span className={`text-xs font-bold ${cfg.color} mt-0.5 shrink-0`}>{cfg.label}</span>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-gray-900 leading-snug">{action}</p>
+                  <div className="flex items-center gap-2 mt-1 flex-wrap">
+                    <span className="text-xs text-gray-400">{item.group} · {item.account}</span>
+                    {item.due && <span className="text-xs text-gray-400">· {item.due}</span>}
+                  </div>
+                </div>
+              </div>
+            )
+          })}
         </div>
       )}
 
-      {/* 계정 현황 */}
-      <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <h2 className="text-sm font-bold text-gray-900">{t('accountStatus')}</h2>
-          <div className="flex gap-1 flex-wrap justify-end">
-            {filters.map(([val, label]) => (
-              <button
-                key={val}
-                onClick={() => setFilter(val)}
-                className={`text-xs px-2.5 py-1 rounded-full transition-colors ${
-                  filter === val ? 'bg-purple-600 text-white' : 'bg-gray-100 text-gray-600'
-                }`}
-              >
-                {label}
-              </button>
-            ))}
+      {/* 최근 고객 동향 */}
+      {activityFeedAccounts.length > 0 && (
+        <div className="space-y-2">
+          <h2 className="text-sm font-bold text-gray-900">
+            {lang === 'en' ? 'Recent Activity' : '최근 고객 동향'}
+          </h2>
+          <div className="space-y-2">
+            {activityFeedAccounts.map((account, i) => {
+              const healthConfig = getHealthConfig(t)
+              const cfg = healthConfig[account.health] || healthConfig.gray
+              const nextAction = pick(account, 'next_action', lang)
+              const recentItems = (account.activity_history || []).slice(0, 2)
+              return (
+                <div key={i} className="bg-white rounded-xl border border-gray-200 p-3 space-y-2">
+                  {/* 계정 헤더 */}
+                  <div className="flex items-center gap-2">
+                    <span className={`w-2 h-2 rounded-full shrink-0 ${cfg.dot}`} />
+                    <span className="text-xs text-gray-400">{account.group}</span>
+                    <span className="text-sm font-semibold text-gray-900">{account.key_account}</span>
+                    <span className="ml-auto text-xs text-gray-400">{account.last_activity}</span>
+                  </div>
+                  {/* 활동 이력 */}
+                  <div className="space-y-1.5 pl-4">
+                    {recentItems.map((item, j) => {
+                      const acfg = activityTypeConfig[item.type] || activityTypeConfig.memo
+                      return (
+                        <div key={j} className="flex gap-2 items-start">
+                          <span className={`text-xs shrink-0 mt-0.5 ${acfg.color}`}>{acfg.icon}</span>
+                          <p className="text-xs text-gray-600 leading-snug">
+                            <span className="text-gray-400 mr-1">{item.date}</span>
+                            {lang === 'en' ? (item.summary_en || item.summary) : item.summary}
+                          </p>
+                        </div>
+                      )
+                    })}
+                  </div>
+                  {/* 다음 액션 */}
+                  {nextAction && (
+                    <div className="pl-4 pt-1 border-t border-gray-100">
+                      <p className="text-xs text-blue-600">
+                        <span className="mr-1">→</span>{nextAction}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )
+            })}
           </div>
         </div>
-        {sorted.map((account, i) => <AccountCard key={i} account={account} t={t} lang={lang} />)}
-      </div>
+      )}
 
       {/* 리스크 */}
       {risks.length > 0 && (
