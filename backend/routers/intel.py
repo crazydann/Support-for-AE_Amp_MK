@@ -449,6 +449,26 @@ async def translate_texts_endpoint(body: TranslateRequest):
     return {"translations": translations}
 
 
+# ── Weekly Synthesis API ─────────────────────────────────────────────────────
+
+WEEKLY_SYNTHESIS_FILE = DATA_DIR / "weekly_synthesis.json"
+
+@router.get("/weekly-synthesis")
+async def get_weekly_synthesis():
+    """주간 AI 합성 리포트 반환"""
+    if not WEEKLY_SYNTHESIS_FILE.exists():
+        return {}
+    return json.loads(WEEKLY_SYNTHESIS_FILE.read_text(encoding="utf-8"))
+
+
+@router.post("/weekly-synthesis")
+async def update_weekly_synthesis(body: dict):
+    """주간 AI 합성 리포트 저장"""
+    body["generated_at"] = datetime.now().strftime("%Y-%m-%d")
+    WEEKLY_SYNTHESIS_FILE.write_text(json.dumps(body, ensure_ascii=False, indent=2), encoding="utf-8")
+    return {"ok": True}
+
+
 # ── Weekly Feed API (non-SFDC: Gmail/Slack/Calendar/Glean/Memo) ──────────────
 
 @router.get("/weekly-feed")

@@ -729,6 +729,7 @@ const WEEKLY_CHANNELS = [
 
 function WeeklyView({ t, lang }) {
   const [feed, setFeed] = useState(null)
+  const [synthesis, setSynthesis] = useState(null)
   const [loadingFeed, setLoadingFeed] = useState(true)
   const [syncing, setSyncing] = useState(false)
   const [syncMsg, setSyncMsg] = useState(null)
@@ -742,6 +743,13 @@ function WeeklyView({ t, lang }) {
   useEffect(() => {
     if (lang === 'en') prefetch(allTextsRef.current)
   }, [lang])
+
+  useEffect(() => {
+    fetch(`${API}/api/intel/weekly-synthesis`)
+      .then(r => r.json())
+      .then(d => { if (d?.period) setSynthesis(d) })
+      .catch(() => {})
+  }, [])
 
   // 액션 상태 로드
   useEffect(() => {
@@ -982,6 +990,89 @@ function WeeklyView({ t, lang }) {
 
       {syncMsg && (
         <div className={`text-xs font-medium px-3 py-2 rounded-xl text-center border ${syncMsg.includes('실패') || syncMsg.includes('failed') ? 'bg-red-50 text-red-600 border-red-200' : 'bg-green-50 text-green-600 border-green-200'}`}>{syncMsg}</div>
+      )}
+
+      {/* ── 주간 AI 합성 리포트 ── */}
+      {synthesis && (
+        <div className="space-y-2.5">
+          {/* 이번 주 핵심 */}
+          <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+            <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
+              <div>
+                <span className="text-xs font-bold text-gray-800 uppercase tracking-wider">🔥 {lang === 'en' ? 'This Week Highlights' : '이번 주 핵심'}</span>
+                {synthesis.period_label && <span className="ml-2 text-xs text-purple-600 font-medium bg-purple-50 px-2 py-0.5 rounded-full">{synthesis.period_label}</span>}
+              </div>
+              <span className="text-xs text-gray-300">{synthesis.period}</span>
+            </div>
+            <div className="divide-y divide-gray-50">
+              {(synthesis.highlights || []).map((h, i) => (
+                <div key={i} className="px-4 py-3 flex items-start gap-3">
+                  <span className={`text-sm shrink-0 mt-0.5 ${h.type === 'won' ? '✅' : '🔥'}`}>
+                    {h.type === 'won' ? '✅' : '🔥'}
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap mb-0.5">
+                      <span className={`text-xs font-bold px-1.5 py-0.5 rounded ${h.type === 'won' ? 'bg-green-100 text-green-700' : 'bg-red-50 text-red-700'}`}>{h.account}</span>
+                      <span className="text-xs font-semibold text-gray-800">{h.title}</span>
+                    </div>
+                    <p className="text-xs text-gray-500 leading-relaxed">{h.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+            {/* 신규 파이프라인 */}
+            {(synthesis.new_pipeline || []).length > 0 && (
+              <div className="px-4 py-3 bg-blue-50 border-t border-blue-100">
+                <p className="text-xs font-bold text-blue-700 mb-2">{lang === 'en' ? '📈 New Pipeline' : '📈 신규 파이프라인 미팅'}</p>
+                <ul className="space-y-1">
+                  {synthesis.new_pipeline.map((item, i) => (
+                    <li key={i} className="text-xs text-blue-800 flex items-start gap-1.5">
+                      <span className="text-blue-400 shrink-0">•</span>{item}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+
+          {/* 리스크 시그널 */}
+          {(synthesis.risks || []).length > 0 && (
+            <div className="bg-white rounded-xl border border-amber-200 overflow-hidden">
+              <div className="px-4 py-2.5 border-b border-amber-100 bg-amber-50">
+                <span className="text-xs font-bold text-amber-800">⚠️ {lang === 'en' ? 'Risk Signals' : '리스크 시그널'}</span>
+              </div>
+              <div className="divide-y divide-gray-50">
+                {synthesis.risks.map((r, i) => (
+                  <div key={i} className="px-4 py-3 flex items-start gap-3">
+                    <span className="text-xs font-bold text-red-600 bg-red-50 px-1.5 py-0.5 rounded shrink-0 mt-0.5">{r.account}</span>
+                    <p className="text-xs text-gray-700 leading-relaxed">{r.desc}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* 미팅 밀도 + 인사이트 */}
+          <div className="grid grid-cols-2 gap-2">
+            <div className="bg-white rounded-xl border border-gray-200 p-3">
+              <p className="text-xs font-bold text-gray-700 mb-1">📅 {lang === 'en' ? 'Meetings' : '미팅 밀도'}</p>
+              <p className="text-2xl font-bold text-purple-600">{synthesis.meeting_count}</p>
+              <p className="text-xs text-gray-400">{lang === 'en' ? 'customer meetings' : '고객 미팅'}</p>
+              <p className="text-xs text-gray-500 mt-1 leading-relaxed">{(synthesis.meeting_accounts || []).join(', ')}</p>
+            </div>
+            <div className="bg-white rounded-xl border border-gray-200 p-3">
+              <p className="text-xs font-bold text-gray-700 mb-2">💡 {lang === 'en' ? 'Insights' : '영업 인사이트'}</p>
+              <div className="space-y-2">
+                {(synthesis.insights || []).map((ins, i) => (
+                  <div key={i}>
+                    <p className="text-xs font-semibold text-gray-800">{ins.title}</p>
+                    <p className="text-xs text-gray-500 leading-relaxed">{ins.desc}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* ── 데이터 소스 경고 ── */}
