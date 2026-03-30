@@ -511,7 +511,9 @@ async def agent_audit_stream(account_name: str):
     """
     특정 계정에 대해 Agent Analytics Audit 스킬을 실행하고 결과를 스트리밍합니다.
     """
-    api_key = os.environ.get("ANTHROPIC_API_KEY", "")
+    from ..config import Settings
+    settings = Settings()
+    api_key = settings.anthropic_api_key or os.environ.get("ANTHROPIC_API_KEY", "")
     if not api_key:
         raise HTTPException(status_code=500, detail="ANTHROPIC_API_KEY not configured")
 
@@ -529,7 +531,6 @@ async def agent_audit_stream(account_name: str):
                 messages=[{"role": "user", "content": context}],
             ) as stream:
                 for text in stream.text_stream:
-                    # SSE 포맷
                     yield f"data: {json.dumps({'text': text})}\n\n"
 
             yield "data: [DONE]\n\n"
