@@ -769,47 +769,156 @@ function WeeklyView({ t, lang }) {
   }
 
   const today = new Date()
-  const allEntries = feed?.entries || []
-  const byType    = feed?.by_type || {}
+  const allEntries  = feed?.entries || []
+  const byType      = feed?.by_type || {}
   const actionItems = feed?.action_items || []
   const accountMeta = feed?.account_meta || {}
 
-  // ── 계정별로 활동 그룹핑 ──
-  const byAccount = {}
-  allEntries.forEach(e => {
-    const acct = e.account || (lang === 'en' ? 'Unlinked' : '미분류')
-    if (!byAccount[acct]) byAccount[acct] = []
-    byAccount[acct].push(e)
-  })
-  // 계정별 최신 날짜 기준 정렬
-  const accountList = Object.keys(byAccount).sort((a, b) => {
-    const la = byAccount[a][0]?.date || ''
-    const lb = byAccount[b][0]?.date || ''
-    return lb.localeCompare(la)
-  })
+  // ── 이번 주 / 지난 주 날짜 경계 ──
+  const dow = today.getDay() || 7  // 1=Mon…7=Sun
+  const thisMonday = new Date(today); thisMonday.setDate(today.getDate() - dow + 1)
+  const lastMonday = new Date(thisMonday); lastMonday.setDate(thisMonday.getDate() - 7)
+  const thisMondayStr = thisMonday.toISOString().slice(0, 10)
+  const lastMondayStr = lastMonday.toISOString().slice(0, 10)
 
-  // 계정별 action items 맵
+  // ── 피드 중복 제거 ──
+  // 1) source_id 중복 제거, 2) (account + normalized summary) fingerprint 중복 제거
+  const seenIds = new Set()
+  const seenFingerprints = new Set()
+  const dedupedEntries = []
+  for (const e of allEntries) {
+    const sid = e.source_id || e.id
+    if (sid && seenIds.has(sid)) continue
+    if (sid) seenIds.add(sid)
+    const raw = (e.summary || e.title || '').replace(/\s+/g, ' ').toLowerCase().slice(0, 60)
+    const fp = `${e.account || ''}|${raw}`
+    if (seenFingerprints.has(fp)) continue
+    seenFingerprints.add(fp)
+    dedupedEntries.push(e)
+  }
+
+  // ── 이번 주 / 지난 주 활동 분리 ──
+  const thisWeekEntries = dedupedEntries.filter(e => (e.date || '') >= thisMondayStr)
+  const lastWeekEntries = dedupedEntries.filter(e => {
+    const d = e.date || ''
+    return d >= lastMondayStr && d < thisMondayStr
+  })
+  const earlierEntries  = dedupedEntries.filter(e => (e.date || '') < lastMondayStr)
+
+  // 계정별 그룹핑 helper
+  function groupByAccount(entries) {
+    const map = {}
+    entries.forEach(e => {
+      const acct = e.account || (lang === 'en' ? 'Unlinked' : '미분류')
+      if (!map[acct]) map[acct] = []
+      map[acct].push(e)
+    })
+    // 각 계정 내부 날짜 내림차순
+    Object.values(map).forEach(arr => arr.sort((a, b) => (b.date || '').localeCompare(a.date || '')))
+    // 계정 정렬: 최신 활동 기준
+    return Object.entries(map).sort(([, a], [, b]) =>
+      (b[0]?.date || '').localeCompare(a[0]?.date || '')
+    )
+  }
+
+  // ── 할 일 계정별 그룹핑 (우선순위 정렬) ──
   const actionsByAccount = {}
   actionItems.forEach(a => {
-    const k = a.account || ''
+    const k = a.account || '기타'
     if (!actionsByAccount[k]) actionsByAccount[k] = []
     actionsByAccount[k].push(a)
   })
-
-  // 활동 없지만 할 일 있는 계정
-  const actionOnlyAccounts = Object.keys(actionsByAccount)
-    .filter(k => !byAccount[k] && k)
-    .sort()
-
-  // 전체 할 일 (우선순위순)
-  const sortedActions = [...actionItems].sort((a, b) => {
-    const order = { urgent: 0, high: 1, medium: 2 }
-    return (order[a.priority] ?? 3) - (order[b.priority] ?? 3)
+  const priorityOrder = { urgent: 0, high: 1, medium: 2 }
+  Object.values(actionsByAccount).forEach(arr =>
+    arr.sort((a, b) => (priorityOrder[a.priority] ?? 3) - (priorityOrder[b.priority] ?? 3))
+  )
+  // 계정 정렬: 가장 나쁜 health → 가장 급한 action 순
+  const healthOrder = { red: 0, orange: 1, yellow: 2, green: 3, gray: 4 }
+  const actionAccountList = Object.keys(actionsByAccount).sort((a, b) => {
+    const ha = healthOrder[accountMeta[a]?.health] ?? 5
+    const hb = healthOrder[accountMeta[b]?.health] ?? 5
+    if (ha !== hb) return ha - hb
+    const pa = priorityOrder[actionsByAccount[a][0]?.priority] ?? 3
+    const pb = priorityOrder[actionsByAccount[b][0]?.priority] ?? 3
+    return pa - pb
   })
-  const urgentCount = sortedActions.filter(a => a.priority === 'urgent').length
 
-  const toggleAccount = (name) =>
-    setExpandedAccounts(prev => ({ ...prev, [name]: !prev[name] }))
+  const doneCount = actionItems.filter(a => actionStatuses[makeActionId(a)]?.done).length
+  const urgentCount = actionItems.filter(a => a.priority === 'urgent' && !actionStatuses[makeActionId(a)]?.done).length
+
+  const fmtWeekRange = (mon, label) => {
+    const sun = new Date(mon); sun.setDate(mon.getDate() + 6)
+    const fmt = d => d.toLocaleDateString(lang === 'en' ? 'en-US' : 'ko-KR', { month: 'short', day: 'numeric' })
+    return `${label}  ${fmt(mon)} – ${fmt(sun)}`
+  }
+
+  // ── 활동 섹션 컴포넌트 (재사용) ──
+  function ActivitySection({ entries, title, emptyMsg }) {
+    const grouped = groupByAccount(entries)
+    if (grouped.length === 0) return null
+    return (
+      <div className="space-y-2">
+        <h2 className="text-xs font-bold text-gray-500 uppercase tracking-wider px-1 flex items-center gap-2">
+          {title}
+          <span className="bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full font-normal normal-case tracking-normal">{entries.length}</span>
+        </h2>
+        {grouped.map(([acctName, items]) => {
+          const meta = accountMeta[acctName] || {}
+          const hcfg = healthConfig[meta.health] || healthConfig.gray
+          const types = [...new Set(items.map(e => e.type || e.log_type || 'memo'))]
+          const isExp = expandedAccounts[acctName + title] ?? false
+          const visible = isExp ? items : items.slice(0, 3)
+          return (
+            <div key={acctName} className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+              <button
+                className="w-full text-left px-3 py-2 flex items-center gap-2 hover:bg-gray-50"
+                onClick={() => setExpandedAccounts(p => ({ ...p, [acctName + title]: !p[acctName + title] }))}
+              >
+                <span className={`w-2 h-2 rounded-full shrink-0 ${hcfg.dot}`} />
+                <span className="flex-1 text-sm font-semibold text-gray-900 truncate">{acctName}</span>
+                <div className="flex gap-1">
+                  {types.map(tp => {
+                    const tc = feedTypeConfig[tp] || feedTypeConfig.memo
+                    return <span key={tp} className={`text-xs px-1.5 py-0.5 rounded-full ${tc.pill}`}>{tc.icon}</span>
+                  })}
+                </div>
+                <svg className={`w-3.5 h-3.5 text-gray-400 shrink-0 transition-transform ${isExp ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+              <div className="divide-y divide-gray-50 border-t border-gray-100">
+                {visible.map((item, i) => {
+                  const itemType = item.type || item.log_type || 'memo'
+                  const cfg = feedTypeConfig[itemType] || feedTypeConfig.memo
+                  const text = tr(cleanSummary(item.summary || item.title || ''))
+                  return (
+                    <div key={i} className="px-3 py-2 flex gap-2 items-start">
+                      <span className={`text-xs mt-0.5 shrink-0 ${cfg.color}`}>{cfg.icon}</span>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1.5 mb-0.5">
+                          <span className={`text-xs font-semibold ${cfg.color}`}>{lang === 'en' ? cfg.label_en : cfg.label}</span>
+                          <span className="text-xs text-gray-400">{item.date?.slice(5)}</span>
+                        </div>
+                        <p className="text-xs text-gray-700 leading-relaxed line-clamp-2">{text}</p>
+                      </div>
+                    </div>
+                  )
+                })}
+                {!isExp && items.length > 3 && (
+                  <button
+                    onClick={() => setExpandedAccounts(p => ({ ...p, [acctName + title]: true }))}
+                    className="w-full py-1.5 text-xs text-gray-400 hover:text-purple-600 hover:bg-gray-50"
+                  >
+                    {lang === 'en' ? `+${items.length - 3} more` : `+${items.length - 3}건 더 보기`}
+                  </button>
+                )}
+              </div>
+            </div>
+          )
+        })}
+      </div>
+    )
+  }
 
   if (loadingFeed) return (
     <div className="flex items-center justify-center h-48">
@@ -823,347 +932,165 @@ function WeeklyView({ t, lang }) {
   return (
     <div className="space-y-4 pb-24">
 
-      {/* ── 주간 보고 헤더 ── */}
+      {/* ── 헤더 ── */}
       <div className="bg-gradient-to-br from-purple-600 to-indigo-600 rounded-2xl p-4 text-white">
         <div className="flex items-start justify-between gap-2 mb-3">
           <div>
-            <p className="text-xs font-medium opacity-70">
-              {lang === 'en' ? 'Weekly Report' : '주간 보고'} · AE MK
-            </p>
+            <p className="text-xs font-medium opacity-70">{lang === 'en' ? 'Weekly Report' : '주간 보고'} · AE MK</p>
             <p className="text-sm font-bold mt-0.5">
               {today.toLocaleDateString(lang === 'en' ? 'en-US' : 'ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })}
             </p>
           </div>
-          <button
-            onClick={handleSync}
-            disabled={syncing}
-            className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all shrink-0 ${
-              syncing ? 'bg-white/10 text-white/50 cursor-not-allowed' : 'bg-white/20 hover:bg-white/30 text-white'
-            }`}
-          >
+          <button onClick={handleSync} disabled={syncing}
+            className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold shrink-0 ${syncing ? 'bg-white/10 text-white/50 cursor-not-allowed' : 'bg-white/20 hover:bg-white/30 text-white'}`}>
             <svg className={`w-3 h-3 ${syncing ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
             </svg>
             {syncing ? (lang === 'en' ? 'Syncing…' : '동기화 중…') : (lang === 'en' ? 'Sync' : '동기화')}
           </button>
         </div>
-        {/* 통계 칩 */}
         <div className="flex gap-2 flex-wrap">
           <div className="bg-white/15 rounded-lg px-3 py-1.5 text-center">
-            <p className="text-sm font-bold">{accountList.length}</p>
-            <p className="text-xs opacity-70">{lang === 'en' ? 'Accounts' : '고객'}</p>
+            <p className="text-sm font-bold">{actionItems.length - doneCount}<span className="text-xs opacity-60">/{actionItems.length}</span></p>
+            <p className="text-xs opacity-70">{lang === 'en' ? 'Tasks left' : '할 일'}</p>
           </div>
-          {byType.gmail > 0 && (
-            <div className="bg-white/15 rounded-lg px-3 py-1.5 text-center">
-              <p className="text-sm font-bold">{byType.gmail}</p>
-              <p className="text-xs opacity-70">{lang === 'en' ? 'Emails' : '이메일'}</p>
-            </div>
-          )}
-          {byType.slack > 0 && (
-            <div className="bg-white/15 rounded-lg px-3 py-1.5 text-center">
-              <p className="text-sm font-bold">{byType.slack}</p>
-              <p className="text-xs opacity-70">Slack</p>
-            </div>
-          )}
-          {byType.meeting > 0 && (
-            <div className="bg-white/15 rounded-lg px-3 py-1.5 text-center">
-              <p className="text-sm font-bold">{byType.meeting}</p>
-              <p className="text-xs opacity-70">{lang === 'en' ? 'Meetings' : '미팅'}</p>
-            </div>
-          )}
           {urgentCount > 0 && (
             <div className="bg-red-400/40 rounded-lg px-3 py-1.5 text-center">
               <p className="text-sm font-bold text-red-100">{urgentCount}</p>
               <p className="text-xs opacity-70">{lang === 'en' ? 'Urgent' : '긴급'}</p>
             </div>
           )}
+          {byType.gmail > 0 && <div className="bg-white/15 rounded-lg px-3 py-1.5 text-center"><p className="text-sm font-bold">{byType.gmail}</p><p className="text-xs opacity-70">{lang === 'en' ? 'Emails' : '이메일'}</p></div>}
+          {byType.slack > 0 && <div className="bg-white/15 rounded-lg px-3 py-1.5 text-center"><p className="text-sm font-bold">{byType.slack}</p><p className="text-xs opacity-70">Slack</p></div>}
+          {byType.meeting > 0 && <div className="bg-white/15 rounded-lg px-3 py-1.5 text-center"><p className="text-sm font-bold">{byType.meeting}</p><p className="text-xs opacity-70">{lang === 'en' ? 'Meetings' : '미팅'}</p></div>}
         </div>
       </div>
 
       {syncMsg && (
-        <div className={`text-xs font-medium px-3 py-2 rounded-xl text-center border ${
-          syncMsg.includes('실패') || syncMsg.includes('failed')
-            ? 'bg-red-50 text-red-600 border-red-200'
-            : 'bg-green-50 text-green-600 border-green-200'
-        }`}>{syncMsg}</div>
+        <div className={`text-xs font-medium px-3 py-2 rounded-xl text-center border ${syncMsg.includes('실패') || syncMsg.includes('failed') ? 'bg-red-50 text-red-600 border-red-200' : 'bg-green-50 text-green-600 border-green-200'}`}>{syncMsg}</div>
       )}
 
-      {/* ── 이번 주 할 일 ── */}
-      {sortedActions.length > 0 && (
+      {/* ── 이번 주 할 일 (account별) ── */}
+      {actionAccountList.length > 0 && (
         <div className="space-y-2">
           <h2 className="text-xs font-bold text-gray-500 uppercase tracking-wider px-1 flex items-center gap-2">
-            ✅ {lang === 'en' ? 'Action Items' : '이번 주 할 일'}
-            <span className="bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full font-normal normal-case tracking-normal">
-              {sortedActions.filter(a => !actionStatuses[makeActionId(a)]?.done).length}/{sortedActions.length}
+            ✅ {lang === 'en' ? 'This Week — Tasks' : '이번 주 할 일'}
+            <span className="text-xs text-gray-400 font-normal normal-case tracking-normal">
+              {fmtWeekRange(thisMonday, '')}
+            </span>
+            <span className="ml-auto bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full font-normal normal-case tracking-normal">
+              {doneCount}/{actionItems.length} {lang === 'en' ? 'done' : '완료'}
             </span>
           </h2>
-          <div className="space-y-1.5">
-            {sortedActions.map((item, i) => {
-              const id = makeActionId(item)
-              const status = actionStatuses[id] || { done: false, note: '' }
-              const cfg = priorityConfig[item.priority] || priorityConfig.medium
-              const action = tr(pick(item, 'action', lang) || item.action || '')
-              const days = item.due ? daysUntil(item.due) : null
-              const noteExpanded = expandedNotes[id]
-              const noteText = status.note || ''
-              const displayNote = tr(noteText)
-
-              return (
-                <div key={i} className={`rounded-xl border overflow-hidden transition-all ${
-                  status.done ? 'border-gray-200 bg-gray-50' : `${cfg.bg} border-current`
-                }`} style={status.done ? {} : {}}>
-                  {/* 메인 행 */}
-                  <div className={`px-3 py-2.5 flex gap-2.5 items-start ${status.done ? '' : cfg.bg}`}>
-                    {/* 체크박스 */}
-                    <button
-                      onClick={() => saveActionStatus(id, !status.done, status.note)}
-                      className={`w-4.5 h-4.5 mt-0.5 rounded border-2 flex items-center justify-center shrink-0 transition-all ${
-                        status.done
-                          ? 'bg-green-500 border-green-500 text-white'
-                          : 'border-gray-300 hover:border-green-400 bg-white'
-                      }`}
-                      style={{ width: 18, height: 18, minWidth: 18 }}
-                    >
-                      {status.done && (
-                        <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                        </svg>
-                      )}
-                    </button>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start gap-1.5">
-                        {!status.done && (
-                          <span className={`text-xs font-bold ${cfg.color} shrink-0 mt-0.5`}>{cfg.label}</span>
-                        )}
-                        <p className={`text-xs font-semibold leading-snug flex-1 ${
-                          status.done ? 'line-through text-gray-400' : 'text-gray-900'
-                        }`}>{action}</p>
-                      </div>
-                      <div className="flex items-center gap-2 mt-1 flex-wrap">
-                        <span className="text-xs text-gray-400">{item.account}</span>
-                        {item.due && !status.done && (
-                          <span className={`text-xs font-medium px-1.5 py-0.5 rounded-full ${
-                            days !== null && days <= 3 ? 'bg-red-100 text-red-600'
-                            : days !== null && days <= 7 ? 'bg-orange-100 text-orange-600'
-                            : 'bg-gray-100 text-gray-500'
-                          }`}>{item.due}{days !== null ? ` (D-${days})` : ''}</span>
-                        )}
-                        {status.done && status.note && (
-                          <span className="text-xs text-green-600 font-medium">✓ {lang === 'en' ? 'Note saved' : '처리 내용 저장됨'}</span>
-                        )}
-                      </div>
-                    </div>
-                    {/* 노트 토글 버튼 */}
-                    <button
-                      onClick={() => setExpandedNotes(prev => ({ ...prev, [id]: !prev[id] }))}
-                      className={`text-xs px-1.5 py-1 rounded-lg shrink-0 transition-colors ${
-                        noteExpanded ? 'bg-blue-100 text-blue-600' : 'text-gray-300 hover:text-gray-500 hover:bg-gray-100'
-                      }`}
-                      title={lang === 'en' ? 'Add note' : '처리 내용 입력'}
-                    >
-                      📝
-                    </button>
-                  </div>
-
-                  {/* 노트 입력 영역 */}
-                  {(noteExpanded || noteText) && (
-                    <div className="px-3 pb-2.5 pt-0 border-t border-gray-100 bg-white">
-                      {noteExpanded ? (
-                        <textarea
-                          className="w-full text-xs text-gray-700 border border-gray-200 rounded-lg px-2.5 py-2 mt-2 resize-none focus:outline-none focus:border-blue-300 focus:ring-1 focus:ring-blue-200 placeholder-gray-300"
-                          rows={2}
-                          placeholder={lang === 'en' ? 'Add completion note…' : '처리 내용을 입력하세요…'}
-                          value={noteText}
-                          onChange={e => saveActionStatus(id, status.done, e.target.value)}
-                          autoFocus
-                        />
-                      ) : (
-                        noteText && (
-                          <p
-                            className="text-xs text-blue-700 bg-blue-50 rounded-lg px-2.5 py-2 mt-2 cursor-pointer hover:bg-blue-100"
-                            onClick={() => setExpandedNotes(prev => ({ ...prev, [id]: true }))}
-                          >
-                            📝 {displayNote}
-                          </p>
-                        )
-                      )}
-                    </div>
-                  )}
-                </div>
-              )
-            })}
-          </div>
-        </div>
-      )}
-
-      {/* ── 고객별 활동 ── */}
-      {allEntries.length === 0 ? (
-        <div className="bg-gray-50 border border-dashed border-gray-200 rounded-xl p-6 text-center space-y-1.5">
-          <p className="text-sm font-medium text-gray-500">
-            {lang === 'en' ? 'No activity in the past 2 weeks' : '최근 2주 활동 없음'}
-          </p>
-          <p className="text-xs text-gray-400">
-            {lang === 'en' ? 'Press "Sync" above to fetch emails, calendar, and Slack data'
-              : '위 "동기화" 버튼을 눌러 이메일·캘린더·Slack 데이터를 가져오세요'}
-          </p>
-        </div>
-      ) : (
-        <div className="space-y-2">
-          <h2 className="text-xs font-bold text-gray-500 uppercase tracking-wider px-1 flex items-center gap-2">
-            📋 {lang === 'en' ? 'Account Activity' : '고객별 활동'}
-            <span className="bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full font-normal normal-case tracking-normal">
-              {accountList.length}{lang === 'en' ? ' accounts' : '개'}
-            </span>
-          </h2>
-          {accountList.map(acctName => {
-            const items = byAccount[acctName] || []
+          {actionAccountList.map(acctName => {
+            const actions = actionsByAccount[acctName] || []
             const meta  = accountMeta[acctName] || {}
             const hcfg  = healthConfig[meta.health] || healthConfig.gray
-            const acctActions = actionsByAccount[acctName] || []
-            const isExpanded  = expandedAccounts[acctName] ?? false
-            const latestDate  = items[0]?.date || ''
-            // 타입 뱃지 (고유 타입 목록)
-            const types = [...new Set(items.map(e => e.type || e.log_type || 'memo'))]
-            // 표시할 항목: 접힌 상태 3개, 펼침 전체
-            const visibleItems = isExpanded ? items : items.slice(0, 3)
-
+            const allDone = actions.every(a => actionStatuses[makeActionId(a)]?.done)
             return (
-              <div key={acctName} className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-                {/* 계정 헤더 — 클릭 시 토글 */}
-                <button
-                  onClick={() => toggleAccount(acctName)}
-                  className="w-full text-left px-3 py-2.5 flex items-center gap-2 hover:bg-gray-50 transition-colors"
-                >
+              <div key={acctName} className={`rounded-xl border overflow-hidden ${allDone ? 'border-gray-200 opacity-60' : 'border-gray-200'}`}>
+                {/* 계정 헤더 */}
+                <div className="px-3 py-2 bg-gray-50 border-b border-gray-100 flex items-center gap-2">
                   <span className={`w-2 h-2 rounded-full shrink-0 ${hcfg.dot}`} />
-                  <span className="flex-1 text-sm font-bold text-gray-900 truncate">{acctName}</span>
-                  {/* 채널 뱃지 */}
-                  <div className="flex gap-1 shrink-0">
-                    {types.map(tp => {
-                      const tc = feedTypeConfig[tp] || feedTypeConfig.memo
-                      return (
-                        <span key={tp} className={`text-xs px-1.5 py-0.5 rounded-full ${tc.pill}`}>
-                          {tc.icon}
-                        </span>
-                      )
-                    })}
-                  </div>
-                  <span className="text-xs text-gray-400 shrink-0">{latestDate?.slice(5)}</span>
-                  <svg className={`w-3.5 h-3.5 text-gray-400 shrink-0 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
-                    fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </button>
-
-                {/* 활동 항목들 */}
-                <div className="divide-y divide-gray-50 border-t border-gray-100">
-                  {visibleItems.map((item, i) => {
-                    const itemType = item.type || item.log_type || 'memo'
-                    const cfg = feedTypeConfig[itemType] || feedTypeConfig.memo
-                    const rawText = cleanSummary(item.summary || item.title || '')
-                    const text = tr(rawText)
+                  <span className="text-xs font-bold text-gray-700">{acctName}</span>
+                  {allDone && <span className="ml-auto text-xs text-green-500 font-semibold">{lang === 'en' ? 'All done ✓' : '모두 완료 ✓'}</span>}
+                </div>
+                {/* 액션 목록 */}
+                <div className="divide-y divide-gray-50 bg-white">
+                  {actions.map((item, i) => {
+                    const id = makeActionId(item)
+                    const status = actionStatuses[id] || { done: false, note: '' }
+                    const cfg = priorityConfig[item.priority] || priorityConfig.medium
+                    const action = tr(pick(item, 'action', lang) || item.action || '')
+                    const days = item.due ? daysUntil(item.due) : null
+                    const noteExp = expandedNotes[id]
                     return (
-                      <div key={i} className="px-3 py-2 flex gap-2 items-start">
-                        <span className={`text-xs mt-0.5 shrink-0 ${cfg.color}`}>{cfg.icon}</span>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-1.5 mb-0.5">
-                            <span className={`text-xs font-semibold ${cfg.color}`}>
-                              {lang === 'en' ? cfg.label_en : cfg.label}
-                            </span>
-                            <span className="text-xs text-gray-400">{item.date?.slice(5)}</span>
+                      <div key={i} className={`${status.done ? 'bg-gray-50' : ''}`}>
+                        <div className="px-3 py-2.5 flex gap-2.5 items-start">
+                          <button
+                            onClick={() => saveActionStatus(id, !status.done, status.note)}
+                            className={`rounded border-2 flex items-center justify-center shrink-0 mt-0.5 transition-all ${status.done ? 'bg-green-500 border-green-500 text-white' : 'border-gray-300 hover:border-green-400 bg-white'}`}
+                            style={{ width: 16, height: 16, minWidth: 16 }}
+                          >
+                            {status.done && <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>}
+                          </button>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-start gap-1.5">
+                              {!status.done && <span className={`text-xs font-bold ${cfg.color} shrink-0 mt-0.5`}>{cfg.label}</span>}
+                              <p className={`text-xs font-semibold leading-snug flex-1 ${status.done ? 'line-through text-gray-400' : 'text-gray-900'}`}>{action}</p>
+                            </div>
+                            {item.due && !status.done && (
+                              <div className="mt-0.5">
+                                <span className={`text-xs font-medium px-1.5 py-0.5 rounded-full ${days !== null && days <= 3 ? 'bg-red-100 text-red-600' : days !== null && days <= 7 ? 'bg-orange-100 text-orange-600' : 'bg-gray-100 text-gray-500'}`}>
+                                  {item.due} {days !== null ? `(D-${days})` : ''}
+                                </span>
+                              </div>
+                            )}
                           </div>
-                          <p className="text-xs text-gray-700 leading-relaxed line-clamp-2">{text}</p>
+                          <button
+                            onClick={() => setExpandedNotes(prev => ({ ...prev, [id]: !prev[id] }))}
+                            className={`text-xs px-1 py-0.5 rounded shrink-0 ${noteExp ? 'text-blue-500' : 'text-gray-300 hover:text-gray-400'}`}
+                          >📝</button>
                         </div>
+                        {(noteExp || status.note) && (
+                          <div className="px-3 pb-2.5 bg-white">
+                            {noteExp
+                              ? <textarea
+                                  className="w-full text-xs text-gray-700 border border-gray-200 rounded-lg px-2.5 py-2 resize-none focus:outline-none focus:border-blue-300"
+                                  rows={2}
+                                  placeholder={lang === 'en' ? 'Add completion note…' : '처리 내용을 입력하세요…'}
+                                  value={status.note}
+                                  onChange={e => saveActionStatus(id, status.done, e.target.value)}
+                                  autoFocus
+                                />
+                              : status.note && (
+                                <p
+                                  className="text-xs text-blue-700 bg-blue-50 rounded-lg px-2.5 py-2 cursor-pointer hover:bg-blue-100"
+                                  onClick={() => setExpandedNotes(prev => ({ ...prev, [id]: true }))}
+                                >📝 {tr(status.note)}</p>
+                              )
+                            }
+                          </div>
+                        )}
                       </div>
                     )
                   })}
-                  {/* 더보기 */}
-                  {!isExpanded && items.length > 3 && (
-                    <button
-                      onClick={() => toggleAccount(acctName)}
-                      className="w-full py-1.5 text-xs text-gray-400 hover:text-purple-600 hover:bg-gray-50 transition-colors"
-                    >
-                      {lang === 'en' ? `+${items.length - 3} more` : `+${items.length - 3}건 더 보기`}
-                    </button>
-                  )}
                 </div>
-
-                {/* 이 계정 관련 할 일 */}
-                {acctActions.length > 0 && (
-                  <div className="px-3 py-2 bg-gray-50 border-t border-gray-100 space-y-1.5">
-                    {acctActions.map((a, i) => {
-                      const aid = makeActionId(a)
-                      const aStatus = actionStatuses[aid] || { done: false, note: '' }
-                      const pcfg = priorityConfig[a.priority] || priorityConfig.medium
-                      const noteExpA = expandedNotes[aid]
-                      return (
-                        <div key={i} className="space-y-1">
-                          <div className="flex gap-2 items-start">
-                            <button
-                              onClick={() => saveActionStatus(aid, !aStatus.done, aStatus.note)}
-                              className={`rounded border-2 flex items-center justify-center shrink-0 mt-0.5 transition-all ${
-                                aStatus.done ? 'bg-green-500 border-green-500 text-white' : 'border-gray-300 hover:border-green-400 bg-white'
-                              }`}
-                              style={{ width: 14, height: 14, minWidth: 14 }}
-                            >
-                              {aStatus.done && <svg className="w-2 h-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>}
-                            </button>
-                            {!aStatus.done && <span className={`text-xs font-bold ${pcfg.color} shrink-0 mt-0.5`}>{pcfg.label}</span>}
-                            <p className={`text-xs leading-snug flex-1 ${aStatus.done ? 'line-through text-gray-400' : 'text-gray-700'}`}>{tr(pick(a, 'action', lang) || a.action || '')}</p>
-                            <div className="flex items-center gap-1 shrink-0">
-                              {a.due && !aStatus.done && <span className="text-xs text-gray-400">{a.due.slice(5)}</span>}
-                              <button onClick={() => setExpandedNotes(prev => ({ ...prev, [aid]: !prev[aid] }))} className="text-xs text-gray-300 hover:text-gray-500">📝</button>
-                            </div>
-                          </div>
-                          {(noteExpA || aStatus.note) && (
-                            noteExpA
-                              ? <textarea className="w-full text-xs border border-gray-200 rounded px-2 py-1 resize-none focus:outline-none focus:border-blue-300" rows={1} placeholder={lang === 'en' ? 'Note…' : '처리 내용…'} value={aStatus.note} onChange={e => saveActionStatus(aid, aStatus.done, e.target.value)} autoFocus />
-                              : aStatus.note && <p className="text-xs text-blue-600 bg-blue-50 rounded px-2 py-1 cursor-pointer" onClick={() => setExpandedNotes(prev => ({ ...prev, [aid]: true }))}>{tr(aStatus.note)}</p>
-                          )}
-                        </div>
-                      )
-                    })}
-                  </div>
-                )}
               </div>
             )
           })}
-
-          {/* 활동은 없지만 할 일 있는 계정 */}
-          {actionOnlyAccounts.length > 0 && (
-            <div className="space-y-2 mt-1">
-              <p className="text-xs text-gray-400 px-1">
-                {lang === 'en' ? '— No activity yet, but action items exist —' : '— 활동 없음 · 할 일 있음 —'}
-              </p>
-              {actionOnlyAccounts.map(acctName => {
-                const meta  = accountMeta[acctName] || {}
-                const hcfg  = healthConfig[meta.health] || healthConfig.gray
-                const acctActions = actionsByAccount[acctName] || []
-                return (
-                  <div key={acctName} className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-                    <div className="px-3 py-2 flex items-center gap-2 border-b border-gray-100">
-                      <span className={`w-2 h-2 rounded-full shrink-0 ${hcfg.dot}`} />
-                      <span className="text-sm font-semibold text-gray-700">{acctName}</span>
-                    </div>
-                    <div className="px-3 py-2 space-y-1.5">
-                      {acctActions.map((a, i) => {
-                        const pcfg = priorityConfig[a.priority] || priorityConfig.medium
-                        return (
-                          <div key={i} className="flex gap-2 items-start">
-                            <span className={`text-xs font-bold ${pcfg.color} shrink-0 mt-0.5`}>{pcfg.label}</span>
-                            <p className="text-xs text-gray-700 leading-snug">{pick(a, 'action', lang)}</p>
-                            {a.due && (
-                              <span className="ml-auto text-xs text-gray-400 shrink-0">{a.due.slice(5)}</span>
-                            )}
-                          </div>
-                        )
-                      })}
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-          )}
         </div>
+      )}
+
+      {/* ── 이번 주 활동 (있을 때만) ── */}
+      <ActivitySection
+        entries={thisWeekEntries}
+        title={lang === 'en' ? `📅 This Week — Activity  ${fmtWeekRange(thisMonday, '')}` : `📅 이번 주 활동  ${fmtWeekRange(thisMonday, '')}`}
+        emptyMsg=""
+      />
+
+      {/* ── 지난 주 활동 ── */}
+      {lastWeekEntries.length > 0
+        ? <ActivitySection
+            entries={lastWeekEntries}
+            title={lang === 'en' ? `📋 Last Week — Activity  ${fmtWeekRange(lastMonday, '')}` : `📋 지난 주 활동  ${fmtWeekRange(lastMonday, '')}`}
+            emptyMsg=""
+          />
+        : allEntries.length === 0 && (
+          <div className="bg-gray-50 border border-dashed border-gray-200 rounded-xl p-6 text-center space-y-1.5">
+            <p className="text-sm font-medium text-gray-500">{lang === 'en' ? 'No activity synced yet' : '동기화된 활동 없음'}</p>
+            <p className="text-xs text-gray-400">{lang === 'en' ? 'Press "Sync" to fetch emails, calendar, and Slack' : '"동기화" 버튼으로 이메일·캘린더·Slack 데이터를 가져오세요'}</p>
+          </div>
+        )
+      }
+
+      {/* ── 2주 이전 (접어두기) ── */}
+      {earlierEntries.length > 0 && (
+        <ActivitySection
+          entries={earlierEntries}
+          title={lang === 'en' ? `🗂 Earlier` : `🗂 이전 활동`}
+          emptyMsg=""
+        />
       )}
     </div>
   )
