@@ -14,6 +14,17 @@ ACCOUNT_KEYWORDS: dict[str, list[str]] = {
     "CJ Olive Young": [
         "olive young", "올리브영", "oliveyoung", "cj olive",
     ],
+    "CJ CheilJedang (The Market)": [
+        "더마켓", "the market cj", "cj themarket", "cj 더마켓",
+        "cheiljedang the market", "제일제당 더마켓",
+    ],
+    "CJ CheilJedang": [
+        "제일제당", "cheiljedang", "cj cheiljedang", "@cjfreshway.com",
+    ],
+    "CJ Onstyle": [
+        "cj onstyle", "onstyle", "씨제이온스타일", "cj enm", "cjenm",
+        "cj e&m", "cj홈쇼핑", "cj온스타일",
+    ],
     "하이마트": [
         "하이마트", "himart", "hi-mart", "maxonomy", "마소노미",
         "sohyun.park11@cj.net", "cj올리브네트웍스",

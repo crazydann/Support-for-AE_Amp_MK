@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-03-30T00:43:01.547053+00:00",
+  "generated_at": "2026-03-30T03:55:51.575850",
   "period": "2026-03-29 (KST 주간보고)",
   "period_en": "2026-03-29 (KST Weekly Report)",
   "playbook": {
@@ -69,6 +69,87 @@
           "type": "email",
           "summary": "$450K Upsell 제안서 공식 발송. 의사결정자 검토 중.",
           "summary_en": "Officially sent $450K upsell proposal. Decision maker reviewing."
+        }
+      ]
+    },
+    {
+      "group": "CJ",
+      "key_account": "CJ Onstyle",
+      "arr": "106920",
+      "subscription_end": "2026-12-31",
+      "amplitude_plan": "Growth",
+      "status": "active",
+      "deal_stage": "Renewal Stage2 Qualification ($106.9K)",
+      "deal_stage_en": "Renewal Stage 2 Qualification ($106.9K)",
+      "deal_amount": 106920,
+      "health": "orange",
+      "notes_summary": "CJ ENM 산하 홈쇼핑/이커머스 채널. Growth 플랜, 이벤트 기반 계약. 이벤트 사용률 5.1%(예측 51.9%) - 사용률 매우 저조. 갱신 오퍼튜니티 Stage2 진행 중. MTU 전환 및 Experiment Add-on 크로스셀 후보.",
+      "notes_summary_en": "CJ ENM subsidiary: homeshopping/e-commerce channel. Growth plan, event-based contract. Event utilization 5.1% (projected 51.9%) — very low usage. Renewal opp at Stage 2. MTU conversion + Experiment add-on cross-sell candidate.",
+      "next_action": "저조한 사용률 원인 파악 → CSM 협력 온보딩 강화 + MTU 전환 제안 준비",
+      "next_action_en": "Diagnose low utilization → CSM-led onboarding reinforcement + prepare MTU conversion proposal",
+      "last_activity": "2026-03-30",
+      "strategy": "CJ 그룹 내 확장 레버: CJ Olive Young MTU 전환 완료 후 CJ Onstyle MTU 전환 + Experiment 크로스셀. 사용률 제고가 최우선 과제.",
+      "strategy_en": "CJ group expand lever: after CJ Olive Young MTU conversion, drive CJ Onstyle MTU migration + Experiment cross-sell. Usage improvement is top priority.",
+      "activity_history": [
+        {
+          "date": "2026-03-30",
+          "type": "sfdc",
+          "summary": "[SFDC] CJ Onstyle 갱신 오퍼튜니티 Stage2 확인. ARR $106,920, 이벤트 기반. 사용률 5.1% — 사용 촉진 개입 필요.",
+          "summary_en": "[SFDC] CJ Onstyle renewal opp confirmed at Stage 2. ARR $106,920, event-based. Utilization 5.1% — usage intervention required."
+        }
+      ]
+    },
+    {
+      "group": "CJ",
+      "key_account": "CJ CheilJedang",
+      "arr": "17496",
+      "subscription_end": "2027-03-31",
+      "amplitude_plan": "Growth",
+      "status": "active",
+      "deal_stage": "Active (Renewal Closed Mar 2026)",
+      "deal_stage_en": "Active (Renewal Closed Mar 2026)",
+      "deal_amount": 16200,
+      "health": "yellow",
+      "notes_summary": "제일제당 Growth 플랜 갱신 완료 (2026-03, ARR $16.2K). 이벤트 기반 계약, 사용률 11.6% — 저조. 별도 자회사 '더마켓' 계정 존재(비교적 높은 ARR). CJ 그룹 식품/바이오 디지털 채널.",
+      "notes_summary_en": "CJ CheilJedang Growth plan renewed (Mar 2026, ARR $16.2K). Event-based, utilization 11.6% — low. Separate subsidiary 'The Market' account exists with higher ARR. CJ group food/bio digital channel.",
+      "next_action": "제일제당 + 더마켓 통합 MTU 계약 그룹 전환 검토. 사용률 제고 온보딩 지원.",
+      "next_action_en": "Review consolidated MTU group contract for CheilJedang + The Market. Support onboarding to improve utilization.",
+      "last_activity": "2026-03-30",
+      "strategy": "CJ 그룹 계열사 MTU 통합 전략: 제일제당 + 더마켓 → 하나의 그룹 MTU 계약으로 통합 검토. 사용률 낮아 갱신 리스크 주의.",
+      "strategy_en": "CJ group subsidiary MTU consolidation: CheilJedang + The Market → review as one group MTU contract. Low utilization creates renewal risk.",
+      "activity_history": [
+        {
+          "date": "2026-03-30",
+          "type": "sfdc",
+          "summary": "[SFDC] CJ CheilJedang 2026-03 갱신 완료. ARR $16,200. 이벤트 기반, 사용률 11.6%. 계약 기간 2027-03-31까지.",
+          "summary_en": "[SFDC] CJ CheilJedang Mar 2026 renewal closed. ARR $16,200. Event-based, utilization 11.6%. Contract through 2027-03-31."
+        }
+      ]
+    },
+    {
+      "group": "CJ",
+      "key_account": "CJ CheilJedang (The Market)",
+      "arr": "66960",
+      "subscription_end": "2028-03-31",
+      "amplitude_plan": "Growth",
+      "status": "active",
+      "deal_stage": "Active (Expand Closed Mar 2026)",
+      "deal_stage_en": "Active (Expand Closed Mar 2026)",
+      "deal_amount": 66960,
+      "health": "red",
+      "notes_summary": "제일제당 더마켓(식품 이커머스). MTU 500 계약, 현재 실사용 4,087 MTU → 사용률 817%. 오버리지 심각. 2026-03 수평 확장 오퍼튜니티 클로징($62K). 즉각적 MTU 업그레이드 협의 필요.",
+      "notes_summary_en": "CJ CheilJedang The Market (food e-commerce). MTU quota 500, actual usage 4,087 → 817% utilization. Severe overage. Horizontal expand opp closed Mar 2026 ($62K). Immediate MTU upgrade negotiation required.",
+      "next_action": "817% MTU 오버리지 즉각 협의 — MTU 업그레이드 + 갱신 오퍼 준비. CSM과 긴급 조율.",
+      "next_action_en": "Immediate 817% MTU overage negotiation — prepare MTU upgrade + renewal offer. Urgent coordination with CSM.",
+      "last_activity": "2026-03-30",
+      "strategy": "오버리지 위기를 대형 업셀 기회로 전환: MTU 500 → 적정 규모(5,000+) 업그레이드 제안. 제일제당 통합 계약과 연계해 그룹 MTU 번들 제안 가능.",
+      "strategy_en": "Convert overage crisis to major upsell opportunity: MTU 500 → right-size upgrade (5,000+). Can bundle with CheilJedang main account as group MTU deal.",
+      "activity_history": [
+        {
+          "date": "2026-03-30",
+          "type": "sfdc",
+          "summary": "[SFDC] CJ CheilJedang (The Market) MTU 사용률 817% 확인 (실사용 4,087 / 할당 500). 오버리지 상태 심각, 즉각 대응 필요. ARR $66,960.",
+          "summary_en": "[SFDC] CJ CheilJedang (The Market) MTU utilization 817% confirmed (actual 4,087 / quota 500). Severe overage, immediate action required. ARR $66,960."
         }
       ]
     },
@@ -850,6 +931,14 @@
     }
   ],
   "action_items": [
+    {
+      "priority": "urgent",
+      "account": "CJ CheilJedang (The Market)",
+      "group": "CJ",
+      "action": "MTU 817% 오버리지 즉각 대응 — CSM과 함께 업그레이드 제안 준비 및 고객 연락",
+      "action_en": "Immediate 817% MTU overage response — prepare upgrade proposal with CSM and contact customer",
+      "due": "2026-04-03"
+    },
     {
       "priority": "urgent",
       "account": "신세계 DF",
