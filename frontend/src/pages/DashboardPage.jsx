@@ -508,6 +508,14 @@ function AccountView({ report, t, lang }) {
     }
   }
 
+  const handleGleanSync = async () => {
+    // Glean MCP는 Claude Code에서만 가능 → 안내 메시지
+    setSyncMsg(lang === 'en'
+      ? 'Glean sync: ask Claude "글린 동기화 해줘"'
+      : 'Glean 동기화: Claude에게 "글린 동기화 해줘"라고 요청하세요')
+    setTimeout(() => setSyncMsg(null), 5000)
+  }
+
   const accounts = report.accounts || []
   const actionItems = report.action_items || []
   const risks = report.risks || []
@@ -560,6 +568,15 @@ function AccountView({ report, t, lang }) {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
             </svg>
             {syncing ? (lang === 'en' ? 'Syncing…' : '동기화 중…') : (lang === 'en' ? 'Sync' : '동기화')}
+          </button>
+          <button
+            onClick={handleGleanSync}
+            className="flex items-center gap-1 text-xs bg-white border border-violet-300 text-violet-600 px-2 py-1 rounded-lg hover:bg-violet-100 transition-colors"
+          >
+            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35M17 11A6 6 0 115 11a6 6 0 0112 0z" />
+            </svg>
+            Glean
           </button>
         </div>
       </div>

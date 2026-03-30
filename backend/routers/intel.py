@@ -322,3 +322,40 @@ async def synthesize_memory(account: Optional[str] = None, days: int = 60):
         synthesized.append(acct)
 
     return {"ok": True, "synthesized": synthesized, "count": len(synthesized)}
+
+
+# ── Glean Ingest API ──────────────────────────────────────────
+
+class GleanEntry(BaseModel):
+    account:   str
+    title:     str = ""
+    summary:   str = ""
+    url:       str = ""
+    date:      str = ""
+    type:      str = "glean"
+    source_id: str = ""
+
+
+class GleanIngestRequest(BaseModel):
+    entries: list[GleanEntry]
+
+
+@router.post("/glean-ingest")
+async def glean_ingest(body: GleanIngestRequest):
+    """
+    Claude Code가 Glean MCP로 검색한 결과를 intel_log에 저장.
+    중복 source_id는 자동으로 스킵.
+    """
+    from ..services.glean_sync_service import ingest_glean_results
+
+    entries_dicts = [e.dict() for e in body.entries]
+    result = ingest_glean_results(entries_dicts)
+    return {"ok": True, **result}
+
+
+@router.get("/glean-sync-status")
+async def glean_sync_status():
+    """Glean 동기화 상태 반환 (마지막 실행, 처리 건수)."""
+    from ..services.glean_sync_service import get_sync_status
+
+    return get_sync_status()
