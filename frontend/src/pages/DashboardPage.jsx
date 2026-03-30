@@ -396,6 +396,14 @@ function SubAccountRow({ account, expanded, onToggle, t, lang, relatedActions, r
             )}
           </div>
 
+          {/* 현황 요약 */}
+          {(account.notes_summary || account.notes_summary_en) && (
+            <div className="bg-white rounded-lg p-2.5">
+              <p className="text-xs text-gray-400 mb-1">{lang === 'en' ? 'Summary' : '현황 요약'}</p>
+              <p className="text-xs text-gray-700 leading-relaxed">{pick(account, 'notes_summary', lang)}</p>
+            </div>
+          )}
+
           {/* 활동 이력 (메인) - activity_history + 메모 합산 */}
           <div className="bg-white rounded-lg p-2.5">
             <p className="text-xs font-semibold text-gray-600 mb-2 flex items-center gap-1.5">
@@ -500,6 +508,14 @@ function AccountView({ report, t, lang }) {
     }
   }
 
+  const handleGleanSync = async () => {
+    // Glean MCP는 Claude Code에서만 가능 → 안내 메시지
+    setSyncMsg(lang === 'en'
+      ? 'Glean sync: ask Claude "글린 동기화 해줘"'
+      : 'Glean 동기화: Claude에게 "글린 동기화 해줘"라고 요청하세요')
+    setTimeout(() => setSyncMsg(null), 5000)
+  }
+
   const accounts = report.accounts || []
   const actionItems = report.action_items || []
   const risks = report.risks || []
@@ -552,6 +568,15 @@ function AccountView({ report, t, lang }) {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
             </svg>
             {syncing ? (lang === 'en' ? 'Syncing…' : '동기화 중…') : (lang === 'en' ? 'Sync' : '동기화')}
+          </button>
+          <button
+            onClick={handleGleanSync}
+            className="flex items-center gap-1 text-xs bg-white border border-violet-300 text-violet-600 px-2 py-1 rounded-lg hover:bg-violet-100 transition-colors"
+          >
+            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35M17 11A6 6 0 115 11a6 6 0 0112 0z" />
+            </svg>
+            Glean
           </button>
         </div>
       </div>
@@ -632,6 +657,27 @@ function WeeklyView({ report, t, lang }) {
   const actions    = report.action_items || []
   const risks      = report.risks       || []
   const priorityConfig = getPriorityConfig(t)
+
+  const [synthesizing, setSynthesizing] = useState(false)
+  const [synthMsg, setSynthMsg] = useState(null)
+
+  const handleSynthesize = async () => {
+    setSynthesizing(true)
+    setSynthMsg(null)
+    try {
+      const res = await fetch(`${API}/api/intel/synthesize`, { method: 'POST' })
+      const data = await res.json()
+      setSynthMsg(lang === 'en'
+        ? `Synthesis done (${data.synthesized || 0} accounts updated)`
+        : `합성 완료 (${data.synthesized || 0}개 계정 업데이트)`)
+      setTimeout(() => { setSynthMsg(null); window.location.reload() }, 2000)
+    } catch {
+      setSynthMsg(lang === 'en' ? 'Synthesis failed' : '합성 실패')
+      setTimeout(() => setSynthMsg(null), 3000)
+    } finally {
+      setSynthesizing(false)
+    }
+  }
 
   // 날짜 범위 계산
   const today = new Date()
@@ -720,6 +766,75 @@ function WeeklyView({ report, t, lang }) {
           <p className="text-sm text-gray-700 leading-relaxed">{pick(report, 'strategy_summary', lang)}</p>
         </div>
       )}
+
+      {/* ── 영업 전략 플레이북 ── */}
+      {report.playbook && (
+        <div className="bg-white border border-gray-200 rounded-xl p-4 space-y-2.5">
+          <p className="text-xs font-bold text-gray-700 flex items-center gap-1.5">
+            <span>🎯</span>
+            {lang === 'en' ? 'Sales Playbook' : '영업 전략 플레이북'}
+          </p>
+          <div className="space-y-2">
+            <div className="flex gap-2 items-start">
+              <span className="text-xs text-purple-500 shrink-0 font-bold mt-0.5">①</span>
+              <div>
+                <p className="text-xs font-semibold text-gray-600 mb-0.5">{lang === 'en' ? 'Group MTU Strategy' : '그룹사 MTU 전략'}</p>
+                <p className="text-xs text-gray-600 leading-relaxed">{lang === 'en' ? report.playbook.group_mtu_strategy_en : report.playbook.group_mtu_strategy}</p>
+              </div>
+            </div>
+            <div className="flex gap-2 items-start">
+              <span className="text-xs text-blue-500 shrink-0 font-bold mt-0.5">②</span>
+              <div>
+                <p className="text-xs font-semibold text-gray-600 mb-0.5">{lang === 'en' ? 'Upsell Path' : '업셀 경로'}</p>
+                <p className="text-xs text-gray-600">{lang === 'en' ? report.playbook.upsell_path_en : report.playbook.upsell_path}</p>
+              </div>
+            </div>
+            <div className="flex gap-2 items-start">
+              <span className="text-xs text-orange-500 shrink-0 font-bold mt-0.5">③</span>
+              <div>
+                <p className="text-xs font-semibold text-gray-600 mb-0.5">{lang === 'en' ? '2026 Focus' : '2026 집중 과제'}</p>
+                <p className="text-xs text-gray-600 leading-relaxed">{lang === 'en' ? report.playbook.focus_2026_en : report.playbook.focus_2026}</p>
+                {report.playbook.target_experiment_addon?.length > 0 && (
+                  <div className="flex flex-wrap gap-1 mt-1">
+                    {report.playbook.target_experiment_addon.map((name, i) => (
+                      <span key={i} className="text-xs bg-orange-50 text-orange-600 px-1.5 py-0.5 rounded-full border border-orange-100">{name}</span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── 인텔 합성 실행 버튼 ── */}
+      <div className="flex flex-col items-center gap-2">
+        <button
+          onClick={handleSynthesize}
+          disabled={synthesizing}
+          className={`w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all
+            ${synthesizing
+              ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+              : 'bg-gradient-to-r from-purple-500 to-blue-500 text-white shadow-sm hover:from-purple-600 hover:to-blue-600 active:scale-95'
+            }`}
+        >
+          <span className={synthesizing ? 'animate-spin inline-block' : ''}>
+            {synthesizing ? '⟳' : '🔄'}
+          </span>
+          {synthesizing
+            ? (lang === 'en' ? 'Synthesizing...' : '합성 중...')
+            : (lang === 'en' ? 'Run Intel Synthesis' : '인텔 합성 실행')}
+        </button>
+        {synthMsg && (
+          <p className={`text-xs font-medium px-3 py-1.5 rounded-full ${
+            synthMsg.includes('실패') || synthMsg.includes('failed')
+              ? 'bg-red-50 text-red-600'
+              : 'bg-green-50 text-green-600'
+          }`}>
+            {synthMsg}
+          </p>
+        )}
+      </div>
 
       {/* ── 지난주 한 일 ── */}
       <div className="space-y-3">

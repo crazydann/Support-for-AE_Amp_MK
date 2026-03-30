@@ -1,9 +1,25 @@
 {
-  "generated_at": "2026-03-29T10:00:00+09:00",
+  "generated_at": "2026-03-30T00:43:01.547053+00:00",
   "period": "2026-03-29 (KST 주간보고)",
   "period_en": "2026-03-29 (KST Weekly Report)",
-  "summary": "LG Uplus D-34 긴급 갱신, TVING D-65 Stage5 진행중, CJ Olive Young $450K Upsell Proposal, Starbucks 갱신 Closed Won, SPC Land Closed Won.",
-  "summary_en": "LG Uplus D-34 urgent renewal, TVING D-65 at Stage 5, CJ Olive Young $450K Upsell Proposal, Starbucks renewal Closed Won, SPC Land Closed Won.",
+  "playbook": {
+    "group_mtu_strategy": "그룹사 계약 시 전체 MTU 계약 구조 제안 → 각 계열사를 하위 프로젝트로 구성, 개별+통합 분석 동시 가능. 그룹 내 성공 계열사를 레버리지해 Expand 추진.",
+    "group_mtu_strategy_en": "For group accounts, propose full group MTU contract structure → each subsidiary as sub-project for individual + consolidated analysis. Leverage successful subsidiaries to expand across the group.",
+    "upsell_path": "Event 계약 → MTU 전환 → Experiment / Activation Add-on 크로스셀",
+    "upsell_path_en": "Event contract → MTU conversion → Experiment / Activation Add-on cross-sell",
+    "focus_2026": "2026 전략 우선순위: Experiment Add-on 전 고객 크로스셀 집중 (특히 MTU 전환 완료 Enterprise 고객)",
+    "focus_2026_en": "2026 strategic priority: Experiment Add-on cross-sell across all accounts (especially MTU-converted Enterprise customers)",
+    "target_experiment_addon": [
+      "Musinsa",
+      "Dunamu",
+      "GS Retail",
+      "TVING",
+      "CJ Olive Young",
+      "Lotte Shopping"
+    ]
+  },
+  "summary": "Naver·Samsung Galaxy Store PoC 전면 중단. Samsung Shop·KakaoBank 신규 파이프라인. 현대백화점 내부 승인 완료. LG Uplus D-31 긴급.",
+  "summary_en": "Naver & Samsung Galaxy Store PoC fully on hold. New pipeline: Samsung Shop, KakaoBank. Hyundai Dept Store internal approval done. LG Uplus D-31 urgent.",
   "accounts": [
     {
       "group": "CJ",
@@ -16,14 +32,32 @@
       "deal_stage_en": "Renewal+Expand Stage 5 Proposal ($450K)",
       "deal_amount": 450000,
       "health": "yellow",
-      "notes_summary": "갱신+수직확장 딜 Stage5 진행중. 목표 ARR $450K (현재 $240K 대비 +$210K Upsell). D-126.",
-      "notes_summary_en": "Renewal+Expand deal at Stage 5. Target ARR $450K (+$210K upsell from $240K). D-126.",
-      "next_action": "Stage6 클로징 준비 - 계약서 초안 협의",
-      "next_action_en": "Prepare Stage 6 close - negotiate contract draft",
-      "last_activity": "2026-03-24",
+      "notes_summary": "Q1 내 국내 딜 클로징 목표. 갱신+수직확장 $450K Stage5. MQL 인입: 형구 조(Global Marketing Manager, 3/27), Eunji Hwang(Senior Analyst, 3/25). MTU+SR 오버리지 가격 협의 진행 중 (co-term 방향). Olive Young Global Q2 파이프라인 추가.",
+      "notes_summary_en": "Targeting Q1 domestic close. Renewal+Expand $450K Stage 5. MQL inbound: Hyunggoo Jo (Global Marketing Manager, 3/27), Eunji Hwang (Senior Analyst, 3/25). MTU+SR overage pricing discussion ongoing (co-term direction). Olive Young Global added to Q2 pipeline.",
+      "next_action": "Q1 OF 최종 확정 + 오버리지 co-term 조건 협의 완료",
+      "next_action_en": "Finalize Q1 OF + complete overage co-term terms",
+      "last_activity": "2026-03-27",
       "strategy": "한국 최대 뷰티 플랫폼의 데이터 드리븐 성장 파트너. $450K Upsell은 전사 디지털 플랫폼화의 시작점. G&S 번들로 AI 개인화 추천 가능성 제시.",
       "strategy_en": "Data-driven growth partner for Korea's largest beauty platform. $450K upsell marks start of enterprise digitalization. Present G&S bundle for AI personalization.",
       "activity_history": [
+        {
+          "date": "2026-03-27",
+          "type": "slack",
+          "summary": "[MQL] 형구 조 (CJ Olive Young Global, Global Manager Marketing) - 마케팅 캠페인 인바운드 반응. MQL Owner: MyoungKyu.",
+          "summary_en": "[MQL] Hyunggoo Jo (CJ Olive Young Global, Global Manager Marketing) - inbound from marketing campaign. MQL Owner: MyoungKyu."
+        },
+        {
+          "date": "2026-03-25",
+          "type": "slack",
+          "summary": "[MQL] Eunji Hwang (CJ Olive Young, Senior Analyst) - Product Signal MQL. SLA 3/26까지.",
+          "summary_en": "[MQL] Eunji Hwang (CJ Olive Young, Senior Analyst) - Product Signal MQL. SLA due 3/26."
+        },
+        {
+          "date": "2026-03-25",
+          "type": "email",
+          "summary": "[OF 협의] 최보규님에게 수정 OF 공유. MTU+SR 오버리지: 묶음 요금 기준 1.2X, SR 단독 오버리지 시 co-term 방향으로 협의 중.",
+          "summary_en": "[OF discussion] Shared revised OF with 최보규. MTU+SR overage: 1.2X bundled rate; SR-only overage handled via co-term (discount direction)."
+        },
         {
           "date": "2026-03-24",
           "type": "meeting",
@@ -158,19 +192,19 @@
     {
       "group": "Shinsegae",
       "key_account": "SSG.com",
-      "arr": null,
-      "subscription_end": null,
-      "amplitude_plan": null,
-      "status": "prospect",
-      "deal_stage": "Land 기회 탐색",
-      "deal_stage_en": "Land Opportunity",
-      "deal_amount": 0,
-      "health": "gray",
-      "notes_summary": "신세계그룹 통합 이커머스 플랫폼. Starbucks Korea / Shinsegae Live Shopping 성공 사례 기반 그룹 내 Expand 기회.",
-      "notes_summary_en": "Shinsegae Group's integrated e-commerce platform. Expand opportunity within group leveraging Starbucks Korea and Shinsegae Live Shopping success stories.",
-      "next_action": "Starbucks Korea / Shinsegae Live Shopping 레퍼런스 기반 SSG.com 담당자 접촉",
-      "next_action_en": "Contact SSG.com team leveraging Starbucks Korea / Shinsegae Live Shopping references",
-      "last_activity": "2026-01-01",
+      "arr": "130000",
+      "subscription_end": "2026-09-30",
+      "amplitude_plan": "Growth",
+      "status": "active",
+      "deal_stage": "Active Customer - 2025-10 갱신 완료 (2026-09까지) + Expand 기회 탐색 중",
+      "deal_stage_en": "Active Customer - Renewed Oct 2025 through Sep 2026 + Expand opportunity in pipeline",
+      "deal_amount": 130000,
+      "health": "green",
+      "notes_summary": "신세계그룹 통합 이커머스 플랫폼. 2025-10 Growth 갱신 완료 ($130K ARR, 2026-09까지). Expand 기회: Lotte Shopping 성공사례 + 그룹 내 확산 논의 중.",
+      "notes_summary_en": "Shinsegae Group's integrated e-commerce platform. Growth renewal completed Oct 2025 ($130K ARR, through Sep 2026). Expand opportunity: leveraging Lotte Shopping success + group expansion discussion ongoing.",
+      "next_action": "Renewal + Expand ($140K) 딜 2026-09 만료 전 클로징 준비",
+      "next_action_en": "Prepare closing of Renewal + Expand ($140K) deal before Sep 2026 expiry",
+      "last_activity": "2025-10-01",
       "strategy": "신세계 그룹 내 Starbucks + Live Shopping 레퍼런스로 이커머스 버티컬 확장. 그룹 계약으로 패키지 접근 가능성 타진.",
       "strategy_en": "Expand e-commerce vertical within Shinsegae Group using Starbucks + Live Shopping references. Explore group-level package deal.",
       "activity_history": []
@@ -311,14 +345,21 @@
       "deal_stage_en": "Healthy",
       "deal_amount": 46000,
       "health": "yellow",
-      "notes_summary": "",
-      "notes_summary_en": "",
+      "notes_summary": "골프 예약·콘텐츠 플랫폼 Growth 계약 ($46K, ~2027-01). Q2 클로징 타겟 리스트 포함. Experiment Add-on 크로스셀 기회 탐색.",
+      "notes_summary_en": "Golf booking & content platform Growth contract ($46K, ~2027-01). Included in Q2 closing target list. Explore Experiment Add-on cross-sell opportunity.",
       "next_action": "온보딩 지원 강화 - 활성 사용자 증대",
       "next_action_en": "Strengthen onboarding - increase active user count",
       "last_activity": "2026-02-10",
       "strategy": "골프 예약·콘텐츠 플랫폼 데이터 분석 레퍼런스. 온보딩 활성화로 사용 깊이 증대. 스포츠 레저 버티컬 레퍼런스로 포지셔닝.",
       "strategy_en": "Data analytics reference for golf booking and content platform. Deepen usage through onboarding activation. Position as sports and leisure vertical reference.",
-      "activity_history": []
+      "activity_history": [
+        {
+          "date": "2026-03-30",
+          "type": "memo",
+          "summary": "[메모] Q2 타켓 클로징 목록에 포함 — Experiment Add-on 클로징 집중",
+          "summary_en": "[Memo] Included in Q2 closing target list — focus on Experiment Add-on closing"
+        }
+      ]
     },
     {
       "group": "KT",
@@ -362,23 +403,77 @@
     },
     {
       "group": "Samsung",
-      "key_account": "Samsung Next",
+      "key_account": "Samsung Next (US)",
       "arr": "100000",
       "subscription_end": "2026-11-30",
       "amplitude_plan": "Enterprise",
       "status": "active",
-      "deal_stage": "정상 운영",
-      "deal_stage_en": "Healthy",
+      "deal_stage": "Active Customer - Enterprise 운영 중 (2026-11 만료)",
+      "deal_stage_en": "Active Customer - Enterprise running (expires Nov 2026)",
       "deal_amount": 100000,
-      "health": "green",
-      "notes_summary": "",
-      "notes_summary_en": "",
-      "next_action": "삼성 그룹사 확장 기회 탐색 (Cheil Worldwide 딜 연계)",
-      "next_action_en": "Explore Samsung group expansion (leverage Cheil Worldwide deal)",
-      "last_activity": "2026-02-28",
-      "strategy": "삼성 그룹 스타트업 투자사 랜드마크 고객. Cheil Worldwide 딜 연계로 삼성 그룹 전체 확장 교두보. Samsung Electronics Land 기회 탐색.",
-      "strategy_en": "Landmark customer as Samsung Group's startup investment arm. Leverage Cheil Worldwide deal as Samsung Group expansion foothold. Explore Samsung Electronics Land opportunity.",
+      "health": "yellow",
+      "notes_summary": "Samsung 미국 벤처/이노베이션 부문. Enterprise $100K ARR 정상 운영 중 (2026-11 만료). Samsung 그룹 내 다른 삼성전자 딜(Galaxy Store, Samsung Shop)과 별개 법인.",
+      "notes_summary_en": "Samsung US venture/innovation arm. Enterprise $100K ARR contract healthy (expires Nov 2026). Separate legal entity from Samsung Electronics deals (Galaxy Store, Samsung Shop).",
+      "next_action": "Samsung Next (US) 갱신 준비 (2026-11 만료) + Samsung 그룹 내 Expand 전략 연계",
+      "next_action_en": "Prepare Samsung Next (US) renewal (Nov 2026 expiry) + align with Samsung group Expand strategy",
+      "last_activity": "2026-03-25",
+      "strategy": "Samsung Next (US)는 미국 벤처 부문으로 독립 계약. 삼성전자(Galaxy Store, Samsung Shop) 딜과 시너지 연계 가능. 그룹사 MTU 전략으로 통합 접근 장기 목표.",
+      "strategy_en": "Samsung Next (US) is an independent US venture arm contract. Can create synergy with Samsung Electronics deals (Galaxy Store, Samsung Shop). Long-term: group MTU integration.",
       "activity_history": []
+    },
+    {
+      "group": "Samsung",
+      "key_account": "Samsung Galaxy Store",
+      "arr": null,
+      "subscription_end": null,
+      "amplitude_plan": null,
+      "status": "prospect",
+      "deal_stage": "2차 PoC 중단 - MX Division 예산 동결 (H2 재개 논의 중)",
+      "deal_stage_en": "Phase 2 PoC Paused - MX Division budget freeze (H2 restart in discussion)",
+      "deal_amount": 0,
+      "health": "orange",
+      "notes_summary": "삼성전자 MX Division(갤럭시 스토어) 2차 PoC - 데이터 인제스천까지 완료 후 MX Division 비상 비용관리(LPDDR5X 2배 급등)로 전면 중단. 신규 임원진과 H2(하반기) 재개 논의 중. 4~5월 내부 동향 모니터링 필요.",
+      "notes_summary_en": "Samsung Electronics MX Division (Galaxy Store) Phase 2 PoC - data ingestion completed before full pause due to MX Division emergency cost management (LPDDR5X costs doubled). Discussing H2 restart with new leadership. Monitor internal dynamics April-May.",
+      "next_action": "H2 재개 일정 확인 + MX Division 신규 임원진 관계 구축",
+      "next_action_en": "Confirm H2 restart timeline + build relationship with new MX Division leadership",
+      "last_activity": "2026-03-25",
+      "strategy": "2차 PoC 데이터 인제스천 완료 → 기술 검증은 끝난 상태. MX Division 예산 해제 시 빠른 클로징 가능. H2까지 신규 임원 관계 유지 + 내부 챔피언 활성화가 핵심.",
+      "strategy_en": "Phase 2 PoC data ingestion complete → technical validation done. Ready for fast close once MX Division budget unfreezes. Key: maintain new exec relationships + keep internal champions warm through H2.",
+      "activity_history": [
+        {
+          "date": "2026-03-25",
+          "type": "slack",
+          "summary": "[내부 보고] Samsung Galaxy Store PoC 전면 중단. LPDDR5X 비용 2배 급등 → MX Division 비상 비용관리 → 모든 신규 예산 동결. 신규 임원진과 H2 재개 논의 중.",
+          "summary_en": "[Internal] Samsung Galaxy Store PoC fully paused. LPDDR5X costs doubled → MX Division emergency cost mgmt → all new budgets frozen. H2 restart in discussion with new leadership."
+        }
+      ]
+    },
+    {
+      "group": "Samsung",
+      "key_account": "Samsung Shop (Samsung.com)",
+      "arr": null,
+      "subscription_end": null,
+      "amplitude_plan": null,
+      "status": "prospect",
+      "deal_stage": "초기 미팅 완료 - Adobe 대체 검토 중",
+      "deal_stage_en": "Intro Meeting Done - Evaluating as Adobe Alternative",
+      "deal_amount": 0,
+      "health": "yellow",
+      "notes_summary": "Samsung 글로벌 마케팅팀 (모바일·가전·TV 전 제품군 담당). 3/25 첫 미팅에서 Amplitude를 Adobe 대체로 강한 관심 표명. 팀 내 Kakao Style(Zigzag)·Starbucks Korea 출신 전 Amplitude 사용자들이 내부 지지 형성 중. 글로벌 Samsung.com 규모로 대형 딜 가능성.",
+      "notes_summary_en": "Samsung Global Marketing team (full product portfolio: mobile, home appliances, TV, etc.). Strong interest in Amplitude as Adobe alternative at 3/25 intro meeting. Internal advocacy from former Amplitude users from Kakao Style (Zigzag) and Starbucks Korea. Large deal potential given global Samsung.com scale.",
+      "next_action": "Adobe 대체 Use Case 기반 제안서 준비 + 팀 내 내부 챔피언 (전 Amplitude 사용자) 활성화",
+      "next_action_en": "Prepare Adobe-replacement use case proposal + activate internal champions (ex-Amplitude users)",
+      "last_activity": "2026-03-25",
+      "strategy": "글로벌 Samsung.com 전 제품군 마케팅 분석 플랫폼 교체 딜. 내부 챔피언(Zigzag/Starbucks Korea 출신) 활용해 빠른 내부 설득 가능. Adobe → Amplitude 마이그레이션 레퍼런스 구축 시 글로벌 임팩트.",
+      "strategy_en": "Replace global Samsung.com marketing analytics platform (Adobe → Amplitude). Internal champions (ex-Zigzag/Starbucks Korea) enable fast internal buy-in. Global impact if Adobe migration reference established.",
+      "activity_history": [
+        {
+          "date": "2026-03-25",
+          "type": "meeting",
+          "summary": "Samsung 글로벌 마케팅팀 초기 미팅. Amplitude를 Adobe 대체로 강한 관심. 전 Amplitude 사용자(Kakao Style, Starbucks Korea 출신) 포함된 팀이 내부 지지 형성.",
+          "summary_en": "Samsung Global Marketing team intro meeting. Strong interest in Amplitude as Adobe replacement. Team includes former Amplitude users from Kakao Style and Starbucks Korea generating internal advocacy."
+        }
+      ]
     },
     {
       "group": "SPC",
@@ -408,16 +503,16 @@
       ]
     },
     {
-      "group": "두나무",
-      "key_account": "두나무 (Dunamu)",
-      "arr": null,
-      "subscription_end": null,
-      "amplitude_plan": null,
+      "group": "Dunamu",
+      "key_account": "Dunamu",
+      "arr": "1168000",
+      "subscription_end": "2026-04-30",
+      "amplitude_plan": "Enterprise",
       "status": "active",
-      "deal_stage": "온보딩 / 운영 중",
-      "deal_stage_en": "Active / Onboarding",
+      "deal_stage": "갱신 협상 중 - 2026-04-30 만료 (D-32) / NAVER파이낸셜 인수 협상 변수",
+      "deal_stage_en": "Renewal negotiation in progress - expires 2026-04-30 (D-32) / NAVER Financial acquisition variable",
       "deal_amount": 0,
-      "health": "yellow",
+      "health": "orange",
       "notes_summary": "업비트(국내 1위 가상자산거래소) 운영사. 2025.11 NAVER파이낸셜 인수 협상 중 ($10.3B). CSM 지희, SE 성화 배정 확인. 3/24 슬랙 기술 이슈 조치 확인.",
       "notes_summary_en": "Operator of Upbit (Korea's #1 crypto exchange). NAVER Financial acquisition in progress ($10.3B, closing by June 2026). CSM Jihee and SE Seonghwa assigned. Technical issue resolved 3/24 via Slack.",
       "next_action": "CS 상태 점검 + NAVER 인수 이후 계약 연속성 확인",
@@ -447,12 +542,19 @@
       "health": "gray",
       "notes_summary": "국내 1위 여행·레저 OTA 플랫폼. 2024.12 NOL Universe 론칭(야놀자+인터파크트리플 통합). SoftBank 투자사, NASDAQ IPO 준비 중. AI 개인화 기반 메가 OTA.",
       "notes_summary_en": "Korea's #1 travel & leisure OTA. Launched NOL Universe (Dec 2024, merged Yanolja + InterparkTriple). SoftBank-backed, preparing NASDAQ IPO. AI-powered mega OTA platform.",
-      "next_action": "야놀자 데이터·그로스팀 담당자 접촉 - OTA 행동 분석 니즈 파악",
-      "next_action_en": "Contact Yanolja data/growth team - identify OTA behavior analytics needs",
-      "last_activity": "2026-01-01",
-      "strategy": "국내 1위 여행·레저 OTA의 핵심 성장 파트너. NOL Universe 통합 플랫폼(숙박·항공·공연·다이닝) 전반의 유저 행동 분석, 전환 최적화, AI 개인화 추천이 핵심 Use Case. NASDAQ IPO 준비 중인 고성장 기업으로 데이터 드리븐 의사결정 니즈 높음.",
-      "strategy_en": "Core growth partner for Korea's #1 travel & leisure OTA. Strong Amplitude use cases across NOL Universe: user behavior analytics, conversion optimization, AI personalization across hotels/flights/shows/dining. High data-driven decision needs as NASDAQ IPO-bound high-growth company.",
-      "activity_history": []
+      "next_action": "PoC 범위 확정 + 팀리드 레벨 경영진 보고용 비즈니스 케이스 준비",
+      "next_action_en": "Finalize PoC scope + prepare executive business case from team-lead level",
+      "last_activity": "2026-03-25",
+      "strategy": "양 플랫폼(야놀자+인터파크) 기존 Braze 고객 → 실무자 수요 높음. 통합 행동 분석 PoC로 경영진 설득 후 NOL Universe 전 플랫폼 Land 기회. NASDAQ IPO 준비 중 데이터 드리븐 성장 파트너로 포지셔닝.",
+      "strategy_en": "Both platforms are Braze customers → strong practitioner demand. PoC for unified behavioral analytics → build executive business case. Land across NOL Universe. Position as data-driven growth partner for NASDAQ IPO-bound company.",
+      "activity_history": [
+        {
+          "date": "2026-03-25",
+          "type": "slack",
+          "summary": "[내부 보고] NOL PoC scoping 시작. 야놀자+인터파크 통합 행동 분석 PoC 논의 중. 양사 Braze 고객으로 실무 수요 높음. 팀리드 레벨에서 경영진 보고용 비즈니스 케이스 목표.",
+          "summary_en": "[Internal report] NOL PoC scoping initiated. Discussing PoC for unified behavior analytics across Yanolja+Interpark. Strong practitioner demand as both are Braze customers. Goal: build executive business case from team-lead level."
+        }
+      ]
     },
     {
       "group": "NOL",
@@ -475,14 +577,14 @@
       "activity_history": []
     },
     {
-      "group": "무신사",
-      "key_account": "무신사 (Musinsa)",
-      "arr": null,
-      "subscription_end": null,
+      "group": "Musinsa",
+      "key_account": "Musinsa",
+      "arr": "1000000",
+      "subscription_end": "2028-05-31",
       "amplitude_plan": "Enterprise",
       "status": "active",
-      "deal_stage": "Active Customer - Ask AI (Chat) Beta 진행 중 (무신사/29CM)",
-      "deal_stage_en": "Active Customer - Ask AI (Chat) Beta in Progress (Musinsa/29CM)",
+      "deal_stage": "Active Customer - Enterprise 갱신 완료 (2028-05까지) + Ask AI Beta + Expand 탐색",
+      "deal_stage_en": "Active Customer - Enterprise renewed through May 2028 + Ask AI Beta + Expand in progress",
       "deal_amount": 0,
       "health": "green",
       "notes_summary": "무신사/29CM 팀 7명이 Ask AI (Chat) Beta 채널(#musinsa-ask-ai-beta-test) 활용 중. Manager 이상 사용자 AI 접근 활성화 완료. Databricks 연동 문의 진행 중. CSM Jihee Yoo + SE 정성화 적극 지원. Global Agent white glove 요청됨. MQL: 형훈 윤(3/18), 현욱 이/29CM(3/16). GMV $3.3B, +31% YoY.",
@@ -538,18 +640,25 @@
       "subscription_end": null,
       "amplitude_plan": null,
       "status": "prospect",
-      "deal_stage": "Land 기회 탐색",
-      "deal_stage_en": "Land Opportunity",
+      "deal_stage": "PoC 전면 중단 - CTO/회장 인하우스 결정 (여름 이후 재개 합의)",
+      "deal_stage_en": "PoC Full Hold - CTO/Chairman in-house decision (agreed to resume post-summer)",
       "deal_amount": 0,
-      "health": "gray",
-      "notes_summary": "",
-      "notes_summary_en": "",
-      "next_action": "네이버 쇼핑/파이낸셜 담당자 접촉",
-      "next_action_en": "Contact Naver Shopping/Financial team",
-      "last_activity": "2026-01-15",
-      "strategy": "한국 최대 IT 기업 레퍼런스 확보. 네이버 쇼핑·파이낸셜·웹툰 등 대규모 Land 기회. Amplitude를 네이버 성장 분석의 표준 툴로 포지셔닝.",
-      "strategy_en": "Secure Korea's largest IT company as reference. Large-scale Land opportunity across Naver Shopping, Financial, and Webtoon. Position Amplitude as standard growth analytics tool for Naver.",
-      "activity_history": []
+      "health": "red",
+      "notes_summary": "C-suite 전방위 정렬 완료 후 DPA(법무팀)까지 체결, 2차 PoC 직전 상황에서 CTO가 회장에게 외부툴 전면 인하우스화(Braze·Amplitude 포함) 제안 → 회장 조건부 승인 → PoC 전면 동결. 내부 이해관계자(CMO, Head of Data/Marketing)는 인하우스 대체가 여름 전 한계에 도달할 것으로 예상. 여름 이후 재개 상호 합의.",
+      "notes_summary_en": "Had secured C-suite alignment (CEO, COO, CMO) + signed DPA with legal team for PII PoC — 2nd phase imminent. CTO escalated to Chairman proposing full in-house of external tools (Braze, Amplitude). Chairman conditionally approved, freezing all procurement. Internal stakeholders (CMO, Head of Data/Marketing) expect in-house to fail by mid-summer. Mutual agreement to resume then.",
+      "next_action": "여름까지 모니터링 대기 - 내부 인하우스 실패 시점에 선제적 재접촉 준비",
+      "next_action_en": "Monitor through summer - prepare proactive re-engagement when in-house effort proves insufficient",
+      "last_activity": "2026-03-25",
+      "strategy": "PoC 직전까지 가장 진전된 딜. 인하우스 실패 시 첫 번째 재개 우선순위로 합의. CMO·Head of Data와 관계 유지하며 여름 이후 빠른 재개 포지셔닝.",
+      "strategy_en": "Most advanced deal before freeze. Agreed as first-priority resume when in-house proves insufficient. Maintain CMO/Head of Data relationship for rapid re-engagement post-summer.",
+      "activity_history": [
+        {
+          "date": "2026-03-25",
+          "type": "slack",
+          "summary": "[내부 보고] Matt에게 Naver PoC 전면 중단 보고. CTO→회장 인하우스 결정으로 조달 동결. 여름 이후 재개 상호 합의. CMO·Head of Data는 인하우스 한계 인지 중.",
+          "summary_en": "[Internal report] Reported Naver PoC full hold to Matt. CTO→Chairman in-house decision froze procurement. Mutual agreement to resume post-summer. CMO/Head of Data aware of in-house limitations."
+        }
+      ]
     },
     {
       "group": "Hyundai Motors",
@@ -578,18 +687,166 @@
       "subscription_end": null,
       "amplitude_plan": null,
       "status": "prospect",
-      "deal_stage": "Prospect",
-      "deal_stage_en": "Prospect",
+      "deal_stage": "PoC 준비 - 내부 GA→Amplitude 전환 승인 완료, R&R 조율 중 (4월 중순)",
+      "deal_stage_en": "PoC Prep - Internal GA→Amplitude migration approved, R&R alignment pending (mid-April)",
       "deal_amount": 0,
-      "health": "gray",
-      "notes_summary": "",
-      "notes_summary_en": "",
-      "next_action": "H.Point 앱 담당자 접촉",
-      "next_action_en": "Contact H.Point app team",
-      "last_activity": "2026-01-05",
-      "strategy": "H.Point 멤버십 앱 기반 백화점 고객 행동 분석. 프리미엄 리테일 버티컬 레퍼런스. 현대백화점 그룹 디지털 전환 파트너로 포지셔닝.",
-      "strategy_en": "Department store customer behavior analytics based on H.Point membership app. Premium retail vertical reference. Position as Hyundai Department Store Group digital transformation partner.",
-      "activity_history": []
+      "health": "yellow",
+      "notes_summary": "국내 3대 백화점 (롯데·신세계와 함께). Google Analytics → Amplitude 전환 내부 승인 완료. Shopify 연동 및 분석 담당 R&R 조율 완료 시 (4월 중순 예상) PoC 일정 확정. 3/19 머신러닝 기반 상품 추천(Groovy) → Amplitude 대체/연동 가능성 문의. Lotte·Shinsegae 병행 접근 트렌드.",
+      "notes_summary_en": "One of Korea's top 3 department stores (alongside Lotte, Shinsegae). Internal approval complete for GA→Amplitude migration. PoC scheduling post R&R alignment on Shopify integration (expected mid-April). 3/19 inquiry about replacing ML recommendation engine (Groovy) with/via Amplitude. Parallel approach trend with Lotte & Shinsegae.",
+      "next_action": "4월 중순 R&R 조율 완료 후 PoC 킥오프 일정 확정",
+      "next_action_en": "Confirm PoC kickoff after mid-April R&R/Shopify alignment completion",
+      "last_activity": "2026-03-25",
+      "strategy": "3대 백화점 동시 접근 (롯데·신세계·현대) 전략. GA 대체 PoC → 성공 시 H.Point 멤버십 앱 분석 Expand. Shopify 연동 및 ML 추천 엔진 연계 Use Case로 차별화.",
+      "strategy_en": "Simultaneous top-3 department store approach (Lotte, Shinsegae, Hyundai). GA replacement PoC → success enables H.Point membership app analytics Expand. Differentiate with Shopify integration and ML recommendation engine use cases.",
+      "activity_history": [
+        {
+          "date": "2026-03-25",
+          "type": "slack",
+          "summary": "[내부 보고] 현대백화점 GA→Amplitude 전환 내부 승인 완료. Shopify 연동 및 R&R 조율 후 (4월 중순) PoC 일정 확정 예정.",
+          "summary_en": "[Internal report] Hyundai Dept Store internal approval complete for GA→Amplitude migration. PoC scheduling after Shopify/R&R alignment (mid-April)."
+        },
+        {
+          "date": "2026-03-19",
+          "type": "slack",
+          "summary": "[인바운드 문의] 현대백화점 Amplitude 도입 검토 담당자가 #amplitude-x-ibank-general 채널에 머신러닝 기반 상품 추천(Groovy) → Amplitude 대체/연동 가능성 문의.",
+          "summary_en": "[Inbound inquiry] Hyundai Dept Store rep asked in #amplitude-x-ibank-general about replacing/integrating ML recommendation engine (Groovy) with Amplitude."
+        }
+      ]
+    },
+    {
+      "group": "Kakao",
+      "key_account": "KakaoBank",
+      "arr": null,
+      "subscription_end": null,
+      "amplitude_plan": null,
+      "status": "prospect",
+      "deal_stage": "PoC 검토 - PII-free 행동분석 접근법, 여름 전 PoC 목표",
+      "deal_stage_en": "PoC Evaluation - PII-free behavioral analytics approach, targeting PoC before summer",
+      "deal_amount": 0,
+      "health": "yellow",
+      "notes_summary": "카카오그룹 내 가장 수익성 높은 법인. 금융권 데이터 제약 완전 인지 상태에서 PII-free 행동분석 전용 구현 접근 중. 마케팅팀·신사업팀이 각각 독립적으로 PoC 타임라인 논의. 여름 전 PoC 완료 공동 목표.",
+      "notes_summary_en": "Most profitable entity in Kakao Group. Fully aware of financial-sector data constraints, approaching with PII-free behavioral analytics implementation. Marketing team and New Business team independently discussing PoC timelines. Shared goal: complete PoC before summer 2026.",
+      "next_action": "마케팅팀·신사업팀 PoC 타임라인 통합 조율 + PII-free 구현 Use Case 제안서 준비",
+      "next_action_en": "Align PoC timelines between Marketing and New Business teams + prepare PII-free implementation use case proposal",
+      "last_activity": "2026-03-25",
+      "strategy": "금융권 데이터 제약을 역이용한 PII-free 접근으로 진입장벽 극복. 카카오뱅크 레퍼런스 확보 시 카카오페이·카카오증권 등 카카오 금융그룹 전체 확장 기회.",
+      "strategy_en": "Overcome financial data constraints via PII-free approach. KakaoBank reference enables expansion across Kakao Finance Group (KakaoPay, Kakao Securities, etc.).",
+      "activity_history": [
+        {
+          "date": "2026-03-25",
+          "type": "slack",
+          "summary": "[내부 보고] KakaoBank 신규 파이프라인 Matt에게 보고. 마케팅팀·신사업팀 각각 독립적으로 PoC 검토 중. PII-free 행동분석, 여름 전 PoC 완료 목표.",
+          "summary_en": "[Internal report] KakaoBank new pipeline reported to Matt. Marketing and New Business teams independently evaluating PoC. PII-free behavioral analytics, targeting completion before summer."
+        }
+      ]
+    },
+    {
+      "group": "CJ",
+      "key_account": "CJ Olive Young Global",
+      "arr": null,
+      "subscription_end": null,
+      "amplitude_plan": null,
+      "status": "prospect",
+      "deal_stage": "Q2 클로징 타겟 — 국내 CJ Olive Young 레퍼런스 기반 접근",
+      "deal_stage_en": "Q2 Closing Target — approach via domestic CJ Olive Young reference",
+      "deal_amount": 0,
+      "health": "yellow",
+      "notes_summary": "CJ올리브영 글로벌 사업부. 국내 CJ Olive Young(Growth 계약)과 별도 운영. 해외 e-커머스 및 글로벌 뷰티 플랫폼 분석 수요. Q2 클로징 타겟.",
+      "notes_summary_en": "CJ Olive Young Global division. Separate operation from domestic CJ Olive Young (Growth contract). Demand for overseas e-commerce and global beauty platform analytics. Q2 closing target.",
+      "next_action": "글로벌 사업부 의사결정자 파악 + 국내 CJ Olive Young 레퍼런스 레버리지",
+      "next_action_en": "Identify decision-maker in Global division + leverage domestic CJ Olive Young reference",
+      "last_activity": "2026-03-30",
+      "strategy": "국내 CJ Olive Young 성공 레퍼런스를 기반으로 글로벌 사업부 확장 접근. 그룹 MTU 전환 시 CJ 그룹 전체 통합 분석 구조 제안.",
+      "strategy_en": "Leverage domestic CJ Olive Young success reference to expand into Global division. Propose integrated analytics structure for CJ Group via MTU conversion.",
+      "activity_history": [
+        {
+          "date": "2026-03-30",
+          "type": "memo",
+          "summary": "[메모] Q2 타켓 클로징 올리브영글로벌, 웨이브, 골프존, 신세계DF, 우리카드",
+          "summary_en": "[Memo] Q2 target closing: CJ Olive Young Global, Wavve, Golfzon, Shinsegae DF, Woori Card"
+        }
+      ]
+    },
+    {
+      "group": "Wavve",
+      "key_account": "Wavve",
+      "arr": null,
+      "subscription_end": null,
+      "amplitude_plan": null,
+      "status": "prospect",
+      "deal_stage": "Q2 클로징 타겟 — OTT 구독자 행동분석 수요 확인 필요",
+      "deal_stage_en": "Q2 Closing Target — need to confirm OTT subscriber behavior analytics demand",
+      "deal_amount": 0,
+      "health": "yellow",
+      "notes_summary": "SK텔레콤·KBS·MBC·SBS 합작 OTT 서비스. TVING과 경쟁 관계. 구독자 행동분석 및 콘텐츠 추천 고도화 수요 예상. Q2 클로징 타겟.",
+      "notes_summary_en": "OTT service joint venture by SK Telecom, KBS, MBC, SBS. Competes with TVING. Expected demand for subscriber behavior analytics and content recommendation optimization. Q2 closing target.",
+      "next_action": "Wavve 제품/데이터팀 컨택 + TVING 레퍼런스 활용 접근",
+      "next_action_en": "Contact Wavve product/data team + leverage TVING reference",
+      "last_activity": "2026-03-30",
+      "strategy": "TVING(CJ ENM) 레퍼런스로 OTT 업종 접근. 구독자 LTV 분석·이탈 예측 Use Case 제안. 콘텐츠 추천 개인화 ROI 데모.",
+      "strategy_en": "Approach OTT vertical with TVING reference. Propose subscriber LTV analysis and churn prediction use cases. Content recommendation personalization ROI demo.",
+      "activity_history": [
+        {
+          "date": "2026-03-30",
+          "type": "memo",
+          "summary": "[메모] Q2 타켓 클로징 올리브영글로벌, 웨이브, 골프존, 신세계DF, 우리카드",
+          "summary_en": "[Memo] Q2 target closing: CJ Olive Young Global, Wavve, Golfzon, Shinsegae DF, Woori Card"
+        }
+      ]
+    },
+    {
+      "group": "Shinsegae",
+      "key_account": "Shinsegae Duty Free",
+      "arr": null,
+      "subscription_end": null,
+      "amplitude_plan": null,
+      "status": "prospect",
+      "deal_stage": "Q2 클로징 타겟 — 신세계 그룹 MTU 전략 연계",
+      "deal_stage_en": "Q2 Closing Target — linked to Shinsegae Group MTU strategy",
+      "deal_amount": 0,
+      "health": "yellow",
+      "notes_summary": "신세계그룹 면세점 사업부. 그룹 내 SSG.com(Growth, active) · 신세계라이브쇼핑 레퍼런스 활용 가능. 외국인 관광객 행동분석 및 고급 구매 패턴 분석 수요. Q2 클로징 타겟.",
+      "notes_summary_en": "Shinsegae Group's duty-free division. Can leverage SSG.com (Growth, active) and Shinsegae Live Shopping references within group. Demand for foreign tourist behavior analytics and luxury purchase pattern analysis. Q2 closing target.",
+      "next_action": "신세계 그룹 레퍼런스(SSG.com) 기반 접근 + 면세점 e-커머스/디지털팀 컨택",
+      "next_action_en": "Approach via Shinsegae Group reference (SSG.com) + contact duty-free e-commerce/digital team",
+      "last_activity": "2026-03-30",
+      "strategy": "신세계 그룹 MTU 전략 적용 — SSG.com 계약 확장으로 신세계DF 포함. 그룹 통합 분석 구조 제안으로 DF 독립 계약 vs 그룹 통합 비교 시나리오 준비.",
+      "strategy_en": "Apply Shinsegae Group MTU strategy — expand SSG.com contract to include Shinsegae DF. Prepare group-integrated vs standalone contract comparison scenarios.",
+      "activity_history": [
+        {
+          "date": "2026-03-30",
+          "type": "memo",
+          "summary": "[메모] Q2 타켓 클로징 올리브영글로벌, 웨이브, 골프존, 신세계DF, 우리카드",
+          "summary_en": "[Memo] Q2 target closing: CJ Olive Young Global, Wavve, Golfzon, Shinsegae DF, Woori Card"
+        }
+      ]
+    },
+    {
+      "group": "Woori Financial",
+      "key_account": "Woori Card",
+      "arr": null,
+      "subscription_end": null,
+      "amplitude_plan": null,
+      "status": "prospect",
+      "deal_stage": "Q2 클로징 타겟 — 금융권 PII-free 접근 필요",
+      "deal_stage_en": "Q2 Closing Target — financial sector PII-free approach required",
+      "deal_amount": 0,
+      "health": "yellow",
+      "notes_summary": "우리금융그룹 카드 사업부. 금융권 데이터 규제 환경에서 PII-free 행동분석 접근 필요. 카드 앱 UX 개선 및 소비 패턴 분석 수요. Q2 클로징 타겟.",
+      "notes_summary_en": "Woori Financial Group's card division. PII-free behavioral analytics approach required under financial data regulations. Demand for card app UX improvement and spending pattern analysis. Q2 closing target.",
+      "next_action": "우리카드 앱 디지털팀 컨택 + KakaoBank PII-free 접근법 레퍼런스 준비",
+      "next_action_en": "Contact Woori Card app digital team + prepare KakaoBank PII-free approach reference",
+      "last_activity": "2026-03-30",
+      "strategy": "금융권 PII-free 접근으로 진입. KakaoBank·LG Uplus 레퍼런스 활용. 우리금융그룹(우리은행·우리투자증권 등) 전체 확장 발판 확보.",
+      "strategy_en": "Enter via PII-free approach for financial sector. Leverage KakaoBank and LG Uplus references. Establish foothold for Woori Financial Group expansion (Woori Bank, Woori Investment, etc.).",
+      "activity_history": [
+        {
+          "date": "2026-03-30",
+          "type": "memo",
+          "summary": "[메모] Q2 타켓 클로징 올리브영글로벌, 웨이브, 골프존, 신세계DF, 우리카드",
+          "summary_en": "[Memo] Q2 target closing: CJ Olive Young Global, Wavve, Golfzon, Shinsegae DF, Woori Card"
+        }
+      ]
     }
   ],
   "action_items": [
@@ -642,31 +899,202 @@
       "due": "2026-04-20"
     },
     {
+      "priority": "high",
+      "account": "Samsung Shop (Samsung.com)",
+      "group": "Samsung",
+      "action": "Adobe 대체 Use Case 제안서 준비 + 내부 챔피언 (전 Zigzag/Starbucks Korea 사용자) 활성화",
+      "action_en": "Prepare Adobe-replacement use case proposal + activate internal champions (ex-Zigzag/Starbucks Korea users)",
+      "due": "2026-04-15"
+    },
+    {
+      "priority": "high",
+      "account": "KakaoBank",
+      "group": "Kakao",
+      "action": "마케팅팀·신사업팀 PoC 타임라인 통합 조율 + PII-free 행동분석 구현 제안서 준비 (여름 전 PoC 목표)",
+      "action_en": "Align PoC timelines between Marketing and New Business teams + prepare PII-free implementation proposal (target: PoC before summer)",
+      "due": "2026-04-20"
+    },
+    {
+      "priority": "medium",
+      "account": "Hyundai Department Store",
+      "group": "Hyundai Department",
+      "action": "4월 중순 R&R/Shopify 조율 완료 후 PoC 킥오프 일정 확정",
+      "action_en": "Confirm PoC kickoff after mid-April R&R/Shopify alignment",
+      "due": "2026-04-20"
+    },
+    {
       "priority": "medium",
       "account": "SK Telecom (IFLAND)",
       "group": "SK",
       "action": "SK Adot 팀 재유치 미팅 - T world 신규 Land 기회 탐색",
       "action_en": "Win-back meeting with SK Adot - explore new Land with T world",
       "due": "2026-04-30"
+    },
+    {
+      "priority": "high",
+      "account": "CJ Olive Young",
+      "group": "CJ",
+      "action": "[합성] CJ Olive Young Experiment Add-on 크로스셀 제안 — 데모 일정 잡기",
+      "action_en": "[Synthesis] CJ Olive Young Experiment Add-on cross-sell — schedule demo",
+      "due": ""
+    },
+    {
+      "priority": "high",
+      "account": "TVING",
+      "group": "CJ",
+      "action": "[합성] TVING D-61 갱신 준비 착수 — QBR / 성과 리뷰 예약",
+      "action_en": "[Synthesis] TVING D-61 renewal prep — schedule QBR / success review",
+      "due": "2026-05-31"
+    },
+    {
+      "priority": "high",
+      "account": "TVING",
+      "group": "CJ",
+      "action": "[합성] TVING Experiment Add-on 크로스셀 제안 — 데모 일정 잡기",
+      "action_en": "[Synthesis] TVING Experiment Add-on cross-sell — schedule demo",
+      "due": ""
+    },
+    {
+      "priority": "urgent",
+      "account": "LG Uplus (CTO)",
+      "group": "LG",
+      "action": "[합성] LG Uplus (CTO) D-30 갱신 긴급 — EB 컨펌 및 조건 협의 착수",
+      "action_en": "[Synthesis] LG Uplus (CTO) D-30 urgent renewal — start EB confirmation and negotiation",
+      "due": "2026-04-30"
+    },
+    {
+      "priority": "urgent",
+      "account": "LG Uplus (CTO)",
+      "group": "LG",
+      "action": "[합성] LG Uplus (CTO) Health RED — 이탈 위험 긴급 대응 및 경영진 에스컬레이션 검토",
+      "action_en": "[Synthesis] LG Uplus (CTO) Health RED — urgent churn prevention and exec escalation",
+      "due": "2026-03-30"
+    },
+    {
+      "priority": "urgent",
+      "account": "SK Telecom (IFLAND)",
+      "group": "SK",
+      "action": "[합성] SK Telecom (IFLAND) 계약 만료 — 즉시 갱신 처리 필요",
+      "action_en": "[Synthesis] SK Telecom (IFLAND) contract expired — immediate renewal required",
+      "due": "2026-03-30"
+    },
+    {
+      "priority": "urgent",
+      "account": "Dunamu",
+      "group": "Dunamu",
+      "action": "[합성] Dunamu D-30 갱신 긴급 — EB 컨펌 및 조건 협의 착수",
+      "action_en": "[Synthesis] Dunamu D-30 urgent renewal — start EB confirmation and negotiation",
+      "due": "2026-04-30"
+    },
+    {
+      "priority": "high",
+      "account": "Musinsa",
+      "group": "Musinsa",
+      "action": "[합성] Musinsa Experiment Add-on 크로스셀 제안 — 데모 일정 잡기",
+      "action_en": "[Synthesis] Musinsa Experiment Add-on cross-sell — schedule demo",
+      "due": ""
+    },
+    {
+      "priority": "medium",
+      "account": "Samsung Galaxy Store",
+      "group": "Samsung",
+      "action": "H2 재개 일정 확인 - MX Division 신규 임원진 연락 + 내부 챔피언(갤럭시스토어팀) 관계 유지",
+      "action_en": "Confirm H2 restart - contact new MX Division leadership + keep Galaxy Store internal champions warm",
+      "due": "2026-05-31"
+    },
+    {
+      "account": "CJ Olive Young Global",
+      "action": "Q2 클로징 타겟 — 초기 컨택 및 니즈 확인",
+      "action_en": "Q2 Closing Target — initial contact and needs assessment",
+      "priority": "high",
+      "due": "2026-06-30",
+      "source": "memo"
+    },
+    {
+      "account": "Wavve",
+      "action": "Q2 클로징 타겟 — 초기 컨택 및 니즈 확인",
+      "action_en": "Q2 Closing Target — initial contact and needs assessment",
+      "priority": "high",
+      "due": "2026-06-30",
+      "source": "memo"
+    },
+    {
+      "account": "Shinsegae Duty Free",
+      "action": "Q2 클로징 타겟 — 초기 컨택 및 니즈 확인",
+      "action_en": "Q2 Closing Target — initial contact and needs assessment",
+      "priority": "high",
+      "due": "2026-06-30",
+      "source": "memo"
+    },
+    {
+      "account": "Woori Card",
+      "action": "Q2 클로징 타겟 — 초기 컨택 및 니즈 확인",
+      "action_en": "Q2 Closing Target — initial contact and needs assessment",
+      "priority": "high",
+      "due": "2026-06-30",
+      "source": "memo"
+    },
+    {
+      "account": "Golfzon County",
+      "action": "Q2 클로징 타겟 — 초기 컨택 및 니즈 확인",
+      "action_en": "Q2 Closing Target — initial contact and needs assessment",
+      "priority": "high",
+      "due": "2026-06-30",
+      "source": "memo"
     }
   ],
-  "strategy_summary": "【이번 주 하이라이트】하이마트 신규 Land Closed Won (3/24 서명, 4/1 시작). 【최우선】LG Uplus D-31 즉각 갱신 착수. TVING D-63 Experiment 어답션 활용해 갱신 가속. 【긍정 모멘텀】Lotte ON 매주 위클리로 Phase3 Taxonomy 활발 진행. Starbucks Expand $204K Quote Approved. 관리 총 ARR ~$1.68M.",
-  "strategy_summary_en": "【This Week's Highlight】Himart New Land Closed Won (signed 3/24, starts 4/1) via CJ OliveNetworks partner. 【Top Priority】LG Uplus D-31: immediate renewal required. TVING D-63: leverage Experiment adoption to accelerate renewal. 【Positive Momentum】Lotte ON weekly meetings driving Phase 3 Taxonomy. Starbucks Expand $204K Quote Approved. Total managed ARR ~$1.68M.",
+  "strategy_summary": "[합성 업데이트 2026-03-30] 주요 계정 현황: CJ Olive Young, TVING D-61, LG Uplus (CTO) 긴급, Golfzon County. 합성 결과 8건 액션, 4건 리스크 추가. | 【파이프라인 위기】Naver PoC 전면 중단(CTO→회장 인하우스 결정), Samsung Galaxy Store PoC 동결(MX Division 예산 동결) — Naver Shopping Q2→Q4 슬립. 【복구 전략】Q2 타겟: CJ OliveYoung Global, Wavve, Golfzon, 신세계DF 각 $100K+. 【신규 파이프라인】Samsung Shop(Samsung.com, Adobe 대체), KakaoBank(PII-free PoC), 현대백화점(GA→Amp 내부 승인 완료), NOL(PoC scoping). 【최우선】LG Uplus D-31 갱신, TVING D-62 클로징, 4/2 신세계DF 데모.",
+  "strategy_summary_en": "[Synthesis 2026-03-30] Key accounts: CJ Olive Young, TVING D-61, LG Uplus (CTO) 긴급, Golfzon County. 8 actions and 4 risks added from synthesis. | 【Pipeline Risk】Naver PoC fully frozen (CTO→Chairman in-house decision), Samsung Galaxy Store PoC paused (MX Division budget freeze) — Naver Shopping slips Q2→Q4. 【Recovery Plan】Q2 targets: Olive Young Global, Wavve, Golfzon, Shinsegae DF each $100K+. 【New Pipeline】Samsung Shop (Samsung.com, Adobe replacement), KakaoBank (PII-free PoC), Hyundai Dept Store (GA→Amp internal approval done), NOL (PoC scoping). 【Top Priority】LG Uplus D-31 renewal, TVING D-62 close, 4/2 Shinsegae DF demo.",
   "risks": [
     {
       "account": "LG Uplus (CTO)",
-      "risk": "D-34 만료 - 갱신 Stage2에 불과, EB 미컨펌. infiniSTAR 갱신 Closed Lost 선례 있음",
-      "risk_en": "D-34 expiry - only at Stage 2, EB not confirmed. Precedent: infiniSTAR renewal Closed Lost"
+      "risk": "D-31 만료 - 갱신 Stage2에 불과, EB 미컨펌. infiniSTAR 갱신 Closed Lost 선례 있음",
+      "risk_en": "D-31 expiry - only at Stage 2, EB not confirmed. Precedent: infiniSTAR renewal Closed Lost"
     },
     {
       "account": "TVING",
-      "risk": "D-65 만료 - Stage5 딜 진행중이나 클로징이 만료일보다 늦어질 위험",
-      "risk_en": "D-65 expiry - Stage 5 deal in progress but at risk of close lagging behind contract expiry"
+      "risk": "D-62 만료 - Stage5 딜 진행중이나 클로징이 만료일보다 늦어질 위험",
+      "risk_en": "D-62 expiry - Stage 5 deal in progress but at risk of close lagging behind contract expiry"
+    },
+    {
+      "account": "Naver Corp",
+      "risk": "PoC 전면 중단 - CTO→회장 인하우스 결정. Naver Shopping Q2 딜 Q4로 슬립. 여름까지 재개 불가",
+      "risk_en": "PoC fully frozen - CTO→Chairman in-house decision. Naver Shopping Q2 deal slips to Q4. Cannot resume until summer"
+    },
+    {
+      "account": "Samsung Galaxy Store",
+      "risk": "Samsung Galaxy Store PoC 동결 - MX Division 예산 동결. H2 재개 예정이나 불확실",
+      "risk_en": "Samsung Galaxy Store PoC frozen - MX Division budget freeze. H2 restart planned but uncertain"
     },
     {
       "account": "SK Telecom (IFLAND)",
       "risk": "해지 고객 - SK Adot / T world 재유치 파이프라인 부재",
       "risk_en": "Churned - no active win-back pipeline for SK Adot / T world"
+    },
+    {
+      "account": "Dunamu",
+      "risk": "2026-04-30 Enterprise 계약 만료 (D-32). 갱신 딜 Stage 2 Qualification 단계. NAVER파이낸셜 인수 협상($10.3B) 변수로 의사결정 지연 가능. $1,168K ARR 갱신 리스크.",
+      "risk_en": "Enterprise contract expires 2026-04-30 (D-32). Renewal deal at Stage 2 Qualification. NAVER Financial acquisition ($10.3B) may delay decision. $1,168K ARR renewal at risk."
+    },
+    {
+      "account": "LG Uplus (CTO)",
+      "risk": "D-30 갱신 임박. 갱신 협상 즉시 착수 필요.",
+      "risk_en": "D-30 renewal approaching. Immediate negotiation required."
+    },
+    {
+      "account": "LG Uplus (CTO)",
+      "risk": "Health 레드 — 긴급 계정 관리 필요 (이탈 위험)",
+      "risk_en": "Health RED — urgent account management needed (churn risk)"
+    },
+    {
+      "account": "SK Telecom (IFLAND)",
+      "risk": "계약 만료됨 (만료일: 2024-12-31). 즉시 갱신 조치 필요.",
+      "risk_en": "Contract expired (2024-12-31). Immediate renewal action required."
+    },
+    {
+      "account": "Dunamu",
+      "risk": "D-30 갱신 임박. 갱신 협상 즉시 착수 필요.",
+      "risk_en": "D-30 renewal approaching. Immediate negotiation required."
     }
   ]
 }

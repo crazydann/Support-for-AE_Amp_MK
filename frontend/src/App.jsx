@@ -9,7 +9,7 @@ export default function App() {
   const { lang, setLang, t } = useLang()
   const [tab, setTab] = useState('dashboard')
   const [currentCompany, setCurrentCompany] = useState(null)
-  const [dashView, setDashView] = useState('todo')  // 'todo' | 'account' | 'weekly'
+  const [dashView, setDashView] = useState('weekly')  // 'todo' | 'account' | 'weekly'
 
   const TABS = [
     { id: 'dashboard', label: t('tabHome'),      icon: HomeIcon },
@@ -73,23 +73,23 @@ export default function App() {
                 <span className="text-white font-bold text-xs">A</span>
               </div>
               <div>
-                <h1 className="text-sm font-bold text-gray-900 leading-none">{t('appName')}</h1>
+                <h1 className="text-sm font-bold text-gray-900 leading-none truncate max-w-[120px]">{t('appName')}</h1>
               </div>
             </div>
           </div>
 
           {/* 오른쪽: 뷰 토글 (대시보드) or 뒤로가기 */}
           {tab === 'dashboard' && (
-            <div className="flex items-center bg-gray-100 rounded-lg p-0.5">
+            <div className="flex items-center bg-gray-100 rounded-lg p-0.5 flex-shrink-0">
               <button
-                onClick={() => setDashView('todo')}
+                onClick={() => setDashView('weekly')}
                 className={`text-xs font-semibold px-2.5 py-1 rounded-md transition-all ${
-                  dashView === 'todo'
+                  dashView === 'weekly'
                     ? 'bg-white text-purple-700 shadow-sm'
                     : 'text-gray-400 hover:text-gray-600'
                 }`}
               >
-                {t('viewTodo')}
+                {t('viewWeekly')}
               </button>
               <button
                 onClick={() => setDashView('account')}
@@ -102,14 +102,14 @@ export default function App() {
                 {t('viewAccount')}
               </button>
               <button
-                onClick={() => setDashView('weekly')}
+                onClick={() => setDashView('todo')}
                 className={`text-xs font-semibold px-2.5 py-1 rounded-md transition-all ${
-                  dashView === 'weekly'
+                  dashView === 'todo'
                     ? 'bg-white text-purple-700 shadow-sm'
                     : 'text-gray-400 hover:text-gray-600'
                 }`}
               >
-                {t('viewWeekly')}
+                {t('viewTodo')}
               </button>
             </div>
           )}
