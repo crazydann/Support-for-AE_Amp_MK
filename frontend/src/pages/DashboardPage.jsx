@@ -676,15 +676,19 @@ function AccountView({ report, t, lang }) {
 
 // ─── WEEKLY VIEW ──────────────────────────────────────────────────────────────
 
-// 타입별 피드 설정 (weekly용 — SFDC 제외)
 const feedTypeConfig = {
-  gmail:   { icon: '✉',  color: 'text-blue-600',   bg: 'bg-blue-50',    border: 'border-blue-100',   label: '이메일',    label_en: 'Email' },
-  slack:   { icon: '💬', color: 'text-green-600',  bg: 'bg-green-50',   border: 'border-green-100',  label: '슬랙',      label_en: 'Slack' },
-  meeting: { icon: '📅', color: 'text-purple-600', bg: 'bg-purple-50',  border: 'border-purple-100', label: '미팅',      label_en: 'Meeting' },
-  glean:   { icon: '🔍', color: 'text-indigo-600', bg: 'bg-indigo-50',  border: 'border-indigo-100', label: 'Glean/Drive', label_en: 'Glean/Drive' },
-  drive:   { icon: '📄', color: 'text-indigo-600', bg: 'bg-indigo-50',  border: 'border-indigo-100', label: 'Drive',     label_en: 'Drive' },
-  memo:    { icon: '📝', color: 'text-orange-600', bg: 'bg-orange-50',  border: 'border-orange-100', label: '메모',      label_en: 'Memo' },
-  insight: { icon: '💡', color: 'text-yellow-600', bg: 'bg-yellow-50',  border: 'border-yellow-100', label: '인사이트',  label_en: 'Insight' },
+  gmail:   { icon: '✉',  color: 'text-blue-600',   bg: 'bg-blue-50',   pill: 'bg-blue-100 text-blue-700',    label: '이메일', label_en: 'Email' },
+  slack:   { icon: '💬', color: 'text-green-600',  bg: 'bg-green-50',  pill: 'bg-green-100 text-green-700',  label: '슬랙',   label_en: 'Slack' },
+  meeting: { icon: '📅', color: 'text-purple-600', bg: 'bg-purple-50', pill: 'bg-purple-100 text-purple-700',label: '미팅',   label_en: 'Meeting' },
+  glean:   { icon: '🔍', color: 'text-indigo-600', bg: 'bg-indigo-50', pill: 'bg-indigo-100 text-indigo-700',label: 'Glean',  label_en: 'Glean' },
+  drive:   { icon: '📄', color: 'text-indigo-600', bg: 'bg-indigo-50', pill: 'bg-indigo-100 text-indigo-700',label: 'Drive',  label_en: 'Drive' },
+  memo:    { icon: '📝', color: 'text-orange-600', bg: 'bg-orange-50', pill: 'bg-orange-100 text-orange-700',label: '메모',   label_en: 'Memo' },
+  insight: { icon: '💡', color: 'text-yellow-600', bg: 'bg-yellow-50', pill: 'bg-yellow-100 text-yellow-700',label: '인사이트', label_en: 'Insight' },
+}
+
+// 요약 텍스트에서 [접두사] 정리
+function cleanSummary(s = '') {
+  return s.replace(/^\[(Gmail|Slack|SFDC|글린|Glean)[^\]]*\]\s*/i, '').trim()
 }
 
 function WeeklyView({ t, lang }) {
@@ -692,10 +696,10 @@ function WeeklyView({ t, lang }) {
   const [loadingFeed, setLoadingFeed] = useState(true)
   const [syncing, setSyncing] = useState(false)
   const [syncMsg, setSyncMsg] = useState(null)
-  const [activeTab, setActiveTab] = useState('all') // all | gmail | slack | meeting | glean | memo
+  const [expandedAccounts, setExpandedAccounts] = useState({})
   const priorityConfig = getPriorityConfig(t)
+  const healthConfig = getHealthConfig(t)
 
-  // weekly-feed 로드
   useEffect(() => {
     fetch(`${API}/api/intel/weekly-feed?days=14`)
       .then(r => r.json())
@@ -704,280 +708,325 @@ function WeeklyView({ t, lang }) {
   }, [])
 
   const handleSync = async () => {
-    setSyncing(true)
-    setSyncMsg(null)
+    setSyncing(true); setSyncMsg(null)
     try {
       const res = await fetch(`${API}/api/intel/sync?force=true`, { method: 'POST' })
       const data = await res.json()
-      setSyncMsg(lang === 'en'
-        ? `Sync done (${data.added || 0} added)`
-        : `동기화 완료 (${data.added || 0}건 추가)`)
-      // 피드 재로드
+      setSyncMsg(lang === 'en' ? `Sync done (${data.added || 0} added)` : `동기화 완료 (${data.added || 0}건 추가)`)
       const r2 = await fetch(`${API}/api/intel/weekly-feed?days=14`)
-      const d2 = await r2.json()
-      setFeed(d2)
+      setFeed(await r2.json())
       setTimeout(() => setSyncMsg(null), 4000)
     } catch {
       setSyncMsg(lang === 'en' ? 'Sync failed' : '동기화 실패')
       setTimeout(() => setSyncMsg(null), 3000)
-    } finally {
-      setSyncing(false)
-    }
+    } finally { setSyncing(false) }
   }
 
   const today = new Date()
-  const weekStart = new Date(today)
-  weekStart.setDate(today.getDate() - today.getDay() + (today.getDay() === 0 ? -6 : 1))
-
   const allEntries = feed?.entries || []
-  const byDate = feed?.by_date || {}
-  const byType = feed?.by_type || {}
+  const byType    = feed?.by_type || {}
   const actionItems = feed?.action_items || []
+  const accountMeta = feed?.account_meta || {}
 
-  // 탭 필터
-  const filteredEntries = activeTab === 'all'
-    ? allEntries
-    : allEntries.filter(e => (e.type || e.log_type) === activeTab)
-
-  // 날짜별 그룹핑 (필터 적용 후)
-  const filteredByDate = {}
-  filteredEntries.forEach(e => {
-    const d = e.date || (e.ts || '').slice(0, 10) || 'unknown'
-    if (!filteredByDate[d]) filteredByDate[d] = []
-    filteredByDate[d].push(e)
+  // ── 계정별로 활동 그룹핑 ──
+  const byAccount = {}
+  allEntries.forEach(e => {
+    const acct = e.account || (lang === 'en' ? 'Unlinked' : '미분류')
+    if (!byAccount[acct]) byAccount[acct] = []
+    byAccount[acct].push(e)
   })
-  const sortedDates = Object.keys(filteredByDate).sort((a, b) => b.localeCompare(a))
+  // 계정별 최신 날짜 기준 정렬
+  const accountList = Object.keys(byAccount).sort((a, b) => {
+    const la = byAccount[a][0]?.date || ''
+    const lb = byAccount[b][0]?.date || ''
+    return lb.localeCompare(la)
+  })
 
-  // 탭 목록 (데이터 있는 타입만)
-  const tabs = [
-    { id: 'all', label: lang === 'en' ? 'All' : '전체', count: allEntries.length },
-    ...[
-      { id: 'gmail',   label: lang === 'en' ? 'Email' : '이메일', icon: '✉' },
-      { id: 'slack',   label: 'Slack', icon: '💬' },
-      { id: 'meeting', label: lang === 'en' ? 'Meeting' : '미팅', icon: '📅' },
-      { id: 'glean',   label: 'Glean', icon: '🔍' },
-      { id: 'memo',    label: lang === 'en' ? 'Memo' : '메모', icon: '📝' },
-    ].filter(tab => byType[tab.id] > 0).map(tab => ({
-      ...tab,
-      count: byType[tab.id] || 0
-    }))
-  ]
+  // 계정별 action items 맵
+  const actionsByAccount = {}
+  actionItems.forEach(a => {
+    const k = a.account || ''
+    if (!actionsByAccount[k]) actionsByAccount[k] = []
+    actionsByAccount[k].push(a)
+  })
 
+  // 활동 없지만 할 일 있는 계정
+  const actionOnlyAccounts = Object.keys(actionsByAccount)
+    .filter(k => !byAccount[k] && k)
+    .sort()
+
+  // 전체 할 일 (우선순위순)
   const sortedActions = [...actionItems].sort((a, b) => {
     const order = { urgent: 0, high: 1, medium: 2 }
     return (order[a.priority] ?? 3) - (order[b.priority] ?? 3)
   })
+  const urgentCount = sortedActions.filter(a => a.priority === 'urgent').length
+
+  const toggleAccount = (name) =>
+    setExpandedAccounts(prev => ({ ...prev, [name]: !prev[name] }))
+
+  if (loadingFeed) return (
+    <div className="flex items-center justify-center h-48">
+      <div className="text-center space-y-2">
+        <div className="w-6 h-6 border-2 border-purple-500 border-t-transparent rounded-full animate-spin mx-auto" />
+        <p className="text-xs text-gray-400">{lang === 'en' ? 'Loading…' : '불러오는 중…'}</p>
+      </div>
+    </div>
+  )
 
   return (
     <div className="space-y-4 pb-24">
-      {/* 헤더 */}
-      <div className="bg-gradient-to-r from-purple-600 to-indigo-600 rounded-2xl p-4 text-white">
-        <p className="text-xs font-medium opacity-80 mb-1">
-          {lang === 'en' ? 'Weekly Activity Feed' : '주간 활동 피드'} · {today.toLocaleDateString(lang === 'en' ? 'en-US' : 'ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })}
-        </p>
-        <h2 className="text-base font-bold leading-snug">
-          {lang === 'en' ? 'AE MK — Last 2 Weeks' : 'AE MK 최근 2주 활동'}
-        </h2>
-        <div className="flex gap-4 mt-3 pt-3 border-t border-white/20 flex-wrap">
+
+      {/* ── 주간 보고 헤더 ── */}
+      <div className="bg-gradient-to-br from-purple-600 to-indigo-600 rounded-2xl p-4 text-white">
+        <div className="flex items-start justify-between gap-2 mb-3">
+          <div>
+            <p className="text-xs font-medium opacity-70">
+              {lang === 'en' ? 'Weekly Report' : '주간 보고'} · AE MK
+            </p>
+            <p className="text-sm font-bold mt-0.5">
+              {today.toLocaleDateString(lang === 'en' ? 'en-US' : 'ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })}
+            </p>
+          </div>
+          <button
+            onClick={handleSync}
+            disabled={syncing}
+            className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all shrink-0 ${
+              syncing ? 'bg-white/10 text-white/50 cursor-not-allowed' : 'bg-white/20 hover:bg-white/30 text-white'
+            }`}
+          >
+            <svg className={`w-3 h-3 ${syncing ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            {syncing ? (lang === 'en' ? 'Syncing…' : '동기화 중…') : (lang === 'en' ? 'Sync' : '동기화')}
+          </button>
+        </div>
+        {/* 통계 칩 */}
+        <div className="flex gap-2 flex-wrap">
+          <div className="bg-white/15 rounded-lg px-3 py-1.5 text-center">
+            <p className="text-sm font-bold">{accountList.length}</p>
+            <p className="text-xs opacity-70">{lang === 'en' ? 'Accounts' : '고객'}</p>
+          </div>
           {byType.gmail > 0 && (
-            <div className="text-center">
-              <p className="text-lg font-bold">{byType.gmail}</p>
+            <div className="bg-white/15 rounded-lg px-3 py-1.5 text-center">
+              <p className="text-sm font-bold">{byType.gmail}</p>
               <p className="text-xs opacity-70">{lang === 'en' ? 'Emails' : '이메일'}</p>
             </div>
           )}
           {byType.slack > 0 && (
-            <div className="text-center">
-              <p className="text-lg font-bold">{byType.slack}</p>
+            <div className="bg-white/15 rounded-lg px-3 py-1.5 text-center">
+              <p className="text-sm font-bold">{byType.slack}</p>
               <p className="text-xs opacity-70">Slack</p>
             </div>
           )}
           {byType.meeting > 0 && (
-            <div className="text-center">
-              <p className="text-lg font-bold">{byType.meeting}</p>
+            <div className="bg-white/15 rounded-lg px-3 py-1.5 text-center">
+              <p className="text-sm font-bold">{byType.meeting}</p>
               <p className="text-xs opacity-70">{lang === 'en' ? 'Meetings' : '미팅'}</p>
             </div>
           )}
-          {byType.glean > 0 && (
-            <div className="text-center">
-              <p className="text-lg font-bold">{byType.glean}</p>
-              <p className="text-xs opacity-70">Glean</p>
-            </div>
-          )}
-          {byType.memo > 0 && (
-            <div className="text-center">
-              <p className="text-lg font-bold">{byType.memo}</p>
-              <p className="text-xs opacity-70">{lang === 'en' ? 'Memos' : '메모'}</p>
-            </div>
-          )}
-          {allEntries.length === 0 && (
-            <div className="text-center">
-              <p className="text-lg font-bold opacity-60">0</p>
-              <p className="text-xs opacity-50">{lang === 'en' ? 'No activity' : '활동 없음'}</p>
+          {urgentCount > 0 && (
+            <div className="bg-red-400/40 rounded-lg px-3 py-1.5 text-center">
+              <p className="text-sm font-bold text-red-100">{urgentCount}</p>
+              <p className="text-xs opacity-70">{lang === 'en' ? 'Urgent' : '긴급'}</p>
             </div>
           )}
         </div>
       </div>
 
-      {/* 동기화 버튼 */}
-      <div className="flex items-center gap-2">
-        <button
-          onClick={handleSync}
-          disabled={syncing}
-          className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold transition-all border ${
-            syncing
-              ? 'bg-gray-50 text-gray-400 border-gray-200 cursor-not-allowed'
-              : 'bg-white text-purple-700 border-purple-200 hover:bg-purple-50'
-          }`}
-        >
-          <svg className={`w-3.5 h-3.5 ${syncing ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-          </svg>
-          {syncing
-            ? (lang === 'en' ? 'Syncing…' : '동기화 중…')
-            : (lang === 'en' ? 'Sync Gmail / Calendar / Slack' : 'Gmail · 캘린더 · Slack 동기화')}
-        </button>
-      </div>
       {syncMsg && (
-        <div className={`text-xs font-medium px-3 py-2 rounded-xl text-center ${
+        <div className={`text-xs font-medium px-3 py-2 rounded-xl text-center border ${
           syncMsg.includes('실패') || syncMsg.includes('failed')
-            ? 'bg-red-50 text-red-600 border border-red-200'
-            : 'bg-green-50 text-green-600 border border-green-200'
-        }`}>
-          {syncMsg}
-        </div>
+            ? 'bg-red-50 text-red-600 border-red-200'
+            : 'bg-green-50 text-green-600 border-green-200'
+        }`}>{syncMsg}</div>
       )}
 
-      {/* 타입 탭 필터 */}
-      {tabs.length > 1 && (
-        <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-none">
-          {tabs.map(tab => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all shrink-0 ${
-                activeTab === tab.id
-                  ? 'bg-purple-600 text-white shadow-sm'
-                  : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
-              }`}
-            >
-              {tab.icon && <span>{tab.icon}</span>}
-              {tab.label}
-              <span className={`text-xs px-1 rounded-full ${activeTab === tab.id ? 'bg-white/20 text-white' : 'bg-gray-200 text-gray-500'}`}>
-                {tab.count}
-              </span>
-            </button>
-          ))}
-        </div>
-      )}
-
-      {/* 활동 피드 */}
-      {loadingFeed ? (
-        <div className="bg-gray-50 border border-gray-200 rounded-xl p-8 text-center">
-          <div className="w-6 h-6 border-2 border-purple-500 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
-          <p className="text-xs text-gray-400">{lang === 'en' ? 'Loading…' : '불러오는 중…'}</p>
-        </div>
-      ) : sortedDates.length === 0 ? (
-        <div className="bg-gray-50 border border-gray-200 border-dashed rounded-xl p-6 text-center space-y-2">
-          <p className="text-sm font-medium text-gray-500">
-            {lang === 'en' ? 'No activity in the past 2 weeks' : '최근 2주 활동 없음'}
-          </p>
-          <p className="text-xs text-gray-400">
-            {lang === 'en'
-              ? 'Press "Sync" to fetch emails, calendar, and Slack data'
-              : '"동기화" 버튼을 눌러 이메일, 캘린더, 슬랙 데이터를 가져오세요'}
-          </p>
-        </div>
-      ) : (
-        <div className="space-y-3">
-          {sortedDates.map(date => (
-            <div key={date} className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-              {/* 날짜 헤더 */}
-              <div className="bg-gray-50 border-b border-gray-100 px-3 py-2 flex items-center gap-2">
-                <span className="text-xs font-bold text-gray-600">
-                  {new Date(date + 'T00:00:00').toLocaleDateString(lang === 'en' ? 'en-US' : 'ko-KR', {
-                    month: 'long', day: 'numeric', weekday: 'short'
-                  })}
-                </span>
-                <span className="ml-auto text-xs text-gray-400">{filteredByDate[date].length}{lang === 'en' ? ' items' : '건'}</span>
-              </div>
-              {/* 항목들 */}
-              <div className="divide-y divide-gray-50">
-                {filteredByDate[date].map((item, i) => {
-                  const itemType = item.type || item.log_type || 'memo'
-                  const cfg = feedTypeConfig[itemType] || feedTypeConfig.memo
-                  const summary = item.summary || item.title || ''
-                  return (
-                    <div key={i} className="px-3 py-2.5 flex gap-2.5 items-start">
-                      <div className={`${cfg.bg} rounded-full w-7 h-7 flex items-center justify-center text-sm shrink-0 mt-0.5`}>
-                        {cfg.icon}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-1.5 mb-0.5 flex-wrap">
-                          <span className={`text-xs font-semibold ${cfg.color}`}>
-                            {lang === 'en' ? cfg.label_en : cfg.label}
-                          </span>
-                          {item.account && (
-                            <>
-                              <span className="text-xs text-gray-300">·</span>
-                              <span className="text-xs font-medium text-gray-600">{item.account}</span>
-                            </>
-                          )}
-                        </div>
-                        <p className="text-xs text-gray-700 leading-relaxed">
-                          {summary}
-                        </p>
-                        {item.url && (
-                          <a href={item.url} target="_blank" rel="noopener noreferrer"
-                            className="text-xs text-blue-400 hover:text-blue-600 mt-0.5 inline-block truncate max-w-full">
-                            {item.url.slice(0, 60)}{item.url.length > 60 ? '…' : ''}
-                          </a>
-                        )}
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* ── 이번 주 할 일 ── */}
+      {/* ── 이번 주 할 일 (긴급/high 우선 표시) ── */}
       {sortedActions.length > 0 && (
         <div className="space-y-2">
-          <h2 className="text-sm font-bold text-gray-900 flex items-center gap-2">
+          <h2 className="text-xs font-bold text-gray-500 uppercase tracking-wider px-1 flex items-center gap-2">
             ✅ {lang === 'en' ? 'Action Items' : '이번 주 할 일'}
-            <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full font-normal">{sortedActions.length}</span>
+            <span className="bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full font-normal normal-case tracking-normal">
+              {sortedActions.length}
+            </span>
           </h2>
-          <div className="space-y-2">
+          <div className="space-y-1.5">
             {sortedActions.map((item, i) => {
               const cfg = priorityConfig[item.priority] || priorityConfig.medium
               const action = pick(item, 'action', lang)
               const days = item.due ? daysUntil(item.due) : null
               return (
-                <div key={i} className={`rounded-xl border ${cfg.bg} p-3`}>
-                  <div className="flex gap-2.5 items-start">
-                    <span className={`text-xs font-bold ${cfg.color} shrink-0 mt-0.5`}>{cfg.label}</span>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs font-medium text-gray-900 leading-snug">{action}</p>
-                      <div className="flex items-center gap-2 mt-1 flex-wrap">
-                        <span className="text-xs text-gray-400">{item.account}</span>
-                        {item.due && (
-                          <span className={`text-xs font-medium px-1.5 py-0.5 rounded-full ${
-                            days !== null && days <= 3 ? 'bg-red-100 text-red-600'
-                            : days !== null && days <= 7 ? 'bg-orange-100 text-orange-600'
-                            : 'bg-gray-100 text-gray-500'
-                          }`}>
-                            {item.due}{days !== null ? ` (D-${days})` : ''}
-                          </span>
-                        )}
-                      </div>
+                <div key={i} className={`rounded-xl border ${cfg.bg} px-3 py-2.5 flex gap-2.5 items-start`}>
+                  <span className={`text-xs font-bold ${cfg.color} shrink-0 mt-0.5 w-10`}>{cfg.label}</span>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-semibold text-gray-900 leading-snug">{action}</p>
+                    <div className="flex items-center gap-2 mt-1 flex-wrap">
+                      <span className="text-xs text-gray-400">{item.account}</span>
+                      {item.due && (
+                        <span className={`text-xs font-medium px-1.5 py-0.5 rounded-full ${
+                          days !== null && days <= 3 ? 'bg-red-100 text-red-600'
+                          : days !== null && days <= 7 ? 'bg-orange-100 text-orange-600'
+                          : 'bg-gray-100 text-gray-500'
+                        }`}>
+                          {item.due}{days !== null ? ` (D-${days})` : ''}
+                        </span>
+                      )}
                     </div>
                   </div>
                 </div>
               )
             })}
           </div>
+        </div>
+      )}
+
+      {/* ── 고객별 활동 ── */}
+      {allEntries.length === 0 ? (
+        <div className="bg-gray-50 border border-dashed border-gray-200 rounded-xl p-6 text-center space-y-1.5">
+          <p className="text-sm font-medium text-gray-500">
+            {lang === 'en' ? 'No activity in the past 2 weeks' : '최근 2주 활동 없음'}
+          </p>
+          <p className="text-xs text-gray-400">
+            {lang === 'en' ? 'Press "Sync" above to fetch emails, calendar, and Slack data'
+              : '위 "동기화" 버튼을 눌러 이메일·캘린더·Slack 데이터를 가져오세요'}
+          </p>
+        </div>
+      ) : (
+        <div className="space-y-2">
+          <h2 className="text-xs font-bold text-gray-500 uppercase tracking-wider px-1 flex items-center gap-2">
+            📋 {lang === 'en' ? 'Account Activity' : '고객별 활동'}
+            <span className="bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full font-normal normal-case tracking-normal">
+              {accountList.length}{lang === 'en' ? ' accounts' : '개'}
+            </span>
+          </h2>
+          {accountList.map(acctName => {
+            const items = byAccount[acctName] || []
+            const meta  = accountMeta[acctName] || {}
+            const hcfg  = healthConfig[meta.health] || healthConfig.gray
+            const acctActions = actionsByAccount[acctName] || []
+            const isExpanded  = expandedAccounts[acctName] ?? false
+            const latestDate  = items[0]?.date || ''
+            // 타입 뱃지 (고유 타입 목록)
+            const types = [...new Set(items.map(e => e.type || e.log_type || 'memo'))]
+            // 표시할 항목: 접힌 상태 3개, 펼침 전체
+            const visibleItems = isExpanded ? items : items.slice(0, 3)
+
+            return (
+              <div key={acctName} className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                {/* 계정 헤더 — 클릭 시 토글 */}
+                <button
+                  onClick={() => toggleAccount(acctName)}
+                  className="w-full text-left px-3 py-2.5 flex items-center gap-2 hover:bg-gray-50 transition-colors"
+                >
+                  <span className={`w-2 h-2 rounded-full shrink-0 ${hcfg.dot}`} />
+                  <span className="flex-1 text-sm font-bold text-gray-900 truncate">{acctName}</span>
+                  {/* 채널 뱃지 */}
+                  <div className="flex gap-1 shrink-0">
+                    {types.map(tp => {
+                      const tc = feedTypeConfig[tp] || feedTypeConfig.memo
+                      return (
+                        <span key={tp} className={`text-xs px-1.5 py-0.5 rounded-full ${tc.pill}`}>
+                          {tc.icon}
+                        </span>
+                      )
+                    })}
+                  </div>
+                  <span className="text-xs text-gray-400 shrink-0">{latestDate?.slice(5)}</span>
+                  <svg className={`w-3.5 h-3.5 text-gray-400 shrink-0 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+                    fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+
+                {/* 활동 항목들 */}
+                <div className="divide-y divide-gray-50 border-t border-gray-100">
+                  {visibleItems.map((item, i) => {
+                    const itemType = item.type || item.log_type || 'memo'
+                    const cfg = feedTypeConfig[itemType] || feedTypeConfig.memo
+                    const text = cleanSummary(item.summary || item.title || '')
+                    return (
+                      <div key={i} className="px-3 py-2 flex gap-2 items-start">
+                        <span className={`text-xs mt-0.5 shrink-0 ${cfg.color}`}>{cfg.icon}</span>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-1.5 mb-0.5">
+                            <span className={`text-xs font-semibold ${cfg.color}`}>
+                              {lang === 'en' ? cfg.label_en : cfg.label}
+                            </span>
+                            <span className="text-xs text-gray-400">{item.date?.slice(5)}</span>
+                          </div>
+                          <p className="text-xs text-gray-700 leading-relaxed line-clamp-2">{text}</p>
+                        </div>
+                      </div>
+                    )
+                  })}
+                  {/* 더보기 */}
+                  {!isExpanded && items.length > 3 && (
+                    <button
+                      onClick={() => toggleAccount(acctName)}
+                      className="w-full py-1.5 text-xs text-gray-400 hover:text-purple-600 hover:bg-gray-50 transition-colors"
+                    >
+                      {lang === 'en' ? `+${items.length - 3} more` : `+${items.length - 3}건 더 보기`}
+                    </button>
+                  )}
+                </div>
+
+                {/* 이 계정 관련 할 일 */}
+                {acctActions.length > 0 && (
+                  <div className="px-3 py-2 bg-gray-50 border-t border-gray-100 space-y-1.5">
+                    {acctActions.map((a, i) => {
+                      const pcfg = priorityConfig[a.priority] || priorityConfig.medium
+                      return (
+                        <div key={i} className="flex gap-2 items-start">
+                          <span className={`text-xs font-bold ${pcfg.color} shrink-0 mt-0.5`}>{pcfg.label}</span>
+                          <p className="text-xs text-gray-700 leading-snug">{pick(a, 'action', lang)}</p>
+                          {a.due && (
+                            <span className="ml-auto text-xs text-gray-400 shrink-0">{a.due.slice(5)}</span>
+                          )}
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
+              </div>
+            )
+          })}
+
+          {/* 활동은 없지만 할 일 있는 계정 */}
+          {actionOnlyAccounts.length > 0 && (
+            <div className="space-y-2 mt-1">
+              <p className="text-xs text-gray-400 px-1">
+                {lang === 'en' ? '— No activity yet, but action items exist —' : '— 활동 없음 · 할 일 있음 —'}
+              </p>
+              {actionOnlyAccounts.map(acctName => {
+                const meta  = accountMeta[acctName] || {}
+                const hcfg  = healthConfig[meta.health] || healthConfig.gray
+                const acctActions = actionsByAccount[acctName] || []
+                return (
+                  <div key={acctName} className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                    <div className="px-3 py-2 flex items-center gap-2 border-b border-gray-100">
+                      <span className={`w-2 h-2 rounded-full shrink-0 ${hcfg.dot}`} />
+                      <span className="text-sm font-semibold text-gray-700">{acctName}</span>
+                    </div>
+                    <div className="px-3 py-2 space-y-1.5">
+                      {acctActions.map((a, i) => {
+                        const pcfg = priorityConfig[a.priority] || priorityConfig.medium
+                        return (
+                          <div key={i} className="flex gap-2 items-start">
+                            <span className={`text-xs font-bold ${pcfg.color} shrink-0 mt-0.5`}>{pcfg.label}</span>
+                            <p className="text-xs text-gray-700 leading-snug">{pick(a, 'action', lang)}</p>
+                            {a.due && (
+                              <span className="ml-auto text-xs text-gray-400 shrink-0">{a.due.slice(5)}</span>
+                            )}
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )}
         </div>
       )}
     </div>

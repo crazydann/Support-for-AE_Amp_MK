@@ -420,10 +420,16 @@ async def get_weekly_feed(days: int = 14):
         d = (e.get("date") or (e.get("ts") or "")[:10] or "unknown")
         by_date.setdefault(d, []).append(e)
 
-    # 이번 주 action_items (weekly_report에서 — AE 자신의 할 일)
+    # 이번 주 action_items + 계정 메타 (weekly_report에서)
     report = _read_report()
     action_items = report.get("action_items", [])
     risks = report.get("risks", [])
+
+    # 계정 메타 (health, group만 포함 — SFDC ARR 등 제외)
+    account_meta = {
+        a["key_account"]: {"health": a.get("health", "gray"), "group": a.get("group", "")}
+        for a in report.get("accounts", [])
+    }
 
     return {
         "entries": entries,
@@ -432,6 +438,7 @@ async def get_weekly_feed(days: int = 14):
         "by_date": by_date,
         "action_items": action_items,
         "risks": risks,
+        "account_meta": account_meta,
     }
 
 
