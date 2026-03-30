@@ -9,7 +9,7 @@ export default function App() {
   const { lang, setLang, t } = useLang()
   const [tab, setTab] = useState('dashboard')
   const [currentCompany, setCurrentCompany] = useState(null)
-  const [dashView, setDashView] = useState('todo')  // 'todo' | 'account' | 'weekly'
+  const [dashView, setDashView] = useState('weekly')  // 'todo' | 'account' | 'weekly'
 
   const TABS = [
     { id: 'dashboard', label: t('tabHome'),      icon: HomeIcon },
