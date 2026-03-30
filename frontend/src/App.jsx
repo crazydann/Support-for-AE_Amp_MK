@@ -73,14 +73,14 @@ export default function App() {
                 <span className="text-white font-bold text-xs">A</span>
               </div>
               <div>
-                <h1 className="text-sm font-bold text-gray-900 leading-none">{t('appName')}</h1>
+                <h1 className="text-sm font-bold text-gray-900 leading-none truncate max-w-[120px]">{t('appName')}</h1>
               </div>
             </div>
           </div>
 
           {/* 오른쪽: 뷰 토글 (대시보드) or 뒤로가기 */}
           {tab === 'dashboard' && (
-            <div className="flex items-center bg-gray-100 rounded-lg p-0.5">
+            <div className="flex items-center bg-gray-100 rounded-lg p-0.5 flex-shrink-0">
               <button
                 onClick={() => setDashView('todo')}
                 className={`text-xs font-semibold px-2.5 py-1 rounded-md transition-all ${
