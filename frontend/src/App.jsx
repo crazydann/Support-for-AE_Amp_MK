@@ -21,8 +21,16 @@ export default function App() {
   const [currentUser, setCurrentUser] = useState(null)
   const [showUserMgmt, setShowUserMgmt] = useState(false)
 
-  // URL에서 auth_error 파라미터 확인
-  const authError = new URLSearchParams(window.location.search).get('auth_error')
+  // URL에서 auth_error 파라미터 확인 후 즉시 제거
+  const params = new URLSearchParams(window.location.search)
+  const authError = params.get('auth_error')
+  useEffect(() => {
+    if (authError) {
+      params.delete('auth_error')
+      const newUrl = window.location.pathname + (params.toString() ? '?' + params.toString() : '')
+      window.history.replaceState({}, '', newUrl)
+    }
+  }, [])
 
   useEffect(() => {
     fetch(`${API}/api/auth/me`)
