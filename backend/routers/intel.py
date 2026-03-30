@@ -493,9 +493,13 @@ async def get_weekly_feed(days: int = 180):
     action_items = report.get("action_items", [])
     risks = report.get("risks", [])
 
-    # 계정 메타 (health, group만 포함 — SFDC ARR 등 제외)
+    # 계정 메타 (health, group, arr — SFDC Closed Won 기준 ARR 포함)
     account_meta = {
-        a["key_account"]: {"health": a.get("health", "gray"), "group": a.get("group", "")}
+        a["key_account"]: {
+            "health": a.get("health", "gray"),
+            "group":  a.get("group", ""),
+            "arr":    a.get("arr", 0),
+        }
         for a in report.get("accounts", [])
     }
 

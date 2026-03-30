@@ -818,60 +818,53 @@ function WeeklyView({ t, lang }) {
     return `${fmt(mon)} – ${fmt(sun)}`
   }
 
-  // ── 단일 항목 행 ──
+  // 우선순위: memo(0) > meeting(1) > gmail(2) > slack(3) > glean(4) > 기타(5)
+  const TYPE_PRIORITY = { memo: 0, meeting: 1, gmail: 2, slack: 3, glean: 4 }
+
+  function sortByPriority(entries) {
+    return [...entries].sort((a, b) => {
+      const ta = a.type || a.log_type || 'etc'
+      const tb = b.type || b.log_type || 'etc'
+      const pa = TYPE_PRIORITY[ta] ?? 5
+      const pb = TYPE_PRIORITY[tb] ?? 5
+      if (pa !== pb) return pa - pb
+      return (b.date || '').localeCompare(a.date || '')
+    })
+  }
+
+  // ── 단일 항목 행 (타입 아이콘 + 날짜 + 계정 + 내용) ──
   function EntryRow({ item }) {
     const itemType = item.type || item.log_type || 'memo'
     const chCfg = WEEKLY_CHANNELS.find(c => c.type === itemType) || WEEKLY_CHANNELS[4]
     const text = tr(cleanSummary(item.summary || item.title || ''))
-    const dateStr = item.date ? item.date.slice(5) : ''  // MM-DD
+    const dateStr = item.date ? item.date.slice(5) : ''
+    const isMemo = itemType === 'memo'
     return (
-      <div className="flex gap-2.5 items-start py-2 border-b border-gray-50 last:border-0">
-        <span className="text-xs text-gray-400 shrink-0 w-10 mt-0.5">{dateStr}</span>
+      <div className={`flex gap-2.5 items-start py-2.5 border-b border-gray-50 last:border-0 ${isMemo ? 'bg-orange-50 -mx-3 px-3' : ''}`}>
+        <span className={`text-sm shrink-0 mt-0.5`}>{chCfg.icon}</span>
+        <span className="text-xs text-gray-400 shrink-0 w-9 mt-0.5">{dateStr}</span>
         <div className="flex-1 min-w-0">
           {item.account && (
-            <span className="inline-block text-xs font-semibold text-gray-600 bg-gray-100 px-1.5 py-0.5 rounded mr-1.5 mb-0.5">{item.account}</span>
+            <span className={`inline-block text-xs font-semibold px-1.5 py-0.5 rounded mr-1.5 mb-0.5 ${chCfg.pill}`}>{item.account}</span>
           )}
-          <span className="text-xs text-gray-700 leading-relaxed">{text}</span>
+          <span className={`text-xs leading-relaxed ${isMemo ? 'text-orange-900 font-medium' : 'text-gray-700'}`}>{text}</span>
         </div>
       </div>
     )
   }
 
-  // ── 채널별 그룹 (period 내부) ──
-  function ChannelGroup({ entries, ch }) {
-    const [showAll, setShowAll] = useState(false)
-    const items = entries.filter(e => (e.type || e.log_type || '') === ch.type)
-    if (items.length === 0) return null
-    const visible = showAll ? items : items.slice(0, 5)
-    return (
-      <div className={`rounded-xl border ${ch.border} ${ch.bg} overflow-hidden mb-2`}>
-        <div className={`px-3 py-2 flex items-center gap-2 border-b ${ch.border}`}>
-          <span className="text-sm">{ch.icon}</span>
-          <span className={`text-xs font-bold ${ch.color}`}>{lang === 'en' ? ch.label_en : ch.label}</span>
-          <span className={`text-xs px-1.5 py-0.5 rounded-full ${ch.pill} ml-auto`}>{items.length}</span>
-        </div>
-        <div className="px-3 bg-white">
-          {visible.map((item, i) => <EntryRow key={i} item={item} />)}
-          {!showAll && items.length > 5 && (
-            <button onClick={() => setShowAll(true)} className="w-full py-1.5 text-xs text-gray-400 hover:text-purple-600">
-              +{items.length - 5} {lang === 'en' ? 'more' : '건 더 보기'}
-            </button>
-          )}
-        </div>
-      </div>
-    )
-  }
-
-  // ── 기간 섹션 (이번 주 / 지난 주 / 이전) ──
+  // ── 기간 섹션: 우선순위 정렬 통합 리스트 ──
   function PeriodSection({ entries, title, dateRange, defaultOpen = true }) {
     const [open, setOpen] = useState(defaultOpen)
+    const [showAll, setShowAll] = useState(false)
     if (entries.length === 0) return null
-    const channels = WEEKLY_CHANNELS.filter(c => entries.some(e => (e.type || e.log_type || '') === c.type))
+    const sorted = sortByPriority(entries)
+    const visible = showAll ? sorted : sorted.slice(0, 15)
     return (
-      <div className="space-y-0">
+      <div>
         <button
           onClick={() => setOpen(o => !o)}
-          className="w-full flex items-center gap-2 py-2 px-1 hover:bg-gray-50 rounded-lg"
+          className="w-full flex items-center gap-2 py-2.5 px-1 hover:bg-gray-50 rounded-lg"
         >
           <span className="text-xs font-bold text-gray-700 uppercase tracking-wider">{title}</span>
           {dateRange && <span className="text-xs text-gray-400">{dateRange}</span>}
@@ -882,8 +875,14 @@ function WeeklyView({ t, lang }) {
           </svg>
         </button>
         {open && (
-          <div className="pt-1">
-            {channels.map(ch => <ChannelGroup key={ch.type} entries={entries} ch={ch} />)}
+          <div className="bg-white rounded-xl border border-gray-200 overflow-hidden px-3">
+            {visible.map((item, i) => <EntryRow key={i} item={item} />)}
+            {!showAll && sorted.length > 15 && (
+              <button onClick={() => setShowAll(true)}
+                className="w-full py-2 text-xs text-gray-400 hover:text-purple-600 border-t border-gray-50">
+                +{sorted.length - 15} {lang === 'en' ? 'more' : '건 더 보기'}
+              </button>
+            )}
           </div>
         )}
       </div>
@@ -898,11 +897,6 @@ function WeeklyView({ t, lang }) {
       </div>
     </div>
   )
-
-  // 이번 주 채널별 통계
-  const thisWeekStats = WEEKLY_CHANNELS.map(c => ({
-    ...c, count: thisWeekEntries.filter(e => (e.type || e.log_type || '') === c.type).length
-  })).filter(c => c.count > 0)
 
   return (
     <div className="space-y-3 pb-24">
@@ -924,17 +918,26 @@ function WeeklyView({ t, lang }) {
             {syncing ? (lang === 'en' ? 'Syncing…' : '동기화 중…') : (lang === 'en' ? 'Sync' : '동기화')}
           </button>
         </div>
-        {/* 이번 주 채널 통계 */}
+        {/* 이번 주 통계 (우선순위 순서: 메모 → 일정 → 이메일 → 슬랙) */}
         <div className="flex gap-2 flex-wrap">
-          {thisWeekStats.length > 0
-            ? thisWeekStats.map(c => (
+          {[
+            { type: 'memo',    icon: '📝', label: '메모',   label_en: 'Memo' },
+            { type: 'meeting', icon: '📅', label: '일정',   label_en: 'Schedule' },
+            { type: 'gmail',   icon: '✉',  label: '이메일', label_en: 'Email' },
+            { type: 'slack',   icon: '💬', label: '슬랙',   label_en: 'Slack' },
+          ].map(c => {
+            const cnt = thisWeekEntries.filter(e => (e.type || e.log_type || '') === c.type).length
+            if (!cnt) return null
+            return (
               <div key={c.type} className="bg-white/15 rounded-lg px-3 py-1.5 text-center">
-                <p className="text-sm font-bold">{c.count}</p>
-                <p className="text-xs opacity-70">{lang === 'en' ? c.label_en : c.label}</p>
+                <p className="text-sm font-bold">{cnt}</p>
+                <p className="text-xs opacity-70">{c.icon} {lang === 'en' ? c.label_en : c.label}</p>
               </div>
-            ))
-            : <p className="text-xs opacity-60">{lang === 'en' ? 'No activity this week yet' : '이번 주 활동 없음'}</p>
-          }
+            )
+          })}
+          {thisWeekEntries.length === 0 && (
+            <p className="text-xs opacity-60">{lang === 'en' ? 'No activity this week yet' : '이번 주 활동 없음'}</p>
+          )}
         </div>
       </div>
 
