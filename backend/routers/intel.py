@@ -381,6 +381,60 @@ async def synthesize_account(account_name: str, days: int = 60):
             )
     return {"ok": True, "result": result}
 
+# ── Weekly Feed API (non-SFDC: Gmail/Slack/Calendar/Glean/Memo) ──────────────
+
+@router.get("/weekly-feed")
+async def get_weekly_feed(days: int = 14):
+    """
+    주간 피드: Gmail, Slack, Calendar, Glean, Memo 타입만 반환 (SFDC 제외).
+    intel_log.jsonl에서 최근 N일치 필터링 후 날짜 내림차순으로 반환.
+    캘린더 이벤트는 gcal_sync를 통해 실시간 보충 시도.
+    """
+    from ..services import intel_memory_service as mem
+    from datetime import datetime, timedelta
+
+    INCLUDE_TYPES = {"gmail", "slack", "meeting", "glean", "memo", "insight", "drive"}
+    EXCLUDE_TYPES = {"sfdc", "weekly_report"}
+
+    # intel_log에서 읽기
+    all_entries = await mem.read_log(days=days)
+
+    # SFDC/weekly_report 제외
+    entries = [
+        e for e in all_entries
+        if (e.get("type") or e.get("log_type", "")) not in EXCLUDE_TYPES
+    ]
+
+    # 날짜 내림차순 정렬
+    entries.sort(key=lambda e: (e.get("date") or e.get("ts") or ""), reverse=True)
+
+    # 타입별 집계
+    by_type: dict[str, list] = {}
+    for e in entries:
+        t = e.get("type") or e.get("log_type") or "etc"
+        by_type.setdefault(t, []).append(e)
+
+    # 날짜별 집계
+    by_date: dict[str, list] = {}
+    for e in entries:
+        d = (e.get("date") or (e.get("ts") or "")[:10] or "unknown")
+        by_date.setdefault(d, []).append(e)
+
+    # 이번 주 action_items (weekly_report에서 — AE 자신의 할 일)
+    report = _read_report()
+    action_items = report.get("action_items", [])
+    risks = report.get("risks", [])
+
+    return {
+        "entries": entries,
+        "total": len(entries),
+        "by_type": {t: len(v) for t, v in by_type.items()},
+        "by_date": by_date,
+        "action_items": action_items,
+        "risks": risks,
+    }
+
+
 # ── Glean Ingest API ──────────────────────────────────────────
 
 class GleanEntry(BaseModel):

@@ -676,268 +676,281 @@ function AccountView({ report, t, lang }) {
 
 // ─── WEEKLY VIEW ──────────────────────────────────────────────────────────────
 
-function WeeklyView({ report, t, lang }) {
-  const accounts   = report.accounts   || []
-  const actions    = report.action_items || []
-  const risks      = report.risks       || []
+// 타입별 피드 설정 (weekly용 — SFDC 제외)
+const feedTypeConfig = {
+  gmail:   { icon: '✉',  color: 'text-blue-600',   bg: 'bg-blue-50',    border: 'border-blue-100',   label: '이메일',    label_en: 'Email' },
+  slack:   { icon: '💬', color: 'text-green-600',  bg: 'bg-green-50',   border: 'border-green-100',  label: '슬랙',      label_en: 'Slack' },
+  meeting: { icon: '📅', color: 'text-purple-600', bg: 'bg-purple-50',  border: 'border-purple-100', label: '미팅',      label_en: 'Meeting' },
+  glean:   { icon: '🔍', color: 'text-indigo-600', bg: 'bg-indigo-50',  border: 'border-indigo-100', label: 'Glean/Drive', label_en: 'Glean/Drive' },
+  drive:   { icon: '📄', color: 'text-indigo-600', bg: 'bg-indigo-50',  border: 'border-indigo-100', label: 'Drive',     label_en: 'Drive' },
+  memo:    { icon: '📝', color: 'text-orange-600', bg: 'bg-orange-50',  border: 'border-orange-100', label: '메모',      label_en: 'Memo' },
+  insight: { icon: '💡', color: 'text-yellow-600', bg: 'bg-yellow-50',  border: 'border-yellow-100', label: '인사이트',  label_en: 'Insight' },
+}
+
+function WeeklyView({ t, lang }) {
+  const [feed, setFeed] = useState(null)
+  const [loadingFeed, setLoadingFeed] = useState(true)
+  const [syncing, setSyncing] = useState(false)
+  const [syncMsg, setSyncMsg] = useState(null)
+  const [activeTab, setActiveTab] = useState('all') // all | gmail | slack | meeting | glean | memo
   const priorityConfig = getPriorityConfig(t)
 
-  const [synthesizing, setSynthesizing] = useState(false)
-  const [synthMsg, setSynthMsg] = useState(null)
+  // weekly-feed 로드
+  useEffect(() => {
+    fetch(`${API}/api/intel/weekly-feed?days=14`)
+      .then(r => r.json())
+      .then(d => { setFeed(d); setLoadingFeed(false) })
+      .catch(() => setLoadingFeed(false))
+  }, [])
 
-  const handleSynthesize = async () => {
-    setSynthesizing(true)
-    setSynthMsg(null)
+  const handleSync = async () => {
+    setSyncing(true)
+    setSyncMsg(null)
     try {
-      const res = await fetch(`${API}/api/intel/synthesize`, { method: 'POST' })
+      const res = await fetch(`${API}/api/intel/sync?force=true`, { method: 'POST' })
       const data = await res.json()
-      setSynthMsg(lang === 'en'
-        ? `Synthesis done (${data.synthesized || 0} accounts updated)`
-        : `합성 완료 (${data.synthesized || 0}개 계정 업데이트)`)
-      setTimeout(() => { setSynthMsg(null); window.location.reload() }, 2000)
+      setSyncMsg(lang === 'en'
+        ? `Sync done (${data.added || 0} added)`
+        : `동기화 완료 (${data.added || 0}건 추가)`)
+      // 피드 재로드
+      const r2 = await fetch(`${API}/api/intel/weekly-feed?days=14`)
+      const d2 = await r2.json()
+      setFeed(d2)
+      setTimeout(() => setSyncMsg(null), 4000)
     } catch {
-      setSynthMsg(lang === 'en' ? 'Synthesis failed' : '합성 실패')
-      setTimeout(() => setSynthMsg(null), 3000)
+      setSyncMsg(lang === 'en' ? 'Sync failed' : '동기화 실패')
+      setTimeout(() => setSyncMsg(null), 3000)
     } finally {
-      setSynthesizing(false)
+      setSyncing(false)
     }
   }
 
-  // 날짜 범위 계산
   const today = new Date()
   const weekStart = new Date(today)
-  weekStart.setDate(today.getDate() - today.getDay() + (today.getDay() === 0 ? -6 : 1)) // 이번 주 월요일
-  const lastWeekStart = new Date(weekStart)
-  lastWeekStart.setDate(weekStart.getDate() - 7)
-  const lastWeekEnd = new Date(weekStart)
-  lastWeekEnd.setDate(weekStart.getDate() - 1)
+  weekStart.setDate(today.getDate() - today.getDay() + (today.getDay() === 0 ? -6 : 1))
 
-  const fmt = (d) => d.toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' })
-  const lastWeekLabel = `${fmt(lastWeekStart)} ~ ${fmt(lastWeekEnd)}`
-  const thisWeekLabel = `${fmt(weekStart)} ~`
+  const allEntries = feed?.entries || []
+  const byDate = feed?.by_date || {}
+  const byType = feed?.by_type || {}
+  const actionItems = feed?.action_items || []
 
-  // 지난주 활동 수집: 모든 계정의 activity_history에서 지난 14일치 (last_week ~ today)
-  const cutoff = new Date(today)
-  cutoff.setDate(today.getDate() - 14)
-  const cutoffStr = cutoff.toISOString().slice(0, 10)
+  // 탭 필터
+  const filteredEntries = activeTab === 'all'
+    ? allEntries
+    : allEntries.filter(e => (e.type || e.log_type) === activeTab)
 
-  const recentActivities = []
-  accounts.forEach(acc => {
-    (acc.activity_history || []).forEach(item => {
-      if (item.date >= cutoffStr) {
-        recentActivities.push({ ...item, _account: acc.key_account, _group: acc.group })
-      }
-    })
+  // 날짜별 그룹핑 (필터 적용 후)
+  const filteredByDate = {}
+  filteredEntries.forEach(e => {
+    const d = e.date || (e.ts || '').slice(0, 10) || 'unknown'
+    if (!filteredByDate[d]) filteredByDate[d] = []
+    filteredByDate[d].push(e)
   })
-  recentActivities.sort((a, b) => b.date.localeCompare(a.date))
+  const sortedDates = Object.keys(filteredByDate).sort((a, b) => b.localeCompare(a))
 
-  // 날짜별로 그룹핑
-  const byDate = {}
-  recentActivities.forEach(item => {
-    if (!byDate[item.date]) byDate[item.date] = []
-    byDate[item.date].push(item)
-  })
-  const sortedDates = Object.keys(byDate).sort((a, b) => b.localeCompare(a))
+  // 탭 목록 (데이터 있는 타입만)
+  const tabs = [
+    { id: 'all', label: lang === 'en' ? 'All' : '전체', count: allEntries.length },
+    ...[
+      { id: 'gmail',   label: lang === 'en' ? 'Email' : '이메일', icon: '✉' },
+      { id: 'slack',   label: 'Slack', icon: '💬' },
+      { id: 'meeting', label: lang === 'en' ? 'Meeting' : '미팅', icon: '📅' },
+      { id: 'glean',   label: 'Glean', icon: '🔍' },
+      { id: 'memo',    label: lang === 'en' ? 'Memo' : '메모', icon: '📝' },
+    ].filter(tab => byType[tab.id] > 0).map(tab => ({
+      ...tab,
+      count: byType[tab.id] || 0
+    }))
+  ]
 
-  // 이번 주 할 일: due가 이번 주 이내이거나 urgent/high 우선
-  const thisWeekActions = [...actions].sort((a, b) => {
+  const sortedActions = [...actionItems].sort((a, b) => {
     const order = { urgent: 0, high: 1, medium: 2 }
     return (order[a.priority] ?? 3) - (order[b.priority] ?? 3)
   })
 
-  // 총 ARR 통계
-  const totalArr = accounts.filter(a => a.arr).reduce((s, a) => s + parseInt(a.arr || 0), 0)
-  const activeCount = accounts.filter(a => a.status === 'active').length
-  const renewalRisk = accounts.filter(a => ['red', 'orange'].includes(a.health) && a.status === 'active').length
-
   return (
-    <div className="space-y-5 pb-24">
-      {/* 주간 보고 헤더 */}
-      <div className="bg-gradient-to-r from-purple-600 to-blue-600 rounded-2xl p-4 text-white">
+    <div className="space-y-4 pb-24">
+      {/* 헤더 */}
+      <div className="bg-gradient-to-r from-purple-600 to-indigo-600 rounded-2xl p-4 text-white">
         <p className="text-xs font-medium opacity-80 mb-1">
-          {lang === 'en' ? 'Weekly Report' : '주간 보고'} · {today.toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })}
+          {lang === 'en' ? 'Weekly Activity Feed' : '주간 활동 피드'} · {today.toLocaleDateString(lang === 'en' ? 'en-US' : 'ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })}
         </p>
-        <h2 className="text-lg font-bold leading-snug">
-          {lang === 'en' ? 'AE MK — Weekly Summary' : 'AE MK 주간 업무 요약'}
+        <h2 className="text-base font-bold leading-snug">
+          {lang === 'en' ? 'AE MK — Last 2 Weeks' : 'AE MK 최근 2주 활동'}
         </h2>
-        <div className="flex gap-4 mt-3 pt-3 border-t border-white/20">
-          <div className="text-center">
-            <p className="text-xl font-bold">${Math.round(totalArr / 1000)}K</p>
-            <p className="text-xs opacity-70">{lang === 'en' ? 'Managed ARR' : '관리 ARR'}</p>
-          </div>
-          <div className="text-center">
-            <p className="text-xl font-bold">{activeCount}</p>
-            <p className="text-xs opacity-70">{lang === 'en' ? 'Active' : '활성 계정'}</p>
-          </div>
-          <div className="text-center">
-            <p className="text-xl font-bold text-red-200">{renewalRisk}</p>
-            <p className="text-xs opacity-70">{lang === 'en' ? 'At Risk' : '리스크'}</p>
-          </div>
-          <div className="text-center">
-            <p className="text-xl font-bold text-yellow-200">{thisWeekActions.filter(a => a.priority === 'urgent').length}</p>
-            <p className="text-xs opacity-70">{lang === 'en' ? 'Urgent' : '긴급 할 일'}</p>
-          </div>
+        <div className="flex gap-4 mt-3 pt-3 border-t border-white/20 flex-wrap">
+          {byType.gmail > 0 && (
+            <div className="text-center">
+              <p className="text-lg font-bold">{byType.gmail}</p>
+              <p className="text-xs opacity-70">{lang === 'en' ? 'Emails' : '이메일'}</p>
+            </div>
+          )}
+          {byType.slack > 0 && (
+            <div className="text-center">
+              <p className="text-lg font-bold">{byType.slack}</p>
+              <p className="text-xs opacity-70">Slack</p>
+            </div>
+          )}
+          {byType.meeting > 0 && (
+            <div className="text-center">
+              <p className="text-lg font-bold">{byType.meeting}</p>
+              <p className="text-xs opacity-70">{lang === 'en' ? 'Meetings' : '미팅'}</p>
+            </div>
+          )}
+          {byType.glean > 0 && (
+            <div className="text-center">
+              <p className="text-lg font-bold">{byType.glean}</p>
+              <p className="text-xs opacity-70">Glean</p>
+            </div>
+          )}
+          {byType.memo > 0 && (
+            <div className="text-center">
+              <p className="text-lg font-bold">{byType.memo}</p>
+              <p className="text-xs opacity-70">{lang === 'en' ? 'Memos' : '메모'}</p>
+            </div>
+          )}
+          {allEntries.length === 0 && (
+            <div className="text-center">
+              <p className="text-lg font-bold opacity-60">0</p>
+              <p className="text-xs opacity-50">{lang === 'en' ? 'No activity' : '활동 없음'}</p>
+            </div>
+          )}
         </div>
       </div>
 
-      {/* 전략 요약 */}
-      {(report.strategy_summary || report.strategy_summary_en) && (
-        <div className="bg-purple-50 border border-purple-200 rounded-xl p-4">
-          <p className="text-xs font-bold text-purple-600 mb-2 flex items-center gap-1.5">
-            <span>✦</span>
-            {lang === 'en' ? 'This Week\'s Highlights' : '이번 주 하이라이트'}
-          </p>
-          <p className="text-sm text-gray-700 leading-relaxed">{pick(report, 'strategy_summary', lang)}</p>
-        </div>
-      )}
-
-      {/* ── 영업 전략 플레이북 ── */}
-      {report.playbook && (
-        <div className="bg-white border border-gray-200 rounded-xl p-4 space-y-2.5">
-          <p className="text-xs font-bold text-gray-700 flex items-center gap-1.5">
-            <span>🎯</span>
-            {lang === 'en' ? 'Sales Playbook' : '영업 전략 플레이북'}
-          </p>
-          <div className="space-y-2">
-            <div className="flex gap-2 items-start">
-              <span className="text-xs text-purple-500 shrink-0 font-bold mt-0.5">①</span>
-              <div>
-                <p className="text-xs font-semibold text-gray-600 mb-0.5">{lang === 'en' ? 'Group MTU Strategy' : '그룹사 MTU 전략'}</p>
-                <p className="text-xs text-gray-600 leading-relaxed">{lang === 'en' ? report.playbook.group_mtu_strategy_en : report.playbook.group_mtu_strategy}</p>
-              </div>
-            </div>
-            <div className="flex gap-2 items-start">
-              <span className="text-xs text-blue-500 shrink-0 font-bold mt-0.5">②</span>
-              <div>
-                <p className="text-xs font-semibold text-gray-600 mb-0.5">{lang === 'en' ? 'Upsell Path' : '업셀 경로'}</p>
-                <p className="text-xs text-gray-600">{lang === 'en' ? report.playbook.upsell_path_en : report.playbook.upsell_path}</p>
-              </div>
-            </div>
-            <div className="flex gap-2 items-start">
-              <span className="text-xs text-orange-500 shrink-0 font-bold mt-0.5">③</span>
-              <div>
-                <p className="text-xs font-semibold text-gray-600 mb-0.5">{lang === 'en' ? '2026 Focus' : '2026 집중 과제'}</p>
-                <p className="text-xs text-gray-600 leading-relaxed">{lang === 'en' ? report.playbook.focus_2026_en : report.playbook.focus_2026}</p>
-                {report.playbook.target_experiment_addon?.length > 0 && (
-                  <div className="flex flex-wrap gap-1 mt-1">
-                    {report.playbook.target_experiment_addon.map((name, i) => (
-                      <span key={i} className="text-xs bg-orange-50 text-orange-600 px-1.5 py-0.5 rounded-full border border-orange-100">{name}</span>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ── 인텔 합성 실행 버튼 ── */}
-      <div className="flex flex-col items-center gap-2">
+      {/* 동기화 버튼 */}
+      <div className="flex items-center gap-2">
         <button
-          onClick={handleSynthesize}
-          disabled={synthesizing}
-          className={`w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all
-            ${synthesizing
-              ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-              : 'bg-gradient-to-r from-purple-500 to-blue-500 text-white shadow-sm hover:from-purple-600 hover:to-blue-600 active:scale-95'
-            }`}
+          onClick={handleSync}
+          disabled={syncing}
+          className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold transition-all border ${
+            syncing
+              ? 'bg-gray-50 text-gray-400 border-gray-200 cursor-not-allowed'
+              : 'bg-white text-purple-700 border-purple-200 hover:bg-purple-50'
+          }`}
         >
-          <span className={synthesizing ? 'animate-spin inline-block' : ''}>
-            {synthesizing ? '⟳' : '🔄'}
-          </span>
-          {synthesizing
-            ? (lang === 'en' ? 'Synthesizing...' : '합성 중...')
-            : (lang === 'en' ? 'Run Intel Synthesis' : '인텔 합성 실행')}
+          <svg className={`w-3.5 h-3.5 ${syncing ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+          {syncing
+            ? (lang === 'en' ? 'Syncing…' : '동기화 중…')
+            : (lang === 'en' ? 'Sync Gmail / Calendar / Slack' : 'Gmail · 캘린더 · Slack 동기화')}
         </button>
-        {synthMsg && (
-          <p className={`text-xs font-medium px-3 py-1.5 rounded-full ${
-            synthMsg.includes('실패') || synthMsg.includes('failed')
-              ? 'bg-red-50 text-red-600'
-              : 'bg-green-50 text-green-600'
-          }`}>
-            {synthMsg}
-          </p>
-        )}
       </div>
-
-      {/* ── 지난주 한 일 ── */}
-      <div className="space-y-3">
-        <div className="flex items-center gap-2">
-          <h2 className="text-sm font-bold text-gray-900">
-            {lang === 'en' ? '📋 Last Week' : '📋 지난주 한 일'}
-          </h2>
-          <span className="text-xs text-gray-400">{lastWeekLabel}</span>
-          <span className="ml-auto text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">
-            {recentActivities.length}{lang === 'en' ? ' activities' : '건'}
-          </span>
+      {syncMsg && (
+        <div className={`text-xs font-medium px-3 py-2 rounded-xl text-center ${
+          syncMsg.includes('실패') || syncMsg.includes('failed')
+            ? 'bg-red-50 text-red-600 border border-red-200'
+            : 'bg-green-50 text-green-600 border border-green-200'
+        }`}>
+          {syncMsg}
         </div>
+      )}
 
-        {sortedDates.length === 0 ? (
-          <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 text-center text-xs text-gray-400">
-            {lang === 'en' ? 'No activities recorded in the past 2 weeks' : '최근 2주간 기록된 활동이 없습니다'}
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {sortedDates.map(date => (
-              <div key={date} className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-                {/* 날짜 헤더 */}
-                <div className="bg-gray-50 border-b border-gray-100 px-3 py-2">
-                  <span className="text-xs font-bold text-gray-600">
-                    {new Date(date + 'T00:00:00').toLocaleDateString(lang === 'en' ? 'en-US' : 'ko-KR', {
-                      month: 'long', day: 'numeric', weekday: 'short'
-                    })}
-                  </span>
-                </div>
-                {/* 해당 날짜 활동들 */}
-                <div className="divide-y divide-gray-50">
-                  {byDate[date].map((item, i) => {
-                    const cfg = activityTypeConfig[item.type] || activityTypeConfig.memo
-                    return (
-                      <div key={i} className="px-3 py-2.5 flex gap-2.5 items-start">
-                        <div className={`${cfg.bg} rounded-full w-6 h-6 flex items-center justify-center text-xs shrink-0 mt-0.5`}>
-                          {cfg.icon}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-1.5 mb-0.5 flex-wrap">
-                            <span className={`text-xs font-semibold ${cfg.color}`}>
-                              {lang === 'en' ? cfg.label_en : cfg.label}
-                            </span>
-                            <span className="text-xs text-gray-400">·</span>
-                            <span className="text-xs font-medium text-gray-600">{item._account}</span>
-                          </div>
-                          <p className="text-xs text-gray-700 leading-relaxed">
-                            {lang === 'en' ? (item.summary_en || item.summary) : item.summary}
-                          </p>
-                        </div>
-                      </div>
-                    )
+      {/* 타입 탭 필터 */}
+      {tabs.length > 1 && (
+        <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+          {tabs.map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all shrink-0 ${
+                activeTab === tab.id
+                  ? 'bg-purple-600 text-white shadow-sm'
+                  : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+              }`}
+            >
+              {tab.icon && <span>{tab.icon}</span>}
+              {tab.label}
+              <span className={`text-xs px-1 rounded-full ${activeTab === tab.id ? 'bg-white/20 text-white' : 'bg-gray-200 text-gray-500'}`}>
+                {tab.count}
+              </span>
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* 활동 피드 */}
+      {loadingFeed ? (
+        <div className="bg-gray-50 border border-gray-200 rounded-xl p-8 text-center">
+          <div className="w-6 h-6 border-2 border-purple-500 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
+          <p className="text-xs text-gray-400">{lang === 'en' ? 'Loading…' : '불러오는 중…'}</p>
+        </div>
+      ) : sortedDates.length === 0 ? (
+        <div className="bg-gray-50 border border-gray-200 border-dashed rounded-xl p-6 text-center space-y-2">
+          <p className="text-sm font-medium text-gray-500">
+            {lang === 'en' ? 'No activity in the past 2 weeks' : '최근 2주 활동 없음'}
+          </p>
+          <p className="text-xs text-gray-400">
+            {lang === 'en'
+              ? 'Press "Sync" to fetch emails, calendar, and Slack data'
+              : '"동기화" 버튼을 눌러 이메일, 캘린더, 슬랙 데이터를 가져오세요'}
+          </p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {sortedDates.map(date => (
+            <div key={date} className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+              {/* 날짜 헤더 */}
+              <div className="bg-gray-50 border-b border-gray-100 px-3 py-2 flex items-center gap-2">
+                <span className="text-xs font-bold text-gray-600">
+                  {new Date(date + 'T00:00:00').toLocaleDateString(lang === 'en' ? 'en-US' : 'ko-KR', {
+                    month: 'long', day: 'numeric', weekday: 'short'
                   })}
-                </div>
+                </span>
+                <span className="ml-auto text-xs text-gray-400">{filteredByDate[date].length}{lang === 'en' ? ' items' : '건'}</span>
               </div>
-            ))}
-          </div>
-        )}
-      </div>
+              {/* 항목들 */}
+              <div className="divide-y divide-gray-50">
+                {filteredByDate[date].map((item, i) => {
+                  const itemType = item.type || item.log_type || 'memo'
+                  const cfg = feedTypeConfig[itemType] || feedTypeConfig.memo
+                  const summary = item.summary || item.title || ''
+                  return (
+                    <div key={i} className="px-3 py-2.5 flex gap-2.5 items-start">
+                      <div className={`${cfg.bg} rounded-full w-7 h-7 flex items-center justify-center text-sm shrink-0 mt-0.5`}>
+                        {cfg.icon}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1.5 mb-0.5 flex-wrap">
+                          <span className={`text-xs font-semibold ${cfg.color}`}>
+                            {lang === 'en' ? cfg.label_en : cfg.label}
+                          </span>
+                          {item.account && (
+                            <>
+                              <span className="text-xs text-gray-300">·</span>
+                              <span className="text-xs font-medium text-gray-600">{item.account}</span>
+                            </>
+                          )}
+                        </div>
+                        <p className="text-xs text-gray-700 leading-relaxed">
+                          {summary}
+                        </p>
+                        {item.url && (
+                          <a href={item.url} target="_blank" rel="noopener noreferrer"
+                            className="text-xs text-blue-400 hover:text-blue-600 mt-0.5 inline-block truncate max-w-full">
+                            {item.url.slice(0, 60)}{item.url.length > 60 ? '…' : ''}
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* ── 이번 주 할 일 ── */}
-      <div className="space-y-2">
-        <div className="flex items-center gap-2">
-          <h2 className="text-sm font-bold text-gray-900">
-            {lang === 'en' ? '✅ This Week' : '✅ 이번 주 할 일'}
+      {sortedActions.length > 0 && (
+        <div className="space-y-2">
+          <h2 className="text-sm font-bold text-gray-900 flex items-center gap-2">
+            ✅ {lang === 'en' ? 'Action Items' : '이번 주 할 일'}
+            <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full font-normal">{sortedActions.length}</span>
           </h2>
-          <span className="text-xs text-gray-400">{thisWeekLabel}</span>
-          <span className="ml-auto text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">
-            {thisWeekActions.length}{lang === 'en' ? ' items' : '건'}
-          </span>
-        </div>
-
-        {thisWeekActions.length === 0 ? (
-          <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 text-center text-xs text-gray-400">
-            {lang === 'en' ? 'No action items' : '등록된 할 일이 없습니다'}
-          </div>
-        ) : (
           <div className="space-y-2">
-            {thisWeekActions.map((item, i) => {
+            {sortedActions.map((item, i) => {
               const cfg = priorityConfig[item.priority] || priorityConfig.medium
               const action = pick(item, 'action', lang)
               const days = item.due ? daysUntil(item.due) : null
@@ -946,16 +959,14 @@ function WeeklyView({ report, t, lang }) {
                   <div className="flex gap-2.5 items-start">
                     <span className={`text-xs font-bold ${cfg.color} shrink-0 mt-0.5`}>{cfg.label}</span>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-900 leading-snug">{action}</p>
+                      <p className="text-xs font-medium text-gray-900 leading-snug">{action}</p>
                       <div className="flex items-center gap-2 mt-1 flex-wrap">
-                        <span className="text-xs text-gray-400">{item.group} · {item.account}</span>
+                        <span className="text-xs text-gray-400">{item.account}</span>
                         {item.due && (
                           <span className={`text-xs font-medium px-1.5 py-0.5 rounded-full ${
-                            days !== null && days <= 3
-                              ? 'bg-red-100 text-red-600'
-                              : days !== null && days <= 7
-                              ? 'bg-orange-100 text-orange-600'
-                              : 'bg-gray-100 text-gray-500'
+                            days !== null && days <= 3 ? 'bg-red-100 text-red-600'
+                            : days !== null && days <= 7 ? 'bg-orange-100 text-orange-600'
+                            : 'bg-gray-100 text-gray-500'
                           }`}>
                             {item.due}{days !== null ? ` (D-${days})` : ''}
                           </span>
@@ -967,24 +978,6 @@ function WeeklyView({ report, t, lang }) {
               )
             })}
           </div>
-        )}
-      </div>
-
-      {/* ── 리스크 ── */}
-      {risks.length > 0 && (
-        <div className="space-y-2">
-          <h2 className="text-sm font-bold text-gray-900">
-            {lang === 'en' ? '⚠ Risks to Watch' : '⚠ 주의 리스크'}
-          </h2>
-          {risks.map((r, i) => (
-            <div key={i} className="bg-red-50 border border-red-200 rounded-xl p-3 flex gap-2 items-start">
-              <span className="text-red-400 text-sm shrink-0">⚠</span>
-              <div>
-                <p className="text-xs font-semibold text-red-700">{r.account}</p>
-                <p className="text-xs text-red-600 mt-0.5 leading-relaxed">{pick(r, 'risk', lang)}</p>
-              </div>
-            </div>
-          ))}
         </div>
       )}
     </div>
@@ -1035,7 +1028,7 @@ export default function DashboardPage({ dashView = 'todo' }) {
       {dashView === 'todo'
         ? <TodoView report={report} t={t} lang={lang} />
         : dashView === 'weekly'
-        ? <WeeklyView report={report} t={t} lang={lang} />
+        ? <WeeklyView t={t} lang={lang} />
         : <AccountView report={report} t={t} lang={lang} />
       }
     </div>
