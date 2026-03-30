@@ -396,28 +396,48 @@
     },
     {
       "group": "Samsung",
-      "key_account": "Samsung Next",
+      "key_account": "Samsung Next (US)",
       "arr": "100000",
       "subscription_end": "2026-11-30",
       "amplitude_plan": "Enterprise",
       "status": "active",
-      "deal_stage": "정상 운영 (Samsung Galaxy Store PoC 별도 - Hold 중)",
-      "deal_stage_en": "Healthy (Samsung Galaxy Store PoC separate - On Hold)",
+      "deal_stage": "Active Customer - Enterprise 운영 중 (2026-11 만료)",
+      "deal_stage_en": "Active Customer - Enterprise running (expires Nov 2026)",
       "deal_amount": 100000,
       "health": "yellow",
-      "notes_summary": "Samsung Next 본계약은 정상 운영 중. Samsung Galaxy Store 2차 PoC(데이터 인제스천 완료, 채택 목적)가 MX Division 예산 동결로 전면 중단. 메모리 반도체(LPDDR5X) 비용 2배 급등으로 MX Division 비상 비용관리 돌입. 신규 임원진과 H2 재개 논의 중. 4~5월 내부 동향 모니터링.",
-      "notes_summary_en": "Samsung Next base contract healthy. Samsung Galaxy Store Phase 2 PoC (data ingestion complete, adoption target) fully paused due to MX Division budget freeze. LPDDR5X costs doubled YoY → MX emergency cost management. In discussion with new leadership on H2 restart. Monitoring April-May.",
-      "next_action": "Galaxy Store PoC H2 재개 모니터링 + Samsung Shop 신규 딜 병행 추진",
-      "next_action_en": "Monitor Galaxy Store PoC H2 restart + simultaneously advance Samsung Shop new deal",
+      "notes_summary": "Samsung 미국 벤처/이노베이션 부문. Enterprise $100K ARR 정상 운영 중 (2026-11 만료). Samsung 그룹 내 다른 삼성전자 딜(Galaxy Store, Samsung Shop)과 별개 법인.",
+      "notes_summary_en": "Samsung US venture/innovation arm. Enterprise $100K ARR contract healthy (expires Nov 2026). Separate legal entity from Samsung Electronics deals (Galaxy Store, Samsung Shop).",
+      "next_action": "Samsung Next (US) 갱신 준비 (2026-11 만료) + Samsung 그룹 내 Expand 전략 연계",
+      "next_action_en": "Prepare Samsung Next (US) renewal (Nov 2026 expiry) + align with Samsung group Expand strategy",
       "last_activity": "2026-03-25",
-      "strategy": "Samsung Next 안정 유지하며 Samsung Shop(글로벌 마케팅) 신규 Land 병행. Galaxy Store는 H2 재개 확정 시 빠른 클로징 가능 상태. 삼성 그룹 내 멀티 포인트 접근.",
-      "strategy_en": "Maintain Samsung Next stability while advancing Samsung Shop (global marketing) new Land. Galaxy Store ready for fast close once H2 restart confirmed. Multi-point approach within Samsung Group.",
+      "strategy": "Samsung Next (US)는 미국 벤처 부문으로 독립 계약. 삼성전자(Galaxy Store, Samsung Shop) 딜과 시너지 연계 가능. 그룹사 MTU 전략으로 통합 접근 장기 목표.",
+      "strategy_en": "Samsung Next (US) is an independent US venture arm contract. Can create synergy with Samsung Electronics deals (Galaxy Store, Samsung Shop). Long-term: group MTU integration.",
+      "activity_history": []
+    },
+    {
+      "group": "Samsung",
+      "key_account": "Samsung Galaxy Store",
+      "arr": null,
+      "subscription_end": null,
+      "amplitude_plan": null,
+      "status": "prospect",
+      "deal_stage": "2차 PoC 중단 - MX Division 예산 동결 (H2 재개 논의 중)",
+      "deal_stage_en": "Phase 2 PoC Paused - MX Division budget freeze (H2 restart in discussion)",
+      "deal_amount": 0,
+      "health": "orange",
+      "notes_summary": "삼성전자 MX Division(갤럭시 스토어) 2차 PoC - 데이터 인제스천까지 완료 후 MX Division 비상 비용관리(LPDDR5X 2배 급등)로 전면 중단. 신규 임원진과 H2(하반기) 재개 논의 중. 4~5월 내부 동향 모니터링 필요.",
+      "notes_summary_en": "Samsung Electronics MX Division (Galaxy Store) Phase 2 PoC - data ingestion completed before full pause due to MX Division emergency cost management (LPDDR5X costs doubled). Discussing H2 restart with new leadership. Monitor internal dynamics April-May.",
+      "next_action": "H2 재개 일정 확인 + MX Division 신규 임원진 관계 구축",
+      "next_action_en": "Confirm H2 restart timeline + build relationship with new MX Division leadership",
+      "last_activity": "2026-03-25",
+      "strategy": "2차 PoC 데이터 인제스천 완료 → 기술 검증은 끝난 상태. MX Division 예산 해제 시 빠른 클로징 가능. H2까지 신규 임원 관계 유지 + 내부 챔피언 활성화가 핵심.",
+      "strategy_en": "Phase 2 PoC data ingestion complete → technical validation done. Ready for fast close once MX Division budget unfreezes. Key: maintain new exec relationships + keep internal champions warm through H2.",
       "activity_history": [
         {
           "date": "2026-03-25",
           "type": "slack",
-          "summary": "[내부 보고] Samsung Galaxy Store PoC 전면 중단 보고. LPDDR5X 비용 2배 급등 → MX Division 비상 비용관리 → 모든 신규 예산 동결. 신규 임원진과 H2 재개 논의 중.",
-          "summary_en": "[Internal report] Samsung Galaxy Store PoC fully paused. LPDDR5X cost doubled YoY → MX Division emergency cost management → all new budgets frozen. In discussion with new leadership on H2 restart."
+          "summary": "[내부 보고] Samsung Galaxy Store PoC 전면 중단. LPDDR5X 비용 2배 급등 → MX Division 비상 비용관리 → 모든 신규 예산 동결. 신규 임원진과 H2 재개 논의 중.",
+          "summary_en": "[Internal] Samsung Galaxy Store PoC fully paused. LPDDR5X costs doubled → MX Division emergency cost mgmt → all new budgets frozen. H2 restart in discussion with new leadership."
         }
       ]
     },
@@ -858,6 +878,14 @@
       "action": "[합성] Musinsa Experiment Add-on 크로스셀 제안 — 데모 일정 잡기",
       "action_en": "[Synthesis] Musinsa Experiment Add-on cross-sell — schedule demo",
       "due": ""
+    },
+    {
+      "priority": "medium",
+      "account": "Samsung Galaxy Store",
+      "group": "Samsung",
+      "action": "H2 재개 일정 확인 - MX Division 신규 임원진 연락 + 내부 챔피언(갤럭시스토어팀) 관계 유지",
+      "action_en": "Confirm H2 restart - contact new MX Division leadership + keep Galaxy Store internal champions warm",
+      "due": "2026-05-31"
     }
   ],
   "strategy_summary": "[합성 업데이트 2026-03-30] 주요 계정 현황: CJ Olive Young, TVING D-61, LG Uplus (CTO) 긴급, Golfzon County. 합성 결과 8건 액션, 4건 리스크 추가. | 【파이프라인 위기】Naver PoC 전면 중단(CTO→회장 인하우스 결정), Samsung Galaxy Store PoC 동결(MX Division 예산 동결) — Naver Shopping Q2→Q4 슬립. 【복구 전략】Q2 타겟: CJ OliveYoung Global, Wavve, Golfzon, 신세계DF 각 $100K+. 【신규 파이프라인】Samsung Shop(Samsung.com, Adobe 대체), KakaoBank(PII-free PoC), 현대백화점(GA→Amp 내부 승인 완료), NOL(PoC scoping). 【최우선】LG Uplus D-31 갱신, TVING D-62 클로징, 4/2 신세계DF 데모.",
@@ -879,7 +907,7 @@
       "risk_en": "PoC fully frozen - CTO→Chairman in-house decision. Naver Shopping Q2 deal slips to Q4. Cannot resume until summer"
     },
     {
-      "account": "Samsung Next",
+      "account": "Samsung Galaxy Store",
       "risk": "Samsung Galaxy Store PoC 동결 - MX Division 예산 동결. H2 재개 예정이나 불확실",
       "risk_en": "Samsung Galaxy Store PoC frozen - MX Division budget freeze. H2 restart planned but uncertain"
     },
