@@ -381,6 +381,49 @@ async def synthesize_account(account_name: str, days: int = 60):
             )
     return {"ok": True, "result": result}
 
+# ── Action Status API (완료 체크 + 메모) ─────────────────────────────────────
+
+ACTION_STATUS_FILE = DATA_DIR / "action_status.json"
+
+
+def _read_action_status() -> dict:
+    if not ACTION_STATUS_FILE.exists():
+        return {}
+    try:
+        return json.loads(ACTION_STATUS_FILE.read_text(encoding="utf-8"))
+    except Exception:
+        return {}
+
+
+def _write_action_status(data: dict):
+    ACTION_STATUS_FILE.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+
+
+class ActionStatusUpdate(BaseModel):
+    action_id: str
+    done: bool = False
+    note: str = ""
+
+
+@router.get("/action-status")
+async def get_action_status():
+    """모든 액션 아이템 완료 상태 + 메모 반환."""
+    return {"statuses": _read_action_status()}
+
+
+@router.post("/action-status")
+async def update_action_status(body: ActionStatusUpdate):
+    """액션 아이템 완료 상태 및 메모 저장."""
+    statuses = _read_action_status()
+    statuses[body.action_id] = {
+        "done": body.done,
+        "note": body.note,
+        "updated_at": datetime.now().isoformat(),
+    }
+    _write_action_status(statuses)
+    return {"ok": True}
+
+
 # ── Translation API ───────────────────────────────────────────────────────────
 
 class TranslateRequest(BaseModel):

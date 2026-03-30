@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useLang } from '../contexts/LanguageContext'
 import AgentAuditModal from '../components/AgentAuditModal'
 import { useTranslations } from '../hooks/useTranslations'
@@ -693,15 +693,32 @@ function cleanSummary(s = '') {
   return s.replace(/^\[(Gmail|Slack|SFDC|글린|Glean)[^\]]*\]\s*/i, '').trim()
 }
 
+// 액션 아이템 고유 ID (account + action 해시)
+function makeActionId(item) {
+  const str = `${item.account || ''}|${item.action || ''}`
+  let h = 0
+  for (let i = 0; i < str.length; i++) { h = Math.imul(31, h) + str.charCodeAt(i) | 0 }
+  return Math.abs(h).toString(36)
+}
+
 function WeeklyView({ t, lang }) {
   const [feed, setFeed] = useState(null)
   const [loadingFeed, setLoadingFeed] = useState(true)
   const [syncing, setSyncing] = useState(false)
   const [syncMsg, setSyncMsg] = useState(null)
   const [expandedAccounts, setExpandedAccounts] = useState({})
+  const [actionStatuses, setActionStatuses] = useState({})   // {id: {done, note}}
+  const [expandedNotes, setExpandedNotes] = useState({})     // {id: true} 노트 입력창 열림
+  const saveTimers = useRef({})
+  const allTextsRef = useRef([])
   const priorityConfig = getPriorityConfig(t)
   const healthConfig = getHealthConfig(t)
   const { tr, prefetch } = useTranslations(lang)
+
+  // lang 바뀔 때 보이는 텍스트 전체 re-prefetch
+  useEffect(() => {
+    if (lang === 'en') prefetch(allTextsRef.current)
+  }, [lang])
 
   useEffect(() => {
     fetch(`${API}/api/intel/weekly-feed?days=14`)
@@ -709,12 +726,32 @@ function WeeklyView({ t, lang }) {
       .then(d => {
         setFeed(d)
         setLoadingFeed(false)
-        // 피드 로드 완료 후 전체 summary 텍스트 prefetch
         const texts = (d.entries || []).map(e => e.summary || e.title || '').filter(Boolean)
+        allTextsRef.current = texts
         prefetch(texts)
       })
       .catch(() => setLoadingFeed(false))
   }, [])
+
+  // 액션 상태 로드
+  useEffect(() => {
+    fetch(`${API}/api/intel/action-status`)
+      .then(r => r.json())
+      .then(d => setActionStatuses(d.statuses || {}))
+      .catch(() => {})
+  }, [])
+
+  const saveActionStatus = (id, done, note) => {
+    setActionStatuses(prev => ({ ...prev, [id]: { done, note } }))
+    if (saveTimers.current[id]) clearTimeout(saveTimers.current[id])
+    saveTimers.current[id] = setTimeout(() => {
+      fetch(`${API}/api/intel/action-status`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action_id: id, done, note }),
+      }).catch(() => {})
+    }, 600)
+  }
 
   const handleSync = async () => {
     setSyncing(true); setSyncMsg(null)
@@ -851,38 +888,107 @@ function WeeklyView({ t, lang }) {
         }`}>{syncMsg}</div>
       )}
 
-      {/* ── 이번 주 할 일 (긴급/high 우선 표시) ── */}
+      {/* ── 이번 주 할 일 ── */}
       {sortedActions.length > 0 && (
         <div className="space-y-2">
           <h2 className="text-xs font-bold text-gray-500 uppercase tracking-wider px-1 flex items-center gap-2">
             ✅ {lang === 'en' ? 'Action Items' : '이번 주 할 일'}
             <span className="bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full font-normal normal-case tracking-normal">
-              {sortedActions.length}
+              {sortedActions.filter(a => !actionStatuses[makeActionId(a)]?.done).length}/{sortedActions.length}
             </span>
           </h2>
           <div className="space-y-1.5">
             {sortedActions.map((item, i) => {
+              const id = makeActionId(item)
+              const status = actionStatuses[id] || { done: false, note: '' }
               const cfg = priorityConfig[item.priority] || priorityConfig.medium
-              const action = pick(item, 'action', lang)
+              const action = tr(pick(item, 'action', lang) || item.action || '')
               const days = item.due ? daysUntil(item.due) : null
+              const noteExpanded = expandedNotes[id]
+              const noteText = status.note || ''
+              const displayNote = tr(noteText)
+
               return (
-                <div key={i} className={`rounded-xl border ${cfg.bg} px-3 py-2.5 flex gap-2.5 items-start`}>
-                  <span className={`text-xs font-bold ${cfg.color} shrink-0 mt-0.5 w-10`}>{cfg.label}</span>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs font-semibold text-gray-900 leading-snug">{action}</p>
-                    <div className="flex items-center gap-2 mt-1 flex-wrap">
-                      <span className="text-xs text-gray-400">{item.account}</span>
-                      {item.due && (
-                        <span className={`text-xs font-medium px-1.5 py-0.5 rounded-full ${
-                          days !== null && days <= 3 ? 'bg-red-100 text-red-600'
-                          : days !== null && days <= 7 ? 'bg-orange-100 text-orange-600'
-                          : 'bg-gray-100 text-gray-500'
-                        }`}>
-                          {item.due}{days !== null ? ` (D-${days})` : ''}
-                        </span>
+                <div key={i} className={`rounded-xl border overflow-hidden transition-all ${
+                  status.done ? 'border-gray-200 bg-gray-50' : `${cfg.bg} border-current`
+                }`} style={status.done ? {} : {}}>
+                  {/* 메인 행 */}
+                  <div className={`px-3 py-2.5 flex gap-2.5 items-start ${status.done ? '' : cfg.bg}`}>
+                    {/* 체크박스 */}
+                    <button
+                      onClick={() => saveActionStatus(id, !status.done, status.note)}
+                      className={`w-4.5 h-4.5 mt-0.5 rounded border-2 flex items-center justify-center shrink-0 transition-all ${
+                        status.done
+                          ? 'bg-green-500 border-green-500 text-white'
+                          : 'border-gray-300 hover:border-green-400 bg-white'
+                      }`}
+                      style={{ width: 18, height: 18, minWidth: 18 }}
+                    >
+                      {status.done && (
+                        <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                        </svg>
+                      )}
+                    </button>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start gap-1.5">
+                        {!status.done && (
+                          <span className={`text-xs font-bold ${cfg.color} shrink-0 mt-0.5`}>{cfg.label}</span>
+                        )}
+                        <p className={`text-xs font-semibold leading-snug flex-1 ${
+                          status.done ? 'line-through text-gray-400' : 'text-gray-900'
+                        }`}>{action}</p>
+                      </div>
+                      <div className="flex items-center gap-2 mt-1 flex-wrap">
+                        <span className="text-xs text-gray-400">{item.account}</span>
+                        {item.due && !status.done && (
+                          <span className={`text-xs font-medium px-1.5 py-0.5 rounded-full ${
+                            days !== null && days <= 3 ? 'bg-red-100 text-red-600'
+                            : days !== null && days <= 7 ? 'bg-orange-100 text-orange-600'
+                            : 'bg-gray-100 text-gray-500'
+                          }`}>{item.due}{days !== null ? ` (D-${days})` : ''}</span>
+                        )}
+                        {status.done && status.note && (
+                          <span className="text-xs text-green-600 font-medium">✓ {lang === 'en' ? 'Note saved' : '처리 내용 저장됨'}</span>
+                        )}
+                      </div>
+                    </div>
+                    {/* 노트 토글 버튼 */}
+                    <button
+                      onClick={() => setExpandedNotes(prev => ({ ...prev, [id]: !prev[id] }))}
+                      className={`text-xs px-1.5 py-1 rounded-lg shrink-0 transition-colors ${
+                        noteExpanded ? 'bg-blue-100 text-blue-600' : 'text-gray-300 hover:text-gray-500 hover:bg-gray-100'
+                      }`}
+                      title={lang === 'en' ? 'Add note' : '처리 내용 입력'}
+                    >
+                      📝
+                    </button>
+                  </div>
+
+                  {/* 노트 입력 영역 */}
+                  {(noteExpanded || noteText) && (
+                    <div className="px-3 pb-2.5 pt-0 border-t border-gray-100 bg-white">
+                      {noteExpanded ? (
+                        <textarea
+                          className="w-full text-xs text-gray-700 border border-gray-200 rounded-lg px-2.5 py-2 mt-2 resize-none focus:outline-none focus:border-blue-300 focus:ring-1 focus:ring-blue-200 placeholder-gray-300"
+                          rows={2}
+                          placeholder={lang === 'en' ? 'Add completion note…' : '처리 내용을 입력하세요…'}
+                          value={noteText}
+                          onChange={e => saveActionStatus(id, status.done, e.target.value)}
+                          autoFocus
+                        />
+                      ) : (
+                        noteText && (
+                          <p
+                            className="text-xs text-blue-700 bg-blue-50 rounded-lg px-2.5 py-2 mt-2 cursor-pointer hover:bg-blue-100"
+                            onClick={() => setExpandedNotes(prev => ({ ...prev, [id]: true }))}
+                          >
+                            📝 {displayNote}
+                          </p>
+                        )
                       )}
                     </div>
-                  </div>
+                  )}
                 </div>
               )
             })}
@@ -985,13 +1091,33 @@ function WeeklyView({ t, lang }) {
                 {acctActions.length > 0 && (
                   <div className="px-3 py-2 bg-gray-50 border-t border-gray-100 space-y-1.5">
                     {acctActions.map((a, i) => {
+                      const aid = makeActionId(a)
+                      const aStatus = actionStatuses[aid] || { done: false, note: '' }
                       const pcfg = priorityConfig[a.priority] || priorityConfig.medium
+                      const noteExpA = expandedNotes[aid]
                       return (
-                        <div key={i} className="flex gap-2 items-start">
-                          <span className={`text-xs font-bold ${pcfg.color} shrink-0 mt-0.5`}>{pcfg.label}</span>
-                          <p className="text-xs text-gray-700 leading-snug">{pick(a, 'action', lang)}</p>
-                          {a.due && (
-                            <span className="ml-auto text-xs text-gray-400 shrink-0">{a.due.slice(5)}</span>
+                        <div key={i} className="space-y-1">
+                          <div className="flex gap-2 items-start">
+                            <button
+                              onClick={() => saveActionStatus(aid, !aStatus.done, aStatus.note)}
+                              className={`rounded border-2 flex items-center justify-center shrink-0 mt-0.5 transition-all ${
+                                aStatus.done ? 'bg-green-500 border-green-500 text-white' : 'border-gray-300 hover:border-green-400 bg-white'
+                              }`}
+                              style={{ width: 14, height: 14, minWidth: 14 }}
+                            >
+                              {aStatus.done && <svg className="w-2 h-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>}
+                            </button>
+                            {!aStatus.done && <span className={`text-xs font-bold ${pcfg.color} shrink-0 mt-0.5`}>{pcfg.label}</span>}
+                            <p className={`text-xs leading-snug flex-1 ${aStatus.done ? 'line-through text-gray-400' : 'text-gray-700'}`}>{tr(pick(a, 'action', lang) || a.action || '')}</p>
+                            <div className="flex items-center gap-1 shrink-0">
+                              {a.due && !aStatus.done && <span className="text-xs text-gray-400">{a.due.slice(5)}</span>}
+                              <button onClick={() => setExpandedNotes(prev => ({ ...prev, [aid]: !prev[aid] }))} className="text-xs text-gray-300 hover:text-gray-500">📝</button>
+                            </div>
+                          </div>
+                          {(noteExpA || aStatus.note) && (
+                            noteExpA
+                              ? <textarea className="w-full text-xs border border-gray-200 rounded px-2 py-1 resize-none focus:outline-none focus:border-blue-300" rows={1} placeholder={lang === 'en' ? 'Note…' : '처리 내용…'} value={aStatus.note} onChange={e => saveActionStatus(aid, aStatus.done, e.target.value)} autoFocus />
+                              : aStatus.note && <p className="text-xs text-blue-600 bg-blue-50 rounded px-2 py-1 cursor-pointer" onClick={() => setExpandedNotes(prev => ({ ...prev, [aid]: true }))}>{tr(aStatus.note)}</p>
                           )}
                         </div>
                       )
