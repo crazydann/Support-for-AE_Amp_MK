@@ -4,6 +4,7 @@ import DashboardPage from './pages/DashboardPage'
 import SearchPage from './pages/SearchPage'
 import BlueprintPage from './pages/BlueprintPage'
 import MemoPage from './pages/MemoPage'
+import AccountSearch from './components/AccountSearch'
 
 export default function App() {
   const { lang, setLang, t } = useLang()
@@ -37,7 +38,7 @@ export default function App() {
     <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* 상단 헤더 */}
       <header className="bg-white border-b border-gray-200 px-4 py-3 sticky top-0 z-10">
-        <div className="max-w-lg mx-auto flex items-center justify-between">
+        <div className="max-w-lg mx-auto flex items-center gap-1">
           {/* 왼쪽: 언어 토글 + 로고 */}
           <div className="flex items-center gap-3">
             {/* 언어 선택 - 항상 왼쪽 최상단 */}
@@ -77,6 +78,9 @@ export default function App() {
               </div>
             </div>
           </div>
+
+          {/* 가운데: 계정 검색 */}
+          {tab === 'dashboard' && <AccountSearch />}
 
           {/* 오른쪽: 뷰 토글 (대시보드) or 뒤로가기 */}
           {tab === 'dashboard' && (
