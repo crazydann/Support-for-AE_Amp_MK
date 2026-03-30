@@ -70,59 +70,84 @@ async def get_notes():
 
 @router.post("/notes")
 async def create_note(note: NoteCreate):
-    """새 메모 저장. account 미입력 시 내용 기반 자동 감지. Sheets 우선 저장."""
-    from ..services.account_keywords import match_account
+    """새 메모 저장. account 미입력 시 내용 기반 자동 감지.
+    여러 계정이 감지되면 계정별로 각각 저장. Sheets 우선 저장."""
+    from ..services.account_keywords import match_account, match_accounts_all
     from ..services import notes_sheets_service as sheets
 
-    # 계정 자동 감지
-    resolved_account = note.account
-    auto_detected = False
-    if not resolved_account:
-        resolved_account = match_account(note.content)
-        auto_detected = bool(resolved_account)
-
     now = datetime.now()
-    new_note = {
-        "id": str(uuid.uuid4())[:8],
-        "content": note.content,
-        "type": note.type,
-        "tags": note.tags if note.tags else ([resolved_account] if resolved_account else []),
-        "account": resolved_account,
-        "auto_detected": auto_detected,
-        "created_at": now.isoformat(),
-        "date": now.strftime("%Y-%m-%d"),
-        "time": now.strftime("%H:%M"),
-    }
+    preview = note.content[:120] + ("…" if len(note.content) > 120 else "")
 
-    # Sheets에 저장
+    # 계정 자동 감지
+    if note.account:
+        # 명시적으로 계정 지정된 경우
+        target_accounts = [note.account]
+        auto_detected = False
+    else:
+        detected = match_accounts_all(note.content)
+        if detected:
+            target_accounts = detected
+            auto_detected = True
+        else:
+            target_accounts = [None]
+            auto_detected = False
+
+    created_notes = []
     storage = "local"
-    if sheets.is_available():
+
+    for acct in target_accounts:
+        new_note = {
+            "id": str(uuid.uuid4())[:8],
+            "content": note.content,
+            "type": note.type,
+            "tags": note.tags if note.tags else ([acct] if acct else []),
+            "account": acct,
+            "auto_detected": auto_detected,
+            "created_at": now.isoformat(),
+            "date": now.strftime("%Y-%m-%d"),
+            "time": now.strftime("%H:%M"),
+        }
+
+        # Sheets에 저장
+        note_storage = "local"
+        if sheets.is_available():
+            try:
+                ok = await sheets.append_note(new_note)
+                if ok:
+                    note_storage = "sheets"
+                    storage = "sheets"
+            except Exception:
+                pass
+
+        if note_storage == "local":
+            notes = _read_notes_local()
+            notes.insert(0, new_note)
+            _write_notes_local(notes)
+
+        # ── Intel Log에도 자동 기록 ──
         try:
-            ok = await sheets.append_note(new_note)
-            if ok:
-                storage = "sheets"
+            from ..services import intel_memory_service as mem
+            await mem.append_log(
+                summary=f"[메모] {preview}",
+                log_type="memo",
+                account=acct,
+                source="user",
+            )
         except Exception:
-            pass  # Sheets 실패 시 fallback
+            pass
 
-    if storage == "local":
-        notes = _read_notes_local()
-        notes.insert(0, new_note)
-        _write_notes_local(notes)
+        created_notes.append(new_note)
 
-    # ── Intel Log에도 자동 기록 ──
-    try:
-        from ..services import intel_memory_service as mem
-        preview = note.content[:120] + ("…" if len(note.content) > 120 else "")
-        await mem.append_log(
-            summary=f"[메모] {preview}",
-            log_type="memo",
-            account=resolved_account,
-            source="user",
-        )
-    except Exception:
-        pass
-
-    return {"ok": True, "note": new_note, "auto_detected": auto_detected, "storage": storage}
+    # 단일 계정 저장 시 하위 호환성 유지
+    primary_note = created_notes[0] if created_notes else None
+    return {
+        "ok": True,
+        "note": primary_note,
+        "notes": created_notes,
+        "accounts_detected": target_accounts,
+        "auto_detected": auto_detected,
+        "storage": storage,
+    }
 
 
 @router.delete("/notes/{note_id}")

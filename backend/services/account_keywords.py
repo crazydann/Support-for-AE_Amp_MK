@@ -6,6 +6,11 @@ ACCOUNT_KEYWORDS: dict[str, list[str]] = {
     "TVING": [
         "tving", "티빙", "yb.lee10@cj.net", "cjons", "서비스플래닝",
     ],
+    # 더 구체적인 키워드를 CJ Olive Young 위에 배치 (서브스트링 매칭 방지)
+    "CJ Olive Young Global": [
+        "올리브영글로벌", "oliveyoung global", "cj olive young global", "olive young global",
+        "올리브영 글로벌",
+    ],
     "CJ Olive Young": [
         "olive young", "올리브영", "oliveyoung", "cj olive",
     ],
@@ -44,8 +49,14 @@ ACCOUNT_KEYWORDS: dict[str, list[str]] = {
     "SK Telecom (IFLAND)": [
         "ifland", "sk telecom", "sk텔레콤", "skt", "sk adot",
     ],
-    "Samsung Next": [
+    "Samsung Next (US)": [
         "samsung next", "삼성넥스트", "@samsungnext",
+    ],
+    "Samsung Galaxy Store": [
+        "galaxy store", "갤럭시스토어", "samsung galaxy store", "galaxy app store",
+    ],
+    "Samsung Shop (Samsung.com)": [
+        "samsung.com", "samsung shop", "삼성닷컴", "samsung store",
     ],
     "SPC (Secta9ine)": [
         "spc", "secta9ine", "섹나나인", "@spc.co.kr", "파리바게뜨",
@@ -58,12 +69,22 @@ ACCOUNT_KEYWORDS: dict[str, list[str]] = {
         "인터파크", "interpark", "트리플", "triple", "@interpark.com",
         "interparktriple",
     ],
-    "두나무 (Dunamu)": [
+    "Dunamu": [
         "두나무", "dunamu", "upbit", "업비트", "@dunamu.com",
         "lambda 256", "람다256", "stockplus", "스톡플러스",
     ],
-    "무신사 (Musinsa)": [
+    "Musinsa": [
         "무신사", "musinsa", "@musinsa.com",
+    ],
+    "Wavve": [
+        "wavve", "웨이브", "콘텐츠웨이브", "@wavve.com", "contentwavve",
+    ],
+    "Shinsegae Duty Free": [
+        "신세계df", "신세계 df", "신세계면세점", "shinsegae df", "shinsegae duty free",
+        "ssgdf", "ssg df",
+    ],
+    "Woori Card": [
+        "우리카드", "woori card", "@wooricard.com", "woorikard", "wooricard",
     ],
     "Naver Corp": [
         "naver", "네이버", "@naver.com",

@@ -345,14 +345,21 @@
       "deal_stage_en": "Healthy",
       "deal_amount": 46000,
       "health": "yellow",
-      "notes_summary": "",
-      "notes_summary_en": "",
+      "notes_summary": "골프 예약·콘텐츠 플랫폼 Growth 계약 ($46K, ~2027-01). Q2 클로징 타겟 리스트 포함. Experiment Add-on 크로스셀 기회 탐색.",
+      "notes_summary_en": "Golf booking & content platform Growth contract ($46K, ~2027-01). Included in Q2 closing target list. Explore Experiment Add-on cross-sell opportunity.",
       "next_action": "온보딩 지원 강화 - 활성 사용자 증대",
       "next_action_en": "Strengthen onboarding - increase active user count",
       "last_activity": "2026-02-10",
       "strategy": "골프 예약·콘텐츠 플랫폼 데이터 분석 레퍼런스. 온보딩 활성화로 사용 깊이 증대. 스포츠 레저 버티컬 레퍼런스로 포지셔닝.",
       "strategy_en": "Data analytics reference for golf booking and content platform. Deepen usage through onboarding activation. Position as sports and leisure vertical reference.",
-      "activity_history": []
+      "activity_history": [
+        {
+          "date": "2026-03-30",
+          "type": "memo",
+          "summary": "[메모] Q2 타켓 클로징 목록에 포함 — Experiment Add-on 클로징 집중",
+          "summary_en": "[Memo] Included in Q2 closing target list — focus on Experiment Add-on closing"
+        }
+      ]
     },
     {
       "group": "KT",
@@ -732,6 +739,114 @@
           "summary_en": "[Internal report] KakaoBank new pipeline reported to Matt. Marketing and New Business teams independently evaluating PoC. PII-free behavioral analytics, targeting completion before summer."
         }
       ]
+    },
+    {
+      "group": "CJ",
+      "key_account": "CJ Olive Young Global",
+      "arr": null,
+      "subscription_end": null,
+      "amplitude_plan": null,
+      "status": "prospect",
+      "deal_stage": "Q2 클로징 타겟 — 국내 CJ Olive Young 레퍼런스 기반 접근",
+      "deal_stage_en": "Q2 Closing Target — approach via domestic CJ Olive Young reference",
+      "deal_amount": 0,
+      "health": "yellow",
+      "notes_summary": "CJ올리브영 글로벌 사업부. 국내 CJ Olive Young(Growth 계약)과 별도 운영. 해외 e-커머스 및 글로벌 뷰티 플랫폼 분석 수요. Q2 클로징 타겟.",
+      "notes_summary_en": "CJ Olive Young Global division. Separate operation from domestic CJ Olive Young (Growth contract). Demand for overseas e-commerce and global beauty platform analytics. Q2 closing target.",
+      "next_action": "글로벌 사업부 의사결정자 파악 + 국내 CJ Olive Young 레퍼런스 레버리지",
+      "next_action_en": "Identify decision-maker in Global division + leverage domestic CJ Olive Young reference",
+      "last_activity": "2026-03-30",
+      "strategy": "국내 CJ Olive Young 성공 레퍼런스를 기반으로 글로벌 사업부 확장 접근. 그룹 MTU 전환 시 CJ 그룹 전체 통합 분석 구조 제안.",
+      "strategy_en": "Leverage domestic CJ Olive Young success reference to expand into Global division. Propose integrated analytics structure for CJ Group via MTU conversion.",
+      "activity_history": [
+        {
+          "date": "2026-03-30",
+          "type": "memo",
+          "summary": "[메모] Q2 타켓 클로징 올리브영글로벌, 웨이브, 골프존, 신세계DF, 우리카드",
+          "summary_en": "[Memo] Q2 target closing: CJ Olive Young Global, Wavve, Golfzon, Shinsegae DF, Woori Card"
+        }
+      ]
+    },
+    {
+      "group": "Wavve",
+      "key_account": "Wavve",
+      "arr": null,
+      "subscription_end": null,
+      "amplitude_plan": null,
+      "status": "prospect",
+      "deal_stage": "Q2 클로징 타겟 — OTT 구독자 행동분석 수요 확인 필요",
+      "deal_stage_en": "Q2 Closing Target — need to confirm OTT subscriber behavior analytics demand",
+      "deal_amount": 0,
+      "health": "yellow",
+      "notes_summary": "SK텔레콤·KBS·MBC·SBS 합작 OTT 서비스. TVING과 경쟁 관계. 구독자 행동분석 및 콘텐츠 추천 고도화 수요 예상. Q2 클로징 타겟.",
+      "notes_summary_en": "OTT service joint venture by SK Telecom, KBS, MBC, SBS. Competes with TVING. Expected demand for subscriber behavior analytics and content recommendation optimization. Q2 closing target.",
+      "next_action": "Wavve 제품/데이터팀 컨택 + TVING 레퍼런스 활용 접근",
+      "next_action_en": "Contact Wavve product/data team + leverage TVING reference",
+      "last_activity": "2026-03-30",
+      "strategy": "TVING(CJ ENM) 레퍼런스로 OTT 업종 접근. 구독자 LTV 분석·이탈 예측 Use Case 제안. 콘텐츠 추천 개인화 ROI 데모.",
+      "strategy_en": "Approach OTT vertical with TVING reference. Propose subscriber LTV analysis and churn prediction use cases. Content recommendation personalization ROI demo.",
+      "activity_history": [
+        {
+          "date": "2026-03-30",
+          "type": "memo",
+          "summary": "[메모] Q2 타켓 클로징 올리브영글로벌, 웨이브, 골프존, 신세계DF, 우리카드",
+          "summary_en": "[Memo] Q2 target closing: CJ Olive Young Global, Wavve, Golfzon, Shinsegae DF, Woori Card"
+        }
+      ]
+    },
+    {
+      "group": "Shinsegae",
+      "key_account": "Shinsegae Duty Free",
+      "arr": null,
+      "subscription_end": null,
+      "amplitude_plan": null,
+      "status": "prospect",
+      "deal_stage": "Q2 클로징 타겟 — 신세계 그룹 MTU 전략 연계",
+      "deal_stage_en": "Q2 Closing Target — linked to Shinsegae Group MTU strategy",
+      "deal_amount": 0,
+      "health": "yellow",
+      "notes_summary": "신세계그룹 면세점 사업부. 그룹 내 SSG.com(Growth, active) · 신세계라이브쇼핑 레퍼런스 활용 가능. 외국인 관광객 행동분석 및 고급 구매 패턴 분석 수요. Q2 클로징 타겟.",
+      "notes_summary_en": "Shinsegae Group's duty-free division. Can leverage SSG.com (Growth, active) and Shinsegae Live Shopping references within group. Demand for foreign tourist behavior analytics and luxury purchase pattern analysis. Q2 closing target.",
+      "next_action": "신세계 그룹 레퍼런스(SSG.com) 기반 접근 + 면세점 e-커머스/디지털팀 컨택",
+      "next_action_en": "Approach via Shinsegae Group reference (SSG.com) + contact duty-free e-commerce/digital team",
+      "last_activity": "2026-03-30",
+      "strategy": "신세계 그룹 MTU 전략 적용 — SSG.com 계약 확장으로 신세계DF 포함. 그룹 통합 분석 구조 제안으로 DF 독립 계약 vs 그룹 통합 비교 시나리오 준비.",
+      "strategy_en": "Apply Shinsegae Group MTU strategy — expand SSG.com contract to include Shinsegae DF. Prepare group-integrated vs standalone contract comparison scenarios.",
+      "activity_history": [
+        {
+          "date": "2026-03-30",
+          "type": "memo",
+          "summary": "[메모] Q2 타켓 클로징 올리브영글로벌, 웨이브, 골프존, 신세계DF, 우리카드",
+          "summary_en": "[Memo] Q2 target closing: CJ Olive Young Global, Wavve, Golfzon, Shinsegae DF, Woori Card"
+        }
+      ]
+    },
+    {
+      "group": "Woori Financial",
+      "key_account": "Woori Card",
+      "arr": null,
+      "subscription_end": null,
+      "amplitude_plan": null,
+      "status": "prospect",
+      "deal_stage": "Q2 클로징 타겟 — 금융권 PII-free 접근 필요",
+      "deal_stage_en": "Q2 Closing Target — financial sector PII-free approach required",
+      "deal_amount": 0,
+      "health": "yellow",
+      "notes_summary": "우리금융그룹 카드 사업부. 금융권 데이터 규제 환경에서 PII-free 행동분석 접근 필요. 카드 앱 UX 개선 및 소비 패턴 분석 수요. Q2 클로징 타겟.",
+      "notes_summary_en": "Woori Financial Group's card division. PII-free behavioral analytics approach required under financial data regulations. Demand for card app UX improvement and spending pattern analysis. Q2 closing target.",
+      "next_action": "우리카드 앱 디지털팀 컨택 + KakaoBank PII-free 접근법 레퍼런스 준비",
+      "next_action_en": "Contact Woori Card app digital team + prepare KakaoBank PII-free approach reference",
+      "last_activity": "2026-03-30",
+      "strategy": "금융권 PII-free 접근으로 진입. KakaoBank·LG Uplus 레퍼런스 활용. 우리금융그룹(우리은행·우리투자증권 등) 전체 확장 발판 확보.",
+      "strategy_en": "Enter via PII-free approach for financial sector. Leverage KakaoBank and LG Uplus references. Establish foothold for Woori Financial Group expansion (Woori Bank, Woori Investment, etc.).",
+      "activity_history": [
+        {
+          "date": "2026-03-30",
+          "type": "memo",
+          "summary": "[메모] Q2 타켓 클로징 올리브영글로벌, 웨이브, 골프존, 신세계DF, 우리카드",
+          "summary_en": "[Memo] Q2 target closing: CJ Olive Young Global, Wavve, Golfzon, Shinsegae DF, Woori Card"
+        }
+      ]
     }
   ],
   "action_items": [
@@ -886,6 +1001,46 @@
       "action": "H2 재개 일정 확인 - MX Division 신규 임원진 연락 + 내부 챔피언(갤럭시스토어팀) 관계 유지",
       "action_en": "Confirm H2 restart - contact new MX Division leadership + keep Galaxy Store internal champions warm",
       "due": "2026-05-31"
+    },
+    {
+      "account": "CJ Olive Young Global",
+      "action": "Q2 클로징 타겟 — 초기 컨택 및 니즈 확인",
+      "action_en": "Q2 Closing Target — initial contact and needs assessment",
+      "priority": "high",
+      "due": "2026-06-30",
+      "source": "memo"
+    },
+    {
+      "account": "Wavve",
+      "action": "Q2 클로징 타겟 — 초기 컨택 및 니즈 확인",
+      "action_en": "Q2 Closing Target — initial contact and needs assessment",
+      "priority": "high",
+      "due": "2026-06-30",
+      "source": "memo"
+    },
+    {
+      "account": "Shinsegae Duty Free",
+      "action": "Q2 클로징 타겟 — 초기 컨택 및 니즈 확인",
+      "action_en": "Q2 Closing Target — initial contact and needs assessment",
+      "priority": "high",
+      "due": "2026-06-30",
+      "source": "memo"
+    },
+    {
+      "account": "Woori Card",
+      "action": "Q2 클로징 타겟 — 초기 컨택 및 니즈 확인",
+      "action_en": "Q2 Closing Target — initial contact and needs assessment",
+      "priority": "high",
+      "due": "2026-06-30",
+      "source": "memo"
+    },
+    {
+      "account": "Golfzon County",
+      "action": "Q2 클로징 타겟 — 초기 컨택 및 니즈 확인",
+      "action_en": "Q2 Closing Target — initial contact and needs assessment",
+      "priority": "high",
+      "due": "2026-06-30",
+      "source": "memo"
     }
   ],
   "strategy_summary": "[합성 업데이트 2026-03-30] 주요 계정 현황: CJ Olive Young, TVING D-61, LG Uplus (CTO) 긴급, Golfzon County. 합성 결과 8건 액션, 4건 리스크 추가. | 【파이프라인 위기】Naver PoC 전면 중단(CTO→회장 인하우스 결정), Samsung Galaxy Store PoC 동결(MX Division 예산 동결) — Naver Shopping Q2→Q4 슬립. 【복구 전략】Q2 타겟: CJ OliveYoung Global, Wavve, Golfzon, 신세계DF 각 $100K+. 【신규 파이프라인】Samsung Shop(Samsung.com, Adobe 대체), KakaoBank(PII-free PoC), 현대백화점(GA→Amp 내부 승인 완료), NOL(PoC scoping). 【최우선】LG Uplus D-31 갱신, TVING D-62 클로징, 4/2 신세계DF 데모.",
