@@ -658,6 +658,27 @@ function WeeklyView({ report, t, lang }) {
   const risks      = report.risks       || []
   const priorityConfig = getPriorityConfig(t)
 
+  const [synthesizing, setSynthesizing] = useState(false)
+  const [synthMsg, setSynthMsg] = useState(null)
+
+  const handleSynthesize = async () => {
+    setSynthesizing(true)
+    setSynthMsg(null)
+    try {
+      const res = await fetch(`${API}/api/intel/synthesize`, { method: 'POST' })
+      const data = await res.json()
+      setSynthMsg(lang === 'en'
+        ? `Synthesis done (${data.synthesized || 0} accounts updated)`
+        : `합성 완료 (${data.synthesized || 0}개 계정 업데이트)`)
+      setTimeout(() => { setSynthMsg(null); window.location.reload() }, 2000)
+    } catch {
+      setSynthMsg(lang === 'en' ? 'Synthesis failed' : '합성 실패')
+      setTimeout(() => setSynthMsg(null), 3000)
+    } finally {
+      setSynthesizing(false)
+    }
+  }
+
   // 날짜 범위 계산
   const today = new Date()
   const weekStart = new Date(today)
@@ -785,6 +806,35 @@ function WeeklyView({ report, t, lang }) {
           </div>
         </div>
       )}
+
+      {/* ── 인텔 합성 실행 버튼 ── */}
+      <div className="flex flex-col items-center gap-2">
+        <button
+          onClick={handleSynthesize}
+          disabled={synthesizing}
+          className={`w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all
+            ${synthesizing
+              ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+              : 'bg-gradient-to-r from-purple-500 to-blue-500 text-white shadow-sm hover:from-purple-600 hover:to-blue-600 active:scale-95'
+            }`}
+        >
+          <span className={synthesizing ? 'animate-spin inline-block' : ''}>
+            {synthesizing ? '⟳' : '🔄'}
+          </span>
+          {synthesizing
+            ? (lang === 'en' ? 'Synthesizing...' : '합성 중...')
+            : (lang === 'en' ? 'Run Intel Synthesis' : '인텔 합성 실행')}
+        </button>
+        {synthMsg && (
+          <p className={`text-xs font-medium px-3 py-1.5 rounded-full ${
+            synthMsg.includes('실패') || synthMsg.includes('failed')
+              ? 'bg-red-50 text-red-600'
+              : 'bg-green-50 text-green-600'
+          }`}>
+            {synthMsg}
+          </p>
+        )}
+      </div>
 
       {/* ── 지난주 한 일 ── */}
       <div className="space-y-3">
