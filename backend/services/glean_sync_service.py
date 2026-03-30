@@ -108,12 +108,15 @@ def ingest_glean_results(entries: list[dict]) -> dict:
         log_summary = f"[Glean/{etype}] {log_summary}"
 
         # intel_log에 append (동기 방식으로 호출)
+        # gmail/meeting/slack 타입은 그대로 유지 → weekly-feed에서 올바르게 표시
+        NATIVE_TYPES = {"gmail", "meeting", "slack", "memo"}
+        final_type = etype if etype in NATIVE_TYPES else f"glean_{etype}"
         try:
             loop = asyncio.new_event_loop()
             ok = loop.run_until_complete(
                 mem.append_log(
                     summary=log_summary,
-                    log_type=f"glean_{etype}",
+                    log_type=final_type,
                     account=account or None,
                     source="glean",
                 )
