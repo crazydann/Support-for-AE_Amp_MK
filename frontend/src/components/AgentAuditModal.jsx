@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useLang } from '../contexts/LanguageContext'
+import { useTranslations } from '../hooks/useTranslations'
 
 const API = import.meta.env.VITE_API_URL || ''
 
@@ -69,6 +70,7 @@ function MetricCard({ label, value, sub, color = 'gray' }) {
 
 export default function AgentAuditModal({ account, relatedActions = [], relatedRisks = [], onClose }) {
   const { lang, setLang } = useLang()
+  const { tr, prefetch } = useTranslations(lang)
   const [intelLog, setIntelLog] = useState([])
   const [loading, setLoading] = useState(true)
 
@@ -76,7 +78,14 @@ export default function AgentAuditModal({ account, relatedActions = [], relatedR
     const enc = encodeURIComponent(account.key_account)
     fetch(`${API}/api/intel/log?account=${enc}&days=90`)
       .then(r => r.json())
-      .then(d => setIntelLog(d.entries || []))
+      .then(d => {
+        const entries = d.entries || []
+        setIntelLog(entries)
+        // intel log 요약 텍스트 prefetch
+        prefetch(entries.map(e => e.summary).filter(Boolean))
+        // activity_history 텍스트도 prefetch
+        prefetch((account.activity_history || []).map(a => a.summary).filter(Boolean))
+      })
       .catch(() => {})
       .finally(() => setLoading(false))
   }, [account.key_account])
@@ -253,15 +262,19 @@ export default function AgentAuditModal({ account, relatedActions = [], relatedR
             <>
               <SectionHeader>{lang === 'en' ? `Recent Activity (${activities.length})` : `최근 활동 (${activities.length})`}</SectionHeader>
               <div className="space-y-1.5">
-                {activities.map((act, i) => (
-                  <div key={i} className="flex gap-2.5 px-2 py-1.5 rounded-lg hover:bg-gray-50">
-                    <span className="text-sm shrink-0 mt-0.5">{typeIcon(act.type)}</span>
-                    <div className="min-w-0">
-                      <p className="text-xs text-gray-600 leading-snug">{pick(act, 'summary', lang)}</p>
-                      <p className="text-xs text-gray-300 mt-0.5">{act.date}</p>
+                {activities.map((act, i) => {
+                  const rawSummary = lang === 'en' ? (act.summary_en || act.summary) : act.summary
+                  const displaySummary = lang === 'en' && !act.summary_en ? tr(act.summary) : rawSummary
+                  return (
+                    <div key={i} className="flex gap-2.5 px-2 py-1.5 rounded-lg hover:bg-gray-50">
+                      <span className="text-sm shrink-0 mt-0.5">{typeIcon(act.type)}</span>
+                      <div className="min-w-0">
+                        <p className="text-xs text-gray-600 leading-snug">{displaySummary}</p>
+                        <p className="text-xs text-gray-300 mt-0.5">{act.date}</p>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  )
+                })}
               </div>
             </>
           )}
@@ -275,7 +288,7 @@ export default function AgentAuditModal({ account, relatedActions = [], relatedR
                   <div key={i} className="flex gap-2.5 px-2 py-1.5 rounded-lg hover:bg-gray-50">
                     <span className="text-sm shrink-0 mt-0.5">{typeIcon(e.source)}</span>
                     <div className="min-w-0">
-                      <p className="text-xs text-gray-600 leading-snug">{e.summary}</p>
+                      <p className="text-xs text-gray-600 leading-snug">{tr(e.summary)}</p>
                       <p className="text-xs text-gray-300 mt-0.5">{e.date} · {e.source}</p>
                     </div>
                   </div>

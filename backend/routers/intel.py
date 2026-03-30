@@ -381,6 +381,31 @@ async def synthesize_account(account_name: str, days: int = 60):
             )
     return {"ok": True, "result": result}
 
+# ── Translation API ───────────────────────────────────────────────────────────
+
+class TranslateRequest(BaseModel):
+    texts: list[str]
+    target_lang: str = "en"
+    source_lang: str = "ko"
+
+
+@router.post("/translate")
+async def translate_texts_endpoint(body: TranslateRequest):
+    """
+    한국어 텍스트 배치 번역 (Google Translate 비공식 API + 파일 캐시).
+    Returns: {"translations": {"원문": "translated", ...}}
+    """
+    from ..services.translate_service import translate_texts
+
+    if not body.texts:
+        return {"translations": {}}
+
+    # 배치 최대 50건
+    texts = list({t for t in body.texts if t})[:50]
+    translations = translate_texts(texts, target_lang=body.target_lang, source_lang=body.source_lang)
+    return {"translations": translations}
+
+
 # ── Weekly Feed API (non-SFDC: Gmail/Slack/Calendar/Glean/Memo) ──────────────
 
 @router.get("/weekly-feed")

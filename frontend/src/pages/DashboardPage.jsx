@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useLang } from '../contexts/LanguageContext'
 import AgentAuditModal from '../components/AgentAuditModal'
+import { useTranslations } from '../hooks/useTranslations'
 
 function pick(obj, key, lang) {
   return (lang === 'en' && obj[`${key}_en`]) ? obj[`${key}_en`] : obj[key]
@@ -295,6 +296,7 @@ const activityTypeConfig = {
 }
 
 function ActivityFeed({ history, lang }) {
+  const { tr } = useTranslations(lang)
   if (!history || history.length === 0) return (
     <p className="text-xs text-gray-400 text-center py-2">
       {lang === 'en' ? 'No activity recorded yet' : '기록된 활동이 없습니다'}
@@ -304,6 +306,8 @@ function ActivityFeed({ history, lang }) {
     <div className="space-y-2">
       {history.map((item, i) => {
         const cfg = activityTypeConfig[item.type] || activityTypeConfig.memo
+        const rawSummary = lang === 'en' ? (item.summary_en || item.summary) : item.summary
+        const displaySummary = lang === 'en' && !item.summary_en ? tr(item.summary) : rawSummary
         return (
           <div key={i} className="flex gap-2 items-start">
             <div className={`${cfg.bg} rounded-full w-6 h-6 flex items-center justify-center text-xs shrink-0 mt-0.5`}>
@@ -316,9 +320,7 @@ function ActivityFeed({ history, lang }) {
                 </span>
                 <span className="text-xs text-gray-400">{item.date}</span>
               </div>
-              <p className="text-xs text-gray-700 leading-relaxed">
-                {lang === 'en' ? (item.summary_en || item.summary) : item.summary}
-              </p>
+              <p className="text-xs text-gray-700 leading-relaxed">{displaySummary}</p>
             </div>
           </div>
         )
@@ -699,11 +701,18 @@ function WeeklyView({ t, lang }) {
   const [expandedAccounts, setExpandedAccounts] = useState({})
   const priorityConfig = getPriorityConfig(t)
   const healthConfig = getHealthConfig(t)
+  const { tr, prefetch } = useTranslations(lang)
 
   useEffect(() => {
     fetch(`${API}/api/intel/weekly-feed?days=14`)
       .then(r => r.json())
-      .then(d => { setFeed(d); setLoadingFeed(false) })
+      .then(d => {
+        setFeed(d)
+        setLoadingFeed(false)
+        // 피드 로드 완료 후 전체 summary 텍스트 prefetch
+        const texts = (d.entries || []).map(e => e.summary || e.title || '').filter(Boolean)
+        prefetch(texts)
+      })
       .catch(() => setLoadingFeed(false))
   }, [])
 
@@ -944,7 +953,8 @@ function WeeklyView({ t, lang }) {
                   {visibleItems.map((item, i) => {
                     const itemType = item.type || item.log_type || 'memo'
                     const cfg = feedTypeConfig[itemType] || feedTypeConfig.memo
-                    const text = cleanSummary(item.summary || item.title || '')
+                    const rawText = cleanSummary(item.summary || item.title || '')
+                    const text = tr(rawText)
                     return (
                       <div key={i} className="px-3 py-2 flex gap-2 items-start">
                         <span className={`text-xs mt-0.5 shrink-0 ${cfg.color}`}>{cfg.icon}</span>
