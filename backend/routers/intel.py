@@ -5,6 +5,7 @@ Intel Router - 메모 저장/조회 + 주간 리포트 API + 자동 sync
   1. Google Sheets (NOTES_SPREADSHEET_ID 설정 시) → 재배포 후에도 영구 보존
   2. notes.json (로컬 fallback - 개발환경 또는 Sheets 미설정 시)
 """
+import asyncio
 import json
 import uuid
 from datetime import datetime
@@ -323,6 +324,35 @@ async def synthesize_memory(account: Optional[str] = None, days: int = 60):
 
     return {"ok": True, "synthesized": synthesized, "count": len(synthesized)}
 
+
+# ── Synthesis API ─────────────────────────────────────────────
+
+@router.post("/synthesize")
+async def run_synthesis(days: int = 60):
+    """전체 계정 합성 실행. intel_log → account_memory + weekly_report 업데이트."""
+    from ..services import synthesis_service as synth
+    result = await asyncio.get_event_loop().run_in_executor(
+        None, synth.run_full_synthesis, days
+    )
+    return {"ok": True, **result}
+
+
+@router.post("/synthesize/{account_name}")
+async def synthesize_account(account_name: str, days: int = 60):
+    """특정 계정 합성."""
+    from ..services import synthesis_service as synth
+    result = synth.synthesize_account(account_name, days=days)
+    if result:
+        from ..services import intel_memory_service as mem
+        insight = result.get("strategy_update", "")
+        if insight:
+            await mem.append_memory(
+                account=account_name,
+                insight=insight,
+                insight_type="synthesis",
+                source="claude"
+            )
+    return {"ok": True, "result": result}
 
 # ── Glean Ingest API ──────────────────────────────────────────
 
