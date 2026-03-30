@@ -16,6 +16,41 @@ export default function App() {
   const [currentCompany, setCurrentCompany] = useState(null)
   const [dashView, setDashView] = useState('weekly')
 
+  // Todo PIN 잠금
+  const [todoUnlocked, setTodoUnlocked] = useState(() => sessionStorage.getItem('mk_todo_unlocked') === '1')
+  const [showPinModal, setShowPinModal] = useState(false)
+  const [pinInput, setPinInput] = useState('')
+  const [pinError, setPinError] = useState(false)
+
+  function handleTodoClick() {
+    if (todoUnlocked) {
+      setDashView('todo')
+    } else {
+      setShowPinModal(true)
+      setPinInput('')
+      setPinError(false)
+    }
+  }
+
+  function handlePinKey(digit) {
+    if (pinInput.length >= 4) return
+    const next = pinInput + digit
+    setPinInput(next)
+    setPinError(false)
+    if (next.length === 4) {
+      const pin = localStorage.getItem('mk_todo_pin') || '0000'
+      if (next === pin) {
+        setTodoUnlocked(true)
+        sessionStorage.setItem('mk_todo_unlocked', '1')
+        setShowPinModal(false)
+        setDashView('todo')
+      } else {
+        setPinError(true)
+        setTimeout(() => setPinInput(''), 500)
+      }
+    }
+  }
+
   // 인증 상태
   const [authState, setAuthState] = useState('loading') // loading | authenticated | unauthenticated
   const [currentUser, setCurrentUser] = useState(null)
@@ -94,6 +129,46 @@ export default function App() {
       {/* 사용자 관리 모달 */}
       {showUserMgmt && <UserManagement onClose={() => setShowUserMgmt(false)} />}
 
+      {/* Todo PIN 모달 */}
+      {showPinModal && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center px-6">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-xs shadow-xl">
+            <p className="text-sm font-bold text-gray-800 text-center mb-1">🔒 Private View</p>
+            <p className="text-xs text-gray-400 text-center mb-5">Enter PIN to access</p>
+            {/* PIN dots */}
+            <div className="flex justify-center gap-3 mb-5">
+              {[0,1,2,3].map(i => (
+                <div key={i} className={`w-3 h-3 rounded-full border-2 transition-all ${
+                  i < pinInput.length
+                    ? (pinError ? 'bg-red-400 border-red-400' : 'bg-purple-600 border-purple-600')
+                    : 'border-gray-300'
+                }`} />
+              ))}
+            </div>
+            {pinError && <p className="text-xs text-red-500 text-center mb-3">Incorrect PIN</p>}
+            {/* 숫자 키패드 */}
+            <div className="grid grid-cols-3 gap-2 mb-3">
+              {['1','2','3','4','5','6','7','8','9','','0','⌫'].map((k, i) => (
+                <button
+                  key={i}
+                  onClick={() => k === '⌫' ? setPinInput(p => p.slice(0,-1)) : k !== '' && handlePinKey(k)}
+                  disabled={k === ''}
+                  className={`h-12 rounded-xl text-sm font-semibold transition-colors ${
+                    k === '' ? '' :
+                    k === '⌫' ? 'bg-gray-100 text-gray-500 hover:bg-gray-200' :
+                    'bg-gray-50 text-gray-800 hover:bg-purple-50 hover:text-purple-700 active:bg-purple-100'
+                  }`}
+                >{k}</button>
+              ))}
+            </div>
+            <button
+              onClick={() => { setShowPinModal(false); setPinInput('') }}
+              className="w-full text-xs text-gray-400 py-2 hover:text-gray-600"
+            >Cancel</button>
+          </div>
+        </div>
+      )}
+
       {/* 상단 헤더 */}
       <header className="bg-white border-b border-gray-200 px-4 py-3 sticky top-0 z-10">
         <div className="max-w-lg mx-auto flex items-center gap-1">
@@ -148,11 +223,14 @@ export default function App() {
                   }`}
                 >{t('viewAccount')}</button>
                 <button
-                  onClick={() => setDashView('todo')}
-                  className={`text-xs font-semibold px-2.5 py-1 rounded-md transition-all ${
+                  onClick={handleTodoClick}
+                  className={`text-xs font-semibold px-2.5 py-1 rounded-md transition-all flex items-center gap-1 ${
                     dashView === 'todo' ? 'bg-white text-purple-700 shadow-sm' : 'text-gray-400 hover:text-gray-600'
                   }`}
-                >{t('viewTodo')}</button>
+                >
+                  {!todoUnlocked && <span className="text-xs">🔒</span>}
+                  {t('viewTodo')}
+                </button>
               </div>
             )}
             {tab === 'companies' && currentCompany && (
