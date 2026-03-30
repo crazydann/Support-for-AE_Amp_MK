@@ -16,7 +16,7 @@ from typing import Optional
 router = APIRouter(prefix="/api/intel", tags=["intel"])
 
 DATA_DIR = Path(__file__).parent.parent / "data"
-NOTES_FILE = DATA_DIR / "notes.json"
+NOTES_FILE  = DATA_DIR / "notes.json"
 REPORT_FILE = DATA_DIR / "weekly_report.json"
 
 
@@ -94,19 +94,34 @@ async def create_note(note: NoteCreate):
     }
 
     # Sheets에 저장
+    storage = "local"
     if sheets.is_available():
         try:
             ok = await sheets.append_note(new_note)
             if ok:
-                return {"ok": True, "note": new_note, "auto_detected": auto_detected, "storage": "sheets"}
+                storage = "sheets"
         except Exception:
             pass  # Sheets 실패 시 fallback
 
-    # fallback: notes.json
-    notes = _read_notes_local()
-    notes.insert(0, new_note)
-    _write_notes_local(notes)
-    return {"ok": True, "note": new_note, "auto_detected": auto_detected, "storage": "local"}
+    if storage == "local":
+        notes = _read_notes_local()
+        notes.insert(0, new_note)
+        _write_notes_local(notes)
+
+    # ── Intel Log에도 자동 기록 ──
+    try:
+        from ..services import intel_memory_service as mem
+        preview = note.content[:120] + ("…" if len(note.content) > 120 else "")
+        await mem.append_log(
+            summary=f"[메모] {preview}",
+            log_type="memo",
+            account=resolved_account,
+            source="user",
+        )
+    except Exception:
+        pass
+
+    return {"ok": True, "note": new_note, "auto_detected": auto_detected, "storage": storage}
 
 
 @router.delete("/notes/{note_id}")
@@ -210,3 +225,100 @@ async def update_report(report: dict):
     report["generated_at"] = datetime.now().isoformat()
     REPORT_FILE.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
     return {"ok": True, "generated_at": report["generated_at"]}
+
+
+# ── Intel Log API ─────────────────────────────────────────────
+
+class LogEntry(BaseModel):
+    summary: str
+    type: str = "insight"       # memo | gmail | slack | insight | strategy
+    account: Optional[str] = None
+    source: str = "claude"      # user | gmail | slack | claude | system
+
+
+@router.get("/log")
+async def get_intel_log(account: Optional[str] = None, days: int = 90):
+    """Intel Log 조회. account/days 필터 지원."""
+    from ..services import intel_memory_service as mem
+    entries = await mem.read_log(account=account, days=days)
+    return {"entries": entries, "total": len(entries)}
+
+
+@router.post("/log")
+async def append_intel_log(entry: LogEntry):
+    """Intel Log에 이벤트 수동 추가 (Claude 인사이트 등)."""
+    from ..services import intel_memory_service as mem
+    ok = await mem.append_log(
+        summary=entry.summary,
+        log_type=entry.type,
+        account=entry.account,
+        source=entry.source,
+    )
+    return {"ok": ok}
+
+
+# ── Account Memory API ────────────────────────────────────────
+
+class MemoryEntry(BaseModel):
+    account: str
+    insight: str
+    type: str = "synthesis"     # synthesis | risk | opportunity | action
+    source: str = "claude"
+
+
+@router.get("/memory")
+async def get_account_memory(account: Optional[str] = None):
+    """Account Memory 조회. account 미지정 시 전체 반환."""
+    from ..services import intel_memory_service as mem
+    memory = await mem.read_memory(account=account)
+    return {"memory": memory}
+
+
+@router.post("/memory")
+async def append_account_memory(entry: MemoryEntry):
+    """Account Memory에 인사이트 추가."""
+    from ..services import intel_memory_service as mem
+    ok = await mem.append_memory(
+        account=entry.account,
+        insight=entry.insight,
+        insight_type=entry.type,
+        source=entry.source,
+    )
+    return {"ok": ok}
+
+
+@router.post("/memory/synthesize")
+async def synthesize_memory(account: Optional[str] = None, days: int = 60):
+    """
+    Intel Log → Account Memory 자동 합성.
+    Claude가 '/메모리 업데이트' 명령 시 호출 예정.
+    특정 계정 지정 또는 전체 합성 가능.
+    """
+    from ..services import intel_memory_service as mem
+    import json as _json
+
+    report = _read_report()
+    accounts_list = (
+        [account] if account
+        else [a["key_account"] for a in report.get("accounts", [])]
+    )
+
+    synthesized = []
+    for acct in accounts_list:
+        entries = await mem.read_log(account=acct, days=days)
+        if not entries:
+            continue
+        # 간단한 자동 합성: 최근 활동 요약
+        types = {}
+        for e in entries:
+            t = e.get("type", "etc")
+            types[t] = types.get(t, 0) + 1
+        summary_parts = [f"{t} {cnt}건" for t, cnt in types.items()]
+        insight = (
+            f"최근 {days}일 활동 요약: {', '.join(summary_parts)}. "
+            f"최신: {entries[0].get('summary', '')[:80]}"
+        )
+        await mem.append_memory(acct, insight, insight_type="auto-synthesis", source="system")
+        synthesized.append(acct)
+
+    return {"ok": True, "synthesized": synthesized, "count": len(synthesized)}

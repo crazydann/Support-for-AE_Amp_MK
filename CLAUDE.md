@@ -51,22 +51,58 @@
 
 ---
 
+## 영구 메모리 레이어 (Intelligence Memory)
+
+### 사용 방법
+- "메모리 업데이트 해줘" → `POST /api/intel/memory/synthesize` 호출 (Intel Log → Account Memory 자동 합성)
+- "XXX 계정 히스토리 보여줘" → `GET /api/intel/log?account=XXX&days=90`
+- "전체 인텔 요약" → `GET /api/intel/memory`
+- 인사이트 직접 저장 → `POST /api/intel/memory` with `{"account": "...", "insight": "..."}`
+
+### 파일 구조
+```
+backend/data/intel_log.jsonl     # append-only 원시 로그 (메모/Gmail/Slack 모든 이벤트)
+backend/data/account_memory.json # 계정별 합성 요약 (Claude가 주기적으로 업데이트)
+```
+
+### Google Sheets 미러 (같은 Spreadsheet)
+- "Intel Log" 탭: intel_log.jsonl 실시간 미러 → 브라우저에서 검색/필터 가능
+- "Account Memory" 탭: account_memory.json 미러 → 직접 편집 가능
+
+### 자동 기록 흐름
+```
+메모 저장     → intel_log.jsonl + Sheets "Intel Log"
+Gmail 싱크   → intel_log.jsonl + Sheets "Intel Log"
+Slack 싱크   → intel_log.jsonl + Sheets "Intel Log"
+Claude 분석  → account_memory.json + Sheets "Account Memory"
+```
+
+---
+
 ## 프로젝트 구조
 
 ```
 backend/
-  data/weekly_report.json   # 주간 보고 데이터 (계정, 액션, 리스크, 전략)
+  data/
+    weekly_report.json    # 주간 보고 스냅샷 (계정, 액션, 리스크, 전략)
+    intel_log.jsonl       # append-only 이벤트 로그 (영구 누적)
+    account_memory.json   # 계정별 합성 인텔리전스 (Claude 업데이트)
+    notes.json            # 메모 fallback (Sheets 미사용 시)
   services/
-    gmail_sync.py           # Gmail 동기화 (inbox + sent, after:YYYY/MM/DD)
-    account_keywords.py     # 계정별 키워드 매핑 (메모 분류용)
+    intel_memory_service.py  # Intel Log + Account Memory + Sheets 미러
+    gmail_sync.py            # Gmail 동기화 (inbox + sent, after:YYYY/MM/DD)
+    account_keywords.py      # 계정별 키워드 매핑 (메모 분류용)
+    report_sync.py           # Gmail/Slack → activity_history + Intel Log
+  routers/
+    intel.py              # /api/intel/* (메모, 리포트, log, memory)
 frontend/
   src/
-    App.jsx                 # 헤더 토글: Todo | Account | Weekly
-    pages/DashboardPage.jsx # TodoView / AccountView / WeeklyView
-    pages/MemoPage.jsx      # 음성/텍스트 메모 + 구글시트 저장
-    i18n.js                 # KO/EN 번역
-render.yaml                 # Render.com 배포 설정
-CLAUDE.md                   # 이 파일 (Claude 세션 context)
+    App.jsx               # 헤더 토글: Todo | Account | Weekly
+    pages/DashboardPage.jsx  # TodoView / AccountView / WeeklyView
+    pages/MemoPage.jsx    # 음성/텍스트 메모 + 구글시트 저장
+    i18n.js               # KO/EN 번역
+render.yaml               # Render.com 배포 설정
+CLAUDE.md                 # 이 파일 (Claude 세션 context)
 ```
 
 ---

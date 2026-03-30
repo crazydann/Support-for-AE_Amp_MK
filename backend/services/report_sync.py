@@ -139,6 +139,21 @@ def run_sync(force: bool = False) -> dict:
         new_ids.append(source_id)
         added_count += 1
 
+        # ── Intel Log에도 자동 기록 ──
+        try:
+            from .intel_memory_service import _sync_append_log
+            from datetime import timezone as _tz
+            _sync_append_log({
+                "ts":      __import__("datetime").datetime.now(_tz.utc).isoformat(),
+                "date":    activity["date"],
+                "type":    activity["type"],     # gmail | slack
+                "account": account_name,
+                "summary": activity["summary"],
+                "source":  activity["type"],     # gmail | slack
+            })
+        except Exception:
+            pass
+
     # activity_history 날짜 내림차순 정렬
     for acc in accounts.values():
         acc["activity_history"] = sorted(
