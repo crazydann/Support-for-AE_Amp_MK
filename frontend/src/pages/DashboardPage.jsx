@@ -565,6 +565,8 @@ function AccountView({ report, t, lang }) {
     {auditAccount && (
       <AgentAuditModal
         account={auditAccount}
+        relatedActions={actionItems.filter(a => a.account === auditAccount.key_account)}
+        relatedRisks={risks.filter(r => r.account === auditAccount.key_account)}
         onClose={() => setAuditAccount(null)}
       />
     )}
