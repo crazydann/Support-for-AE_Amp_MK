@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-03-29T18:00:00+09:00",
+  "generated_at": "2026-03-30T00:43:01.547053+00:00",
   "period": "2026-03-29 (KST 주간보고)",
   "period_en": "2026-03-29 (KST Weekly Report)",
   "playbook": {
@@ -794,10 +794,74 @@
       "action": "SK Adot 팀 재유치 미팅 - T world 신규 Land 기회 탐색",
       "action_en": "Win-back meeting with SK Adot - explore new Land with T world",
       "due": "2026-04-30"
+    },
+    {
+      "priority": "high",
+      "account": "CJ Olive Young",
+      "group": "CJ",
+      "action": "[합성] CJ Olive Young Experiment Add-on 크로스셀 제안 — 데모 일정 잡기",
+      "action_en": "[Synthesis] CJ Olive Young Experiment Add-on cross-sell — schedule demo",
+      "due": ""
+    },
+    {
+      "priority": "high",
+      "account": "TVING",
+      "group": "CJ",
+      "action": "[합성] TVING D-61 갱신 준비 착수 — QBR / 성과 리뷰 예약",
+      "action_en": "[Synthesis] TVING D-61 renewal prep — schedule QBR / success review",
+      "due": "2026-05-31"
+    },
+    {
+      "priority": "high",
+      "account": "TVING",
+      "group": "CJ",
+      "action": "[합성] TVING Experiment Add-on 크로스셀 제안 — 데모 일정 잡기",
+      "action_en": "[Synthesis] TVING Experiment Add-on cross-sell — schedule demo",
+      "due": ""
+    },
+    {
+      "priority": "urgent",
+      "account": "LG Uplus (CTO)",
+      "group": "LG",
+      "action": "[합성] LG Uplus (CTO) D-30 갱신 긴급 — EB 컨펌 및 조건 협의 착수",
+      "action_en": "[Synthesis] LG Uplus (CTO) D-30 urgent renewal — start EB confirmation and negotiation",
+      "due": "2026-04-30"
+    },
+    {
+      "priority": "urgent",
+      "account": "LG Uplus (CTO)",
+      "group": "LG",
+      "action": "[합성] LG Uplus (CTO) Health RED — 이탈 위험 긴급 대응 및 경영진 에스컬레이션 검토",
+      "action_en": "[Synthesis] LG Uplus (CTO) Health RED — urgent churn prevention and exec escalation",
+      "due": "2026-03-30"
+    },
+    {
+      "priority": "urgent",
+      "account": "SK Telecom (IFLAND)",
+      "group": "SK",
+      "action": "[합성] SK Telecom (IFLAND) 계약 만료 — 즉시 갱신 처리 필요",
+      "action_en": "[Synthesis] SK Telecom (IFLAND) contract expired — immediate renewal required",
+      "due": "2026-03-30"
+    },
+    {
+      "priority": "urgent",
+      "account": "Dunamu",
+      "group": "Dunamu",
+      "action": "[합성] Dunamu D-30 갱신 긴급 — EB 컨펌 및 조건 협의 착수",
+      "action_en": "[Synthesis] Dunamu D-30 urgent renewal — start EB confirmation and negotiation",
+      "due": "2026-04-30"
+    },
+    {
+      "priority": "high",
+      "account": "Musinsa",
+      "group": "Musinsa",
+      "action": "[합성] Musinsa Experiment Add-on 크로스셀 제안 — 데모 일정 잡기",
+      "action_en": "[Synthesis] Musinsa Experiment Add-on cross-sell — schedule demo",
+      "due": ""
     }
   ],
-  "strategy_summary": "【파이프라인 위기】Naver PoC 전면 중단(CTO→회장 인하우스 결정), Samsung Galaxy Store PoC 동결(MX Division 예산 동결) — Naver Shopping Q2→Q4 슬립. 【복구 전략】Q2 타겟: CJ OliveYoung Global, Wavve, Golfzon, 신세계DF 각 $100K+. 【신규 파이프라인】Samsung Shop(Samsung.com, Adobe 대체), KakaoBank(PII-free PoC), 현대백화점(GA→Amp 내부 승인 완료), NOL(PoC scoping). 【최우선】LG Uplus D-31 갱신, TVING D-62 클로징, 4/2 신세계DF 데모.",
-  "strategy_summary_en": "【Pipeline Risk】Naver PoC fully frozen (CTO→Chairman in-house decision), Samsung Galaxy Store PoC paused (MX Division budget freeze) — Naver Shopping slips Q2→Q4. 【Recovery Plan】Q2 targets: Olive Young Global, Wavve, Golfzon, Shinsegae DF each $100K+. 【New Pipeline】Samsung Shop (Samsung.com, Adobe replacement), KakaoBank (PII-free PoC), Hyundai Dept Store (GA→Amp internal approval done), NOL (PoC scoping). 【Top Priority】LG Uplus D-31 renewal, TVING D-62 close, 4/2 Shinsegae DF demo.",
+  "strategy_summary": "[합성 업데이트 2026-03-30] 주요 계정 현황: CJ Olive Young, TVING D-61, LG Uplus (CTO) 긴급, Golfzon County. 합성 결과 8건 액션, 4건 리스크 추가. | 【파이프라인 위기】Naver PoC 전면 중단(CTO→회장 인하우스 결정), Samsung Galaxy Store PoC 동결(MX Division 예산 동결) — Naver Shopping Q2→Q4 슬립. 【복구 전략】Q2 타겟: CJ OliveYoung Global, Wavve, Golfzon, 신세계DF 각 $100K+. 【신규 파이프라인】Samsung Shop(Samsung.com, Adobe 대체), KakaoBank(PII-free PoC), 현대백화점(GA→Amp 내부 승인 완료), NOL(PoC scoping). 【최우선】LG Uplus D-31 갱신, TVING D-62 클로징, 4/2 신세계DF 데모.",
+  "strategy_summary_en": "[Synthesis 2026-03-30] Key accounts: CJ Olive Young, TVING D-61, LG Uplus (CTO) 긴급, Golfzon County. 8 actions and 4 risks added from synthesis. | 【Pipeline Risk】Naver PoC fully frozen (CTO→Chairman in-house decision), Samsung Galaxy Store PoC paused (MX Division budget freeze) — Naver Shopping slips Q2→Q4. 【Recovery Plan】Q2 targets: Olive Young Global, Wavve, Golfzon, Shinsegae DF each $100K+. 【New Pipeline】Samsung Shop (Samsung.com, Adobe replacement), KakaoBank (PII-free PoC), Hyundai Dept Store (GA→Amp internal approval done), NOL (PoC scoping). 【Top Priority】LG Uplus D-31 renewal, TVING D-62 close, 4/2 Shinsegae DF demo.",
   "risks": [
     {
       "account": "LG Uplus (CTO)",
@@ -828,6 +892,26 @@
       "account": "Dunamu",
       "risk": "2026-04-30 Enterprise 계약 만료 (D-32). 갱신 딜 Stage 2 Qualification 단계. NAVER파이낸셜 인수 협상($10.3B) 변수로 의사결정 지연 가능. $1,168K ARR 갱신 리스크.",
       "risk_en": "Enterprise contract expires 2026-04-30 (D-32). Renewal deal at Stage 2 Qualification. NAVER Financial acquisition ($10.3B) may delay decision. $1,168K ARR renewal at risk."
+    },
+    {
+      "account": "LG Uplus (CTO)",
+      "risk": "D-30 갱신 임박. 갱신 협상 즉시 착수 필요.",
+      "risk_en": "D-30 renewal approaching. Immediate negotiation required."
+    },
+    {
+      "account": "LG Uplus (CTO)",
+      "risk": "Health 레드 — 긴급 계정 관리 필요 (이탈 위험)",
+      "risk_en": "Health RED — urgent account management needed (churn risk)"
+    },
+    {
+      "account": "SK Telecom (IFLAND)",
+      "risk": "계약 만료됨 (만료일: 2024-12-31). 즉시 갱신 조치 필요.",
+      "risk_en": "Contract expired (2024-12-31). Immediate renewal action required."
+    },
+    {
+      "account": "Dunamu",
+      "risk": "D-30 갱신 임박. 갱신 협상 즉시 착수 필요.",
+      "risk_en": "D-30 renewal approaching. Immediate negotiation required."
     }
   ]
 }
