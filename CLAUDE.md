@@ -55,6 +55,8 @@
 
 ### 사용 방법
 - "메모리 업데이트 해줘" → `POST /api/intel/memory/synthesize` 호출 (Intel Log → Account Memory 자동 합성)
+- "합성 실행해줘" / "전략 업데이트 해줘" → `POST /api/intel/synthesize` (전체 계정 합성 엔진 실행 → action_items + risks + account_memory 업데이트)
+- "XXX 계정 분석해줘" → `POST /api/intel/synthesize/XXX` (특정 계정만 합성)
 - "XXX 계정 히스토리 보여줘" → `GET /api/intel/log?account=XXX&days=90`
 - "전체 인텔 요약" → `GET /api/intel/memory`
 - 인사이트 직접 저장 → `POST /api/intel/memory` with `{"account": "...", "insight": "..."}`
