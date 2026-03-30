@@ -729,6 +729,46 @@ function WeeklyView({ report, t, lang }) {
         </div>
       )}
 
+      {/* ── 영업 전략 플레이북 ── */}
+      {report.playbook && (
+        <div className="bg-white border border-gray-200 rounded-xl p-4 space-y-2.5">
+          <p className="text-xs font-bold text-gray-700 flex items-center gap-1.5">
+            <span>🎯</span>
+            {lang === 'en' ? 'Sales Playbook' : '영업 전략 플레이북'}
+          </p>
+          <div className="space-y-2">
+            <div className="flex gap-2 items-start">
+              <span className="text-xs text-purple-500 shrink-0 font-bold mt-0.5">①</span>
+              <div>
+                <p className="text-xs font-semibold text-gray-600 mb-0.5">{lang === 'en' ? 'Group MTU Strategy' : '그룹사 MTU 전략'}</p>
+                <p className="text-xs text-gray-600 leading-relaxed">{lang === 'en' ? report.playbook.group_mtu_strategy_en : report.playbook.group_mtu_strategy}</p>
+              </div>
+            </div>
+            <div className="flex gap-2 items-start">
+              <span className="text-xs text-blue-500 shrink-0 font-bold mt-0.5">②</span>
+              <div>
+                <p className="text-xs font-semibold text-gray-600 mb-0.5">{lang === 'en' ? 'Upsell Path' : '업셀 경로'}</p>
+                <p className="text-xs text-gray-600">{lang === 'en' ? report.playbook.upsell_path_en : report.playbook.upsell_path}</p>
+              </div>
+            </div>
+            <div className="flex gap-2 items-start">
+              <span className="text-xs text-orange-500 shrink-0 font-bold mt-0.5">③</span>
+              <div>
+                <p className="text-xs font-semibold text-gray-600 mb-0.5">{lang === 'en' ? '2026 Focus' : '2026 집중 과제'}</p>
+                <p className="text-xs text-gray-600 leading-relaxed">{lang === 'en' ? report.playbook.focus_2026_en : report.playbook.focus_2026}</p>
+                {report.playbook.target_experiment_addon?.length > 0 && (
+                  <div className="flex flex-wrap gap-1 mt-1">
+                    {report.playbook.target_experiment_addon.map((name, i) => (
+                      <span key={i} className="text-xs bg-orange-50 text-orange-600 px-1.5 py-0.5 rounded-full border border-orange-100">{name}</span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ── 지난주 한 일 ── */}
       <div className="space-y-3">
         <div className="flex items-center gap-2">

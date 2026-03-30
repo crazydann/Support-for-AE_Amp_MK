@@ -2,6 +2,22 @@
   "generated_at": "2026-03-29T18:00:00+09:00",
   "period": "2026-03-29 (KST 주간보고)",
   "period_en": "2026-03-29 (KST Weekly Report)",
+  "playbook": {
+    "group_mtu_strategy": "그룹사 계약 시 전체 MTU 계약 구조 제안 → 각 계열사를 하위 프로젝트로 구성, 개별+통합 분석 동시 가능. 그룹 내 성공 계열사를 레버리지해 Expand 추진.",
+    "group_mtu_strategy_en": "For group accounts, propose full group MTU contract structure → each subsidiary as sub-project for individual + consolidated analysis. Leverage successful subsidiaries to expand across the group.",
+    "upsell_path": "Event 계약 → MTU 전환 → Experiment / Activation Add-on 크로스셀",
+    "upsell_path_en": "Event contract → MTU conversion → Experiment / Activation Add-on cross-sell",
+    "focus_2026": "2026 전략 우선순위: Experiment Add-on 전 고객 크로스셀 집중 (특히 MTU 전환 완료 Enterprise 고객)",
+    "focus_2026_en": "2026 strategic priority: Experiment Add-on cross-sell across all accounts (especially MTU-converted Enterprise customers)",
+    "target_experiment_addon": [
+      "Musinsa",
+      "Dunamu",
+      "GS Retail",
+      "TVING",
+      "CJ Olive Young",
+      "Lotte Shopping"
+    ]
+  },
   "summary": "Naver·Samsung Galaxy Store PoC 전면 중단. Samsung Shop·KakaoBank 신규 파이프라인. 현대백화점 내부 승인 완료. LG Uplus D-31 긴급.",
   "summary_en": "Naver & Samsung Galaxy Store PoC fully on hold. New pipeline: Samsung Shop, KakaoBank. Hyundai Dept Store internal approval done. LG Uplus D-31 urgent.",
   "accounts": [
