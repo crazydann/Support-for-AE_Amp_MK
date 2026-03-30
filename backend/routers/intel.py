@@ -452,7 +452,7 @@ async def translate_texts_endpoint(body: TranslateRequest):
 # ── Weekly Feed API (non-SFDC: Gmail/Slack/Calendar/Glean/Memo) ──────────────
 
 @router.get("/weekly-feed")
-async def get_weekly_feed(days: int = 14):
+async def get_weekly_feed(days: int = 180):
     """
     주간 피드: Gmail, Slack, Calendar, Glean, Memo 타입만 반환 (SFDC 제외).
     intel_log.jsonl에서 최근 N일치 필터링 후 날짜 내림차순으로 반환.

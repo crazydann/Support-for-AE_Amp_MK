@@ -7,6 +7,16 @@ function pick(obj, key, lang) {
   return (lang === 'en' && obj[`${key}_en`]) ? obj[`${key}_en`] : obj[key]
 }
 
+/** pick() + 자동 번역 합성: _en 필드 없으면 tr()로 번역 */
+function makePT(lang, tr) {
+  return (obj, key) => {
+    if (!obj) return ''
+    if (lang === 'en' && obj[`${key}_en`]) return obj[`${key}_en`]
+    const val = obj[key] || ''
+    return lang === 'en' ? (tr(val) || val) : val
+  }
+}
+
 const API = import.meta.env.VITE_API_URL || ''
 
 function getHealthConfig(t) {
@@ -141,6 +151,8 @@ function ActionItem({ item, t, lang }) {
 }
 
 function TodoView({ report, t, lang }) {
+  const { tr } = useTranslations(lang)
+  const pt = makePT(lang, tr)
   const accounts = report.accounts || []
   const actions  = report.action_items || []
   const risks    = report.risks || []
@@ -185,7 +197,7 @@ function TodoView({ report, t, lang }) {
       {(report.strategy_summary || report.strategy_summary_en) && (
         <div className="bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-xl p-4">
           <p className="text-xs font-semibold text-purple-600 mb-1.5">{t('strategySummary')}</p>
-          <p className="text-sm text-gray-700 leading-relaxed">{pick(report, 'strategy_summary', lang)}</p>
+          <p className="text-sm text-gray-700 leading-relaxed">{pt(report, 'strategy_summary')}</p>
         </div>
       )}
 
@@ -198,7 +210,7 @@ function TodoView({ report, t, lang }) {
           </h2>
           {actions.map((item, i) => {
             const cfg = priorityConfig[item.priority] || priorityConfig.medium
-            const action = pick(item, 'action', lang)
+            const action = pt(item, 'action')
             return (
               <div key={i} className={`rounded-xl border ${cfg.bg} p-3 flex gap-3 items-start`}>
                 <span className={`text-xs font-bold ${cfg.color} mt-0.5 shrink-0`}>{cfg.label}</span>
@@ -225,7 +237,7 @@ function TodoView({ report, t, lang }) {
             {activityFeedAccounts.map((account, i) => {
               const healthConfig = getHealthConfig(t)
               const cfg = healthConfig[account.health] || healthConfig.gray
-              const nextAction = pick(account, 'next_action', lang)
+              const nextAction = pt(account, 'next_action')
               const recentItems = (account.activity_history || []).slice(0, 2)
               return (
                 <div key={i} className="bg-white rounded-xl border border-gray-200 p-3 space-y-2">
@@ -245,7 +257,7 @@ function TodoView({ report, t, lang }) {
                           <span className={`text-xs shrink-0 mt-0.5 ${acfg.color}`}>{acfg.icon}</span>
                           <p className="text-xs text-gray-600 leading-snug">
                             <span className="text-gray-400 mr-1">{item.date}</span>
-                            {lang === 'en' ? (item.summary_en || item.summary) : item.summary}
+                            {lang === 'en' ? (item.summary_en || tr(item.summary)) : item.summary}
                           </p>
                         </div>
                       )
@@ -275,7 +287,7 @@ function TodoView({ report, t, lang }) {
               <span className="text-red-500 text-sm shrink-0">⚠</span>
               <div>
                 <p className="text-xs font-semibold text-red-700">{r.account}</p>
-                <p className="text-xs text-red-600 mt-0.5">{pick(r, 'risk', lang)}</p>
+                <p className="text-xs text-red-600 mt-0.5">{pt(r, 'risk')}</p>
               </div>
             </div>
           ))}
@@ -329,13 +341,16 @@ function ActivityFeed({ history, lang }) {
   )
 }
 
-function SubAccountRow({ account, expanded, onToggle, t, lang, relatedActions, relatedRisks, accountNotes = [], onAudit }) {
+function SubAccountRow({ account, expanded, onToggle, t, lang, tr: trProp, relatedActions, relatedRisks, accountNotes = [], onAudit }) {
+  const { tr: trHook } = useTranslations(lang)
+  const tr = trProp || trHook
+  const pt = makePT(lang, tr)
   const healthConfig = getHealthConfig(t)
   const priorityConfig = getPriorityConfig(t)
   const cfg = healthConfig[account.health] || healthConfig.gray
   const arrNum = account.arr ? parseInt(account.arr) : 0
-  const dealStage = pick(account, 'deal_stage', lang)
-  const nextAction = pick(account, 'next_action', lang)
+  const dealStage = pt(account, 'deal_stage')
+  const nextAction = pt(account, 'next_action')
 
   // notes.json 메모를 activity_history 형식으로 변환해 합치기
   const noteActivities = accountNotes.map(n => ({
@@ -413,7 +428,7 @@ function SubAccountRow({ account, expanded, onToggle, t, lang, relatedActions, r
           {(account.notes_summary || account.notes_summary_en) && (
             <div className="bg-white rounded-lg p-2.5">
               <p className="text-xs text-gray-400 mb-1">{lang === 'en' ? 'Summary' : '현황 요약'}</p>
-              <p className="text-xs text-gray-700 leading-relaxed">{pick(account, 'notes_summary', lang)}</p>
+              <p className="text-xs text-gray-700 leading-relaxed">{pt(account, 'notes_summary')}</p>
             </div>
           )}
 
@@ -434,7 +449,7 @@ function SubAccountRow({ account, expanded, onToggle, t, lang, relatedActions, r
           {(account.strategy || account.strategy_en) && (
             <div className="bg-purple-50 border border-purple-100 rounded-lg p-2.5">
               <p className="text-xs font-semibold text-purple-600 mb-1">{lang === 'en' ? 'Strategy' : '전략'}</p>
-              <p className="text-xs text-gray-700 leading-relaxed">{pick(account, 'strategy', lang)}</p>
+              <p className="text-xs text-gray-700 leading-relaxed">{pt(account, 'strategy')}</p>
             </div>
           )}
 
@@ -464,7 +479,7 @@ function SubAccountRow({ account, expanded, onToggle, t, lang, relatedActions, r
                   <div key={i} className={`rounded-lg border ${pcfg.bg} px-3 py-2 flex gap-2 items-start`}>
                     <span className={`text-xs font-bold ${pcfg.color} shrink-0 mt-0.5`}>{pcfg.label}</span>
                     <div>
-                      <p className="text-xs text-gray-800 leading-snug">{pick(item, 'action', lang)}</p>
+                      <p className="text-xs text-gray-800 leading-snug">{pt(item, 'action')}</p>
                       {item.due && <p className="text-xs text-gray-400 mt-0.5">{item.due}</p>}
                     </div>
                   </div>
@@ -480,7 +495,7 @@ function SubAccountRow({ account, expanded, onToggle, t, lang, relatedActions, r
               {relatedRisks.map((r, i) => (
                 <div key={i} className="bg-red-50 border border-red-200 rounded-lg px-3 py-2 flex gap-2 items-start">
                   <span className="text-red-400 text-xs shrink-0">⚠</span>
-                  <p className="text-xs text-red-700 leading-snug">{pick(r, 'risk', lang)}</p>
+                  <p className="text-xs text-red-700 leading-snug">{pt(r, 'risk')}</p>
                 </div>
               ))}
             </div>
@@ -492,6 +507,7 @@ function SubAccountRow({ account, expanded, onToggle, t, lang, relatedActions, r
 }
 
 function AccountView({ report, t, lang }) {
+  const { tr } = useTranslations(lang)
   const [expandedGroup, setExpandedGroup] = useState(null)
   const [expandedAccount, setExpandedAccount] = useState(null)
   const [notes, setNotes] = useState([])
@@ -659,6 +675,7 @@ function AccountView({ report, t, lang }) {
                       onToggle={() => setExpandedAccount(expandedAccount === key ? null : key)}
                       t={t}
                       lang={lang}
+                      tr={tr}
                       relatedActions={actionItems.filter(a => a.account === account.key_account)}
                       relatedRisks={risks.filter(r => r.account === account.key_account)}
                       accountNotes={notes.filter(n => n.account === account.key_account)}
@@ -721,7 +738,7 @@ function WeeklyView({ t, lang }) {
   }, [lang])
 
   useEffect(() => {
-    fetch(`${API}/api/intel/weekly-feed?days=14`)
+    fetch(`${API}/api/intel/weekly-feed?days=365`)
       .then(r => r.json())
       .then(d => {
         setFeed(d)
@@ -774,15 +791,16 @@ function WeeklyView({ t, lang }) {
   const actionItems = feed?.action_items || []
   const accountMeta = feed?.account_meta || {}
 
-  // ── 이번 주 / 지난 주 날짜 경계 ──
+  // ── 날짜 경계 계산 ──
   const dow = today.getDay() || 7  // 1=Mon…7=Sun
   const thisMonday = new Date(today); thisMonday.setDate(today.getDate() - dow + 1)
   const lastMonday = new Date(thisMonday); lastMonday.setDate(thisMonday.getDate() - 7)
-  const thisMondayStr = thisMonday.toISOString().slice(0, 10)
-  const lastMondayStr = lastMonday.toISOString().slice(0, 10)
+  const sixMonthsAgo = new Date(today); sixMonthsAgo.setMonth(today.getMonth() - 6)
+  const thisMondayStr  = thisMonday.toISOString().slice(0, 10)
+  const lastMondayStr  = lastMonday.toISOString().slice(0, 10)
+  const sixMonthsAgoStr = sixMonthsAgo.toISOString().slice(0, 10)
 
   // ── 피드 중복 제거 ──
-  // 1) source_id 중복 제거, 2) (account + normalized summary) fingerprint 중복 제거
   const seenIds = new Set()
   const seenFingerprints = new Set()
   const dedupedEntries = []
@@ -797,13 +815,24 @@ function WeeklyView({ t, lang }) {
     dedupedEntries.push(e)
   }
 
-  // ── 이번 주 / 지난 주 활동 분리 ──
-  const thisWeekEntries = dedupedEntries.filter(e => (e.date || '') >= thisMondayStr)
-  const lastWeekEntries = dedupedEntries.filter(e => {
+  // ── 6개월 기준 분리 ──
+  // 6개월 이내: 이번 주 / 지난 주 / 그 이전 섹션에 표시
+  // 6개월 이전: 아카이브 섹션 (collapsed)
+  const activeEntries   = dedupedEntries.filter(e => (e.date || '') >= sixMonthsAgoStr)
+  const archivedEntries = dedupedEntries.filter(e => (e.date || '') < sixMonthsAgoStr)
+
+  const thisWeekEntries = activeEntries.filter(e => (e.date || '') >= thisMondayStr)
+  const lastWeekEntries = activeEntries.filter(e => {
     const d = e.date || ''
     return d >= lastMondayStr && d < thisMondayStr
   })
-  const earlierEntries  = dedupedEntries.filter(e => (e.date || '') < lastMondayStr)
+  const earlierEntries  = activeEntries.filter(e => (e.date || '') < lastMondayStr)
+
+  // ── 최근 메모 (6개월 이내, 날짜 내림차순, 최대 10건) ──
+  const recentMemos = activeEntries
+    .filter(e => (e.type || e.log_type || '') === 'memo')
+    .sort((a, b) => (b.date || '').localeCompare(a.date || ''))
+    .slice(0, 10)
 
   // 계정별 그룹핑 helper
   function groupByAccount(entries) {
@@ -1062,6 +1091,39 @@ function WeeklyView({ t, lang }) {
         </div>
       )}
 
+      {/* ── 최근 메모 (중요도 강조 섹션) ── */}
+      {recentMemos.length > 0 && (
+        <div className="space-y-2">
+          <h2 className="text-xs font-bold text-orange-600 uppercase tracking-wider px-1 flex items-center gap-2">
+            📝 {lang === 'en' ? 'Memos' : '메모'}
+            <span className="bg-orange-100 text-orange-600 px-2 py-0.5 rounded-full font-normal normal-case tracking-normal">{recentMemos.length}</span>
+            <span className="text-xs text-gray-400 font-normal normal-case tracking-normal">{lang === 'en' ? '(last 6 months)' : '(최근 6개월)'}</span>
+          </h2>
+          <div className="space-y-2">
+            {recentMemos.map((item, i) => {
+              const text = tr(cleanSummary(item.summary || item.title || ''))
+              const meta = accountMeta[item.account || ''] || {}
+              const hcfg = healthConfig[meta.health] || healthConfig.gray
+              return (
+                <div key={i} className="bg-orange-50 border border-orange-200 rounded-xl p-3">
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <span className="text-orange-500 text-xs">📝</span>
+                    {item.account && (
+                      <>
+                        <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${hcfg.dot}`} />
+                        <span className="text-xs font-semibold text-gray-700">{item.account}</span>
+                      </>
+                    )}
+                    <span className="ml-auto text-xs text-gray-400">{item.date}</span>
+                  </div>
+                  <p className="text-xs text-gray-800 leading-relaxed">{text}</p>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
+
       {/* ── 이번 주 활동 (있을 때만) ── */}
       <ActivitySection
         entries={thisWeekEntries}
@@ -1084,13 +1146,79 @@ function WeeklyView({ t, lang }) {
         )
       }
 
-      {/* ── 2주 이전 (접어두기) ── */}
+      {/* ── 2주~6개월 이전 ── */}
       {earlierEntries.length > 0 && (
         <ActivitySection
           entries={earlierEntries}
-          title={lang === 'en' ? `🗂 Earlier` : `🗂 이전 활동`}
+          title={lang === 'en' ? `🗂 Earlier (within 6 months)` : `🗂 이전 활동 (6개월 이내)`}
           emptyMsg=""
         />
+      )}
+
+      {/* ── 6개월 이전 아카이브 (기본 접힘, 클릭 시 날짜+내용 표시) ── */}
+      {archivedEntries.length > 0 && (
+        <ArchiveSection entries={archivedEntries} lang={lang} tr={tr} />
+      )}
+    </div>
+  )
+}
+
+/** 6개월 이전 아카이브 섹션: 기본 접힘, 클릭 시 날짜+내용 */
+function ArchiveSection({ entries, lang, tr }) {
+  const [open, setOpen] = useState(false)
+  // 월별 그룹핑
+  const byMonth = {}
+  entries.forEach(e => {
+    const m = (e.date || '').slice(0, 7) || 'unknown'
+    if (!byMonth[m]) byMonth[m] = []
+    byMonth[m].push(e)
+  })
+  const months = Object.keys(byMonth).sort().reverse()
+
+  return (
+    <div className="rounded-xl border border-gray-200 overflow-hidden">
+      <button
+        onClick={() => setOpen(o => !o)}
+        className="w-full text-left px-4 py-3 bg-gray-50 hover:bg-gray-100 flex items-center gap-2 transition-colors"
+      >
+        <span className="text-sm">🗄</span>
+        <span className="flex-1 text-xs font-bold text-gray-500 uppercase tracking-wider">
+          {lang === 'en' ? 'Archive (older than 6 months)' : '아카이브 (6개월 이전)'}
+        </span>
+        <span className="text-xs bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full">{entries.length}</span>
+        <svg className={`w-3.5 h-3.5 text-gray-400 transition-transform ${open ? 'rotate-180' : ''}`}
+          fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+      {open && (
+        <div className="divide-y divide-gray-100">
+          {months.map(month => (
+            <div key={month} className="px-4 py-3">
+              <p className="text-xs font-semibold text-gray-400 mb-2">{month}</p>
+              <div className="space-y-2">
+                {byMonth[month].map((item, i) => {
+                  const itemType = item.type || item.log_type || 'memo'
+                  const cfg = feedTypeConfig[itemType] || feedTypeConfig.memo
+                  const text = tr(cleanSummary(item.summary || item.title || ''))
+                  return (
+                    <div key={i} className="flex gap-2 items-start">
+                      <span className={`text-xs mt-0.5 shrink-0 ${cfg.color}`}>{cfg.icon}</span>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-0.5">
+                          {item.account && <span className="text-xs font-semibold text-gray-600">{item.account}</span>}
+                          <span className="text-xs text-gray-400">{item.date}</span>
+                          <span className={`text-xs px-1.5 py-0.5 rounded-full ${cfg.pill}`}>{lang === 'en' ? cfg.label_en : cfg.label}</span>
+                        </div>
+                        <p className="text-xs text-gray-600 leading-relaxed">{text}</p>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          ))}
+        </div>
       )}
     </div>
   )
