@@ -82,14 +82,14 @@ export default function App() {
           {tab === 'dashboard' && (
             <div className="flex items-center bg-gray-100 rounded-lg p-0.5 flex-shrink-0">
               <button
-                onClick={() => setDashView('todo')}
+                onClick={() => setDashView('weekly')}
                 className={`text-xs font-semibold px-2.5 py-1 rounded-md transition-all ${
-                  dashView === 'todo'
+                  dashView === 'weekly'
                     ? 'bg-white text-purple-700 shadow-sm'
                     : 'text-gray-400 hover:text-gray-600'
                 }`}
               >
-                {t('viewTodo')}
+                {t('viewWeekly')}
               </button>
               <button
                 onClick={() => setDashView('account')}
@@ -102,14 +102,14 @@ export default function App() {
                 {t('viewAccount')}
               </button>
               <button
-                onClick={() => setDashView('weekly')}
+                onClick={() => setDashView('todo')}
                 className={`text-xs font-semibold px-2.5 py-1 rounded-md transition-all ${
-                  dashView === 'weekly'
+                  dashView === 'todo'
                     ? 'bg-white text-purple-700 shadow-sm'
                     : 'text-gray-400 hover:text-gray-600'
                 }`}
               >
-                {t('viewWeekly')}
+                {t('viewTodo')}
               </button>
             </div>
           )}
