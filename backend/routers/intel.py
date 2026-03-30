@@ -7,10 +7,12 @@ Intel Router - 메모 저장/조회 + 주간 리포트 API + 자동 sync
 """
 import asyncio
 import json
+import os
 import uuid
 from datetime import datetime
 from pathlib import Path
 from fastapi import APIRouter, HTTPException, BackgroundTasks
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from typing import Optional
 
@@ -414,3 +416,131 @@ async def glean_sync_status():
     from ..services.glean_sync_service import get_sync_status
 
     return get_sync_status()
+
+
+# ── Agent Analytics Audit (스트리밍) ─────────────────────────────────────────
+
+SKILL_FILE = DATA_DIR / "skills" / "agent-analytics-audit.md"
+INTEL_LOG_FILE = DATA_DIR / "intel_log.jsonl"
+ACCOUNT_MEMORY_FILE = DATA_DIR / "account_memory.json"
+
+
+def _build_audit_context(account_name: str) -> str:
+    """계정 관련 모든 데이터를 컨텍스트로 조립"""
+    report = _read_report()
+
+    # 1) 계정 기본 정보
+    acct_data = next(
+        (a for a in report.get("accounts", []) if a["key_account"] == account_name),
+        None,
+    )
+
+    # 2) Intel log (최근 90일, 해당 계정)
+    intel_entries = []
+    if INTEL_LOG_FILE.exists():
+        for line in INTEL_LOG_FILE.read_text(encoding="utf-8").splitlines():
+            try:
+                entry = json.loads(line)
+                if entry.get("account") == account_name:
+                    intel_entries.append(entry)
+            except Exception:
+                pass
+    intel_entries = intel_entries[-30:]  # 최대 30건
+
+    # 3) Account memory
+    memory_data = {}
+    if ACCOUNT_MEMORY_FILE.exists():
+        try:
+            memory = json.loads(ACCOUNT_MEMORY_FILE.read_text(encoding="utf-8"))
+            memory_data = memory.get(account_name, {})
+        except Exception:
+            pass
+
+    # 4) Action items / risks
+    action_items = [a for a in report.get("action_items", []) if a.get("account") == account_name]
+    risks = [r for r in report.get("risks", []) if r.get("account") == account_name]
+
+    ctx_parts = [f"# 분석 대상 계정: {account_name}\n"]
+    if acct_data:
+        ctx_parts.append(f"## 계정 기본 정보\n```json\n{json.dumps(acct_data, ensure_ascii=False, indent=2)}\n```\n")
+    if action_items:
+        ctx_parts.append(f"## 액션 아이템\n```json\n{json.dumps(action_items, ensure_ascii=False, indent=2)}\n```\n")
+    if risks:
+        ctx_parts.append(f"## 리스크\n```json\n{json.dumps(risks, ensure_ascii=False, indent=2)}\n```\n")
+    if intel_entries:
+        ctx_parts.append(f"## 최근 Intel 로그 ({len(intel_entries)}건)\n```json\n{json.dumps(intel_entries, ensure_ascii=False, indent=2)}\n```\n")
+    if memory_data:
+        ctx_parts.append(f"## Account Memory (합성 인텔리전스)\n```json\n{json.dumps(memory_data, ensure_ascii=False, indent=2)}\n```\n")
+
+    return "\n".join(ctx_parts)
+
+
+AUDIT_SYSTEM_PROMPT = """당신은 Amplitude의 AI 에이전트 도입 현황을 분석하는 전문 어시스트입니다.
+제공된 계정 데이터(SFDC, Slack, Intel 로그, Account Memory)를 바탕으로 아래 형식의 분석 리포트를 한국어로 작성하세요.
+
+## 리포트 구조 (반드시 이 순서로)
+
+### 1. Executive Summary
+3문장 이내: AI 기능이 가치를 제공하고 있는지, 잘 되는 것, 가장 큰 리스크
+
+### 2. 계정 현황 스코어카드
+- ARR, Plan, 계약 만료일, Health 상태
+- 최근 주요 활동 타임라인
+
+### 3. Amplitude AI 도입 분석
+이 계정에서 Amplitude AI 기능(Global Chat, Experiment 등)이 어떻게 활용되고 있는지,
+또는 활용되지 않고 있다면 그 이유와 기회 분석
+
+### 4. 리스크 및 기회
+- 단기 리스크 (30일 이내)
+- 중기 기회 (90일 이내 액션)
+
+### 5. AI Context 개선 권장사항
+이 계정의 Amplitude 사용 패턴을 기반으로 AI 에이전트 품질 향상을 위한 구체적 제언
+(taxonomy mapping, KPI 정의, 에이전트 설정 등)
+
+### 6. 다음 액션 플랜
+우선순위별 구체적 액션 (담당자, 기한 포함)
+
+---
+마크다운 형식으로 작성하고, 실행 가능한 인사이트에 집중하세요."""
+
+
+@router.post("/agent-audit/{account_name:path}")
+async def agent_audit_stream(account_name: str):
+    """
+    특정 계정에 대해 Agent Analytics Audit 스킬을 실행하고 결과를 스트리밍합니다.
+    """
+    api_key = os.environ.get("ANTHROPIC_API_KEY", "")
+    if not api_key:
+        raise HTTPException(status_code=500, detail="ANTHROPIC_API_KEY not configured")
+
+    context = _build_audit_context(account_name)
+
+    async def generate():
+        try:
+            import anthropic
+            client = anthropic.Anthropic(api_key=api_key)
+
+            with client.messages.stream(
+                model="claude-sonnet-4-6",
+                max_tokens=4000,
+                system=AUDIT_SYSTEM_PROMPT,
+                messages=[{"role": "user", "content": context}],
+            ) as stream:
+                for text in stream.text_stream:
+                    # SSE 포맷
+                    yield f"data: {json.dumps({'text': text})}\n\n"
+
+            yield "data: [DONE]\n\n"
+        except Exception as e:
+            yield f"data: {json.dumps({'error': str(e)})}\n\n"
+
+    return StreamingResponse(
+        generate(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "X-Accel-Buffering": "no",
+        },
+    )
