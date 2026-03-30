@@ -147,7 +147,7 @@ def fetch_recent_emails(days_back: int = 14, processed_ids: set = None) -> list[
                 activities.append({
                     "account": account,
                     "date": date_str,
-                    "type": "email",
+                    "type": "gmail",
                     "source_id": f"gmail_{msg_id}",
                     "summary": summary,
                     "summary_en": summary_en,
