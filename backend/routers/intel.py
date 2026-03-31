@@ -453,11 +453,36 @@ async def translate_texts_endpoint(body: TranslateRequest):
 
 WEEKLY_SYNTHESIS_FILE = DATA_DIR / "weekly_synthesis.json"
 
+DEFAULT_SYNTHESIS = {
+    "generated_at": "2026-03-30",
+    "period": "2026-03-16 ~ 2026-03-30",
+    "period_label": "Q1 마감 주간",
+    "highlights": [
+        {"type": "hot", "account": "CJ Olive Young", "title": "$450K 오더폼 접수·서명 진행 중", "desc": "4/1 계약 시작 예정. SR·Heatmap 도입 문의(이수빈)까지 고객이 실질적 준비 시작 → 거의 확정 단계"},
+        {"type": "won", "account": "하이마트", "title": "양사 서명 완료 ✓", "desc": "오더폼 서명 완료"},
+        {"type": "won", "account": "CJ CheilJedang", "title": "갱신 Closed Won ✓", "desc": "ARR Change 0.0 (Q-91980)"},
+    ],
+    "new_pipeline": ["카카오뱅크 데모·POC 제안 (3/24)", "우리카드 미팅 (3/24)", "SSG.com 저녁·퀵미팅 (3/27, 3/30)", "Dunamu 저녁 (3/25)", "Lotte 3연전: 저녁(3/24) → 롯데마트 상무(3/26) → 롯데온 상무(3/27)"],
+    "risks": [
+        {"account": "Naver Corp", "desc": "김철은이 PoC 미진행 결정 공식 통보. 내부 집중 과제 전환으로 단기 클로징 어려움. MK 커피챗으로 관계 유지 중"},
+        {"account": "TVING", "desc": "Experiment 데모 완료했지만 오프라인 집체교육 거부, 샌드박스만 요청 → 의사결정 더딜 수 있음"},
+    ],
+    "meeting_count": 17,
+    "meeting_accounts": ["Shinsegae DF", "Hyundai Dept Store", "Golfzon", "Naver", "TVING", "Samsung", "KakaoBank", "Woori Card", "Lotte(×3)", "Dunamu", "SSG.com(×2)", "Oliveyoung(×2)"],
+    "insights": [
+        {"title": "Lotte 그룹 집중 공략", "desc": "롯데마트·롯데온 상무급 미팅 연속 진행 중. 그룹 MTU 전략 전개 적기"},
+        {"title": "CJ 그룹 Q1 클로징 마무리", "desc": "올리브영·케이카·CJ CheilJedang·하이마트 4개 딜 동시 진행. 박소현(CJ OliveNetworks) 파트너십이 핵심 레버"},
+        {"title": "Dunamu Experiment Add-on", "desc": "저녁 미팅까지 진행. 2026 Experiment Add-on 타깃으로 follow-up 필요"},
+    ],
+}
+
 @router.get("/weekly-synthesis")
 async def get_weekly_synthesis():
     """주간 AI 합성 리포트 반환"""
     if not WEEKLY_SYNTHESIS_FILE.exists():
-        return {}
+        # 파일이 없으면 기본 데이터를 디스크에 저장하고 반환
+        WEEKLY_SYNTHESIS_FILE.write_text(json.dumps(DEFAULT_SYNTHESIS, ensure_ascii=False, indent=2), encoding="utf-8")
+        return DEFAULT_SYNTHESIS
     return json.loads(WEEKLY_SYNTHESIS_FILE.read_text(encoding="utf-8"))
 
 
