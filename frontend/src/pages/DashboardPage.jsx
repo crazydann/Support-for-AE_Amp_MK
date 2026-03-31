@@ -938,6 +938,11 @@ function WeeklyView({ t, lang }) {
         {syncMsg && <p className="mt-2 text-xs opacity-80">{syncMsg}</p>}
       </div>
 
+      {/* ── debug ── */}
+      <div className="text-center text-xs text-gray-400 py-1 bg-gray-50 rounded-xl">
+        actions:{actionItems.length} | hi:{highlights.length} | ri:{risks.length} | mt:{weekMeetings.length} | ins:{insights.length}
+      </div>
+
       {/* ── 이번 주 핵심 ── */}
       {highlights.length > 0 && (
         <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
