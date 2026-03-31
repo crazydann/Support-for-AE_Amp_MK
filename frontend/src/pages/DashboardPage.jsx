@@ -650,7 +650,7 @@ function AccountView({ report, t, lang }) {
             >
               <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${gcfg.dot}`} />
               <span className="flex-1 text-sm font-bold text-gray-900">{groupName}</span>
-              <span className="text-xs text-gray-400 shrink-0">{groupAccounts.length}개</span>
+              <span className="text-xs text-gray-400 shrink-0">{groupAccounts.length}{lang === 'en' ? '' : '개'}</span>
               {groupArr > 0 && (
                 <span className="text-sm font-bold text-gray-800 shrink-0">
                   ${Math.round(groupArr / 1000)}K
@@ -757,7 +757,7 @@ function WeeklyView({ t, lang }) {
       setFeed(feedData)
       setSyncMsg(lang === 'en' ? 'Sync done' : '동기화 완료')
       setTimeout(() => setSyncMsg(null), 3000)
-    } catch { setSyncMsg('동기화 실패') } finally { setSyncing(false) }
+    } catch { setSyncMsg(lang === 'en' ? 'Sync failed' : '동기화 실패') } finally { setSyncing(false) }
   }
 
   const toggleDone = (id, wasDone) => {
@@ -883,7 +883,7 @@ function WeeklyView({ t, lang }) {
             {visible.map((e, i) => <EntryRow key={i} item={e} />)}
             {!all && sorted.length > 15 && (
               <button onClick={() => setAll(true)} className="w-full py-2 text-xs text-gray-400 hover:text-purple-600 border-t border-gray-50">
-                +{sorted.length - 15}건 더 보기
+                +{sorted.length - 15}{lang === 'en' ? ' more' : '건 더 보기'}
               </button>
             )}
           </div>
@@ -905,8 +905,8 @@ function WeeklyView({ t, lang }) {
       <div className="bg-gradient-to-br from-purple-600 to-indigo-600 rounded-2xl p-4 text-white">
         <div className="flex items-start justify-between gap-2 mb-3">
           <div>
-            <p className="text-xs font-medium opacity-70">주간 보고 · AE MK</p>
-            <p className="text-lg font-bold mt-0.5">{today.toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+            <p className="text-xs font-medium opacity-70">{lang === 'en' ? 'Weekly Report · AE MK' : '주간 보고 · AE MK'}</p>
+            <p className="text-lg font-bold mt-0.5">{today.toLocaleDateString(lang === 'en' ? 'en-US' : 'ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
             <p className="text-xs opacity-60 mt-0.5">{fmtRange(thisMon)}</p>
           </div>
           <button onClick={handleSync} disabled={syncing}
@@ -914,40 +914,39 @@ function WeeklyView({ t, lang }) {
             <svg className={`w-3.5 h-3.5 ${syncing ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
             </svg>
-            {syncing ? '동기화 중…' : '동기화'}
+            {syncing ? (lang === 'en' ? 'Syncing…' : '동기화 중…') : (lang === 'en' ? 'Sync' : '동기화')}
           </button>
         </div>
         <div className="flex gap-2 flex-wrap">
-          {[{ tp: 'meeting', icon: '📅', label: '일정' }, { tp: 'gmail', icon: '✉', label: '이메일' }, { tp: 'slack', icon: '💬', label: '슬랙' }].map(c => {
+          {[
+            { tp: 'meeting', icon: '📅', label: '일정',   label_en: 'Meetings' },
+            { tp: 'gmail',   icon: '✉',  label: '이메일', label_en: 'Email' },
+            { tp: 'slack',   icon: '💬', label: '슬랙',   label_en: 'Slack' },
+          ].map(c => {
             const n = thisWeek.filter(e => (e.type || e.log_type) === c.tp).length
             if (!n) return null
             return (
               <div key={c.tp} className="bg-white/15 rounded-xl px-3 py-1.5 text-center min-w-[52px]">
                 <p className="text-sm font-bold">{n}</p>
-                <p className="text-xs opacity-70">{c.icon} {c.label}</p>
+                <p className="text-xs opacity-70">{c.icon} {lang === 'en' ? c.label_en : c.label}</p>
               </div>
             )
           })}
           {actionItems.length > 0 && (
             <div className="bg-white/15 rounded-xl px-3 py-1.5 text-center min-w-[52px]">
               <p className="text-sm font-bold">{doneTasks.length}/{actionItems.length}</p>
-              <p className="text-xs opacity-70">✅ 할일</p>
+              <p className="text-xs opacity-70">✅ {lang === 'en' ? 'Tasks' : '할일'}</p>
             </div>
           )}
         </div>
         {syncMsg && <p className="mt-2 text-xs opacity-80">{syncMsg}</p>}
       </div>
 
-      {/* ── debug ── */}
-      <div className="text-center text-xs text-gray-400 py-1 bg-gray-50 rounded-xl">
-        actions:{actionItems.length} | hi:{highlights.length} | ri:{risks.length} | mt:{weekMeetings.length} | ins:{insights.length}
-      </div>
-
       {/* ── 이번 주 핵심 ── */}
       {highlights.length > 0 && (
         <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
           <div className="px-4 py-3 border-b border-gray-100 bg-gray-50">
-            <span className="text-xs font-bold text-gray-700">🔥 이번 주 핵심</span>
+            <span className="text-xs font-bold text-gray-700">{lang === 'en' ? '🔥 This Week Highlights' : '🔥 이번 주 핵심'}</span>
           </div>
           <div className="divide-y divide-gray-50">
             {highlights.map((a, i) => {
@@ -958,9 +957,9 @@ function WeeklyView({ t, lang }) {
                 <div key={i} className="px-4 py-3 flex items-start gap-2">
                   <span className="text-xs font-semibold text-purple-700 bg-purple-50 px-2 py-0.5 rounded shrink-0 mt-0.5">{a.account}</span>
                   <div className="flex-1 min-w-0">
-                    {pc && <span className={`inline-block text-xs font-medium px-1.5 py-0.5 rounded mr-1.5 ${pc.cls}`}>{pc.label}</span>}
+                    {pc && <span className={`inline-block text-xs font-medium px-1.5 py-0.5 rounded mr-1.5 ${pc.cls}`}>{lang === 'en' ? pc.label_en : pc.label}</span>}
                     {diff !== null && <span className={`text-xs font-medium mr-1.5 ${diff < 0 ? 'text-red-500' : diff <= 3 ? 'text-orange-500' : 'text-gray-400'}`}>{diff < 0 ? `D+${Math.abs(diff)}` : `D-${diff}`}</span>}
-                    <span className="text-xs text-gray-700 leading-relaxed">{a.action}</span>
+                    <span className="text-xs text-gray-700 leading-relaxed">{lang === 'en' ? (a.action_en || tr(a.action)) : a.action}</span>
                   </div>
                 </div>
               )
@@ -972,12 +971,12 @@ function WeeklyView({ t, lang }) {
       {/* ── 신규 파이프라인 ── */}
       {pipeline.length > 0 && (
         <div className="bg-blue-50 rounded-2xl border border-blue-100 px-4 py-3">
-          <p className="text-xs font-bold text-blue-700 mb-2">📈 신규 파이프라인</p>
+          <p className="text-xs font-bold text-blue-700 mb-2">{lang === 'en' ? '📈 New Pipeline' : '📈 신규 파이프라인'}</p>
           <div className="space-y-1.5">
             {pipeline.map((a, i) => (
               <div key={i} className="flex items-start gap-2">
                 <span className="text-xs font-bold text-blue-700 bg-blue-100 px-1.5 py-0.5 rounded shrink-0">{a.account}</span>
-                <p className="text-xs text-blue-800 leading-relaxed">{(a.action || '').slice(0, 60)}</p>
+                <p className="text-xs text-blue-800 leading-relaxed">{(lang === 'en' ? (a.action_en || tr(a.action || '')) : (a.action || '')).slice(0, 60)}</p>
               </div>
             ))}
           </div>
@@ -988,13 +987,13 @@ function WeeklyView({ t, lang }) {
       {risks.length > 0 && (
         <div className="bg-white rounded-2xl border border-amber-200 overflow-hidden">
           <div className="px-4 py-2.5 bg-amber-50 border-b border-amber-100">
-            <span className="text-xs font-bold text-amber-800">⚠️ 리스크 시그널</span>
+            <span className="text-xs font-bold text-amber-800">{lang === 'en' ? '⚠️ Risk Signals' : '⚠️ 리스크 시그널'}</span>
           </div>
           <div className="divide-y divide-gray-50">
             {risks.map((r, i) => (
               <div key={i} className="px-4 py-2.5 flex items-start gap-2">
                 <span className="text-xs font-bold text-red-600 bg-red-50 px-1.5 py-0.5 rounded shrink-0 mt-0.5">{r.account}</span>
-                <p className="text-xs text-gray-700 leading-relaxed">{r.risk || r.desc}</p>
+                <p className="text-xs text-gray-700 leading-relaxed">{lang === 'en' ? (r.risk_en || tr(r.risk || r.desc || '')) : (r.risk || r.desc)}</p>
               </div>
             ))}
           </div>
@@ -1005,18 +1004,18 @@ function WeeklyView({ t, lang }) {
       {(weekMeetings.length > 0 || insights.length > 0) && (
         <div className="grid grid-cols-2 gap-2">
           <div className="bg-white rounded-2xl border border-gray-200 p-3">
-            <p className="text-xs font-bold text-gray-600 mb-1">📅 미팅 밀도</p>
+            <p className="text-xs font-bold text-gray-600 mb-1">{lang === 'en' ? '📅 Meeting Density' : '📅 미팅 밀도'}</p>
             <p className="text-2xl font-bold text-purple-600">{weekMeetings.length}</p>
-            <p className="text-xs text-gray-400 mb-1">이번 주 고객 미팅</p>
+            <p className="text-xs text-gray-400 mb-1">{lang === 'en' ? 'This week meetings' : '이번 주 고객 미팅'}</p>
             {meetingAccounts.length > 0 && <p className="text-xs text-gray-500 leading-relaxed">{meetingAccounts.join(', ')}</p>}
           </div>
           <div className="bg-white rounded-2xl border border-gray-200 p-3">
-            <p className="text-xs font-bold text-gray-600 mb-2">💡 영업 인사이트</p>
+            <p className="text-xs font-bold text-gray-600 mb-2">{lang === 'en' ? '💡 Sales Insights' : '💡 영업 인사이트'}</p>
             <div className="space-y-1.5">
               {insights.map((a, i) => (
                 <div key={i}>
                   <p className="text-xs font-semibold text-gray-700">{a.account}</p>
-                  <p className="text-xs text-gray-500 leading-relaxed">{(a.action || '').slice(0, 55)}</p>
+                  <p className="text-xs text-gray-500 leading-relaxed">{(lang === 'en' ? (a.action_en || tr(a.action || '')) : (a.action || '')).slice(0, 55)}</p>
                 </div>
               ))}
             </div>
@@ -1028,8 +1027,8 @@ function WeeklyView({ t, lang }) {
       {actionItems.length > 0 && (
         <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
           <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
-            <span className="text-xs font-bold text-gray-700">✅ 할 일</span>
-            <span className="text-xs text-gray-400">{doneTasks.length}/{actionItems.length} 완료</span>
+            <span className="text-xs font-bold text-gray-700">{lang === 'en' ? '✅ Tasks' : '✅ 할 일'}</span>
+            <span className="text-xs text-gray-400">{doneTasks.length}/{actionItems.length} {lang === 'en' ? 'done' : '완료'}</span>
           </div>
 
           {/* 미완료 */}
@@ -1050,10 +1049,10 @@ function WeeklyView({ t, lang }) {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-1.5 flex-wrap mb-1">
                         {item.account && <span className="text-xs font-semibold text-purple-700 bg-purple-50 px-1.5 py-0.5 rounded">{item.account}</span>}
-                        {pc && <span className={`text-xs font-medium px-1.5 py-0.5 rounded ${pc.cls}`}>{pc.label}</span>}
+                        {pc && <span className={`text-xs font-medium px-1.5 py-0.5 rounded ${pc.cls}`}>{lang === 'en' ? pc.label_en : pc.label}</span>}
                         {diff !== null && <span className={`text-xs font-medium ${diff < 0 ? 'text-red-500' : diff <= 3 ? 'text-orange-500' : 'text-gray-400'}`}>{diff < 0 ? `D+${Math.abs(diff)}` : `D-${diff}`}</span>}
                       </div>
-                      <p className="text-xs text-gray-800 leading-relaxed">{item.action}</p>
+                      <p className="text-xs text-gray-800 leading-relaxed">{lang === 'en' ? (item.action_en || tr(item.action)) : item.action}</p>
                       {st.note && !noteOn && <p className="text-xs text-gray-400 mt-0.5 italic truncate">{st.note}</p>}
                     </div>
                     {/* 메모 토글 */}
@@ -1066,7 +1065,7 @@ function WeeklyView({ t, lang }) {
                   </div>
                   {noteOn && (
                     <textarea value={st.note || ''} onChange={e => saveNote(id, e.target.value)}
-                      placeholder="진행 메모 입력…" rows={2}
+                      placeholder={lang === 'en' ? 'Add note…' : '진행 메모 입력…'} rows={2}
                       className="mt-1.5 ml-7 w-[calc(100%-1.75rem)] text-xs border border-gray-200 rounded-lg px-2.5 py-2 text-gray-700 placeholder-gray-300 resize-none focus:outline-none focus:ring-1 focus:ring-purple-300" />
                   )}
                 </div>
@@ -1078,7 +1077,7 @@ function WeeklyView({ t, lang }) {
           {doneTasks.length > 0 && (
             <div className="border-t border-gray-100">
               <button onClick={() => setShowDone(p => !p)} className="w-full px-4 py-2.5 flex items-center gap-2 hover:bg-gray-50 transition-colors">
-                <span className="text-xs text-gray-400">완료 {doneTasks.length}건</span>
+                <span className="text-xs text-gray-400">{lang === 'en' ? `Done ${doneTasks.length}` : `완료 ${doneTasks.length}건`}</span>
                 <svg className={`w-3.5 h-3.5 text-gray-300 ml-auto transition-transform ${showDone ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7"/>
                 </svg>
@@ -1096,7 +1095,7 @@ function WeeklyView({ t, lang }) {
                         </button>
                         <div className="flex-1 min-w-0">
                           {item.account && <span className="text-xs text-gray-400 mr-1.5">{item.account}</span>}
-                          <span className="text-xs text-gray-400 line-through">{item.action}</span>
+                          <span className="text-xs text-gray-400 line-through">{lang === 'en' ? (item.action_en || tr(item.action)) : item.action}</span>
                           {st.note && <p className="text-xs text-gray-300 mt-0.5 italic">{st.note}</p>}
                         </div>
                       </div>
@@ -1110,13 +1109,13 @@ function WeeklyView({ t, lang }) {
       )}
 
       {/* ── 이번 주 활동 ── */}
-      <FeedSection items={thisWeek} title="이번 주" range={fmtRange(thisMon)} open={true} />
+      <FeedSection items={thisWeek} title={lang === 'en' ? 'This Week' : '이번 주'} range={fmtRange(thisMon)} open={true} />
 
       {/* ── 지난 주 활동 ── */}
-      <FeedSection items={lastWeek} title="지난 주" range={fmtRange(lastMon)} open={true} />
+      <FeedSection items={lastWeek} title={lang === 'en' ? 'Last Week' : '지난 주'} range={fmtRange(lastMon)} open={true} />
 
       {/* ── 이전 활동 ── */}
-      <FeedSection items={earlier} title="이전 활동" range="6개월 이내" open={false} />
+      <FeedSection items={earlier} title={lang === 'en' ? 'Earlier Activity' : '이전 활동'} range={lang === 'en' ? 'Within 6 months' : '6개월 이내'} open={false} />
 
       {/* ── 아카이브 ── */}
       {archived.length > 0 && <WeeklyArchive entries={archived} lang={lang} tr={tr} />}
@@ -1124,8 +1123,8 @@ function WeeklyView({ t, lang }) {
       {/* ── 빈 상태 ── */}
       {!entries.length && !actionItems.length && (
         <div className="bg-gray-50 border border-dashed border-gray-200 rounded-2xl p-8 text-center">
-          <p className="text-sm text-gray-500 font-medium">동기화된 활동 없음</p>
-          <p className="text-xs text-gray-400 mt-1">동기화 버튼으로 데이터를 가져오세요</p>
+          <p className="text-sm text-gray-500 font-medium">{lang === 'en' ? 'No synced activity' : '동기화된 활동 없음'}</p>
+          <p className="text-xs text-gray-400 mt-1">{lang === 'en' ? 'Use the Sync button to fetch data' : '동기화 버튼으로 데이터를 가져오세요'}</p>
         </div>
       )}
     </div>
@@ -1218,7 +1217,7 @@ export default function DashboardPage({ dashView = 'todo' }) {
       {/* 리포트 생성 시간 */}
       {report.generated_at ? (
         <p className="text-xs text-gray-400 text-center mb-4">
-          {t('lastUpdated')}: {new Date(report.generated_at).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul', dateStyle: 'short', timeStyle: 'short' })} KST
+          {t('lastUpdated')}: {new Date(report.generated_at).toLocaleString(lang === 'en' ? 'en-US' : 'ko-KR', { timeZone: 'Asia/Seoul', dateStyle: 'short', timeStyle: 'short' })} KST
         </p>
       ) : (
         <div className="bg-purple-50 border border-purple-200 rounded-xl p-4 text-sm text-purple-700 mb-4">

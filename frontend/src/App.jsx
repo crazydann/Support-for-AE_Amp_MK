@@ -279,6 +279,7 @@ export default function App() {
 // ── 유저 드롭다운 메뉴 ────────────────────────────────────────────────────────
 function UserMenu({ user, onManageUsers, onLogout }) {
   const [open, setOpen] = useState(false)
+  const { lang } = useLang()
   return (
     <div className="relative">
       <button
@@ -305,14 +306,14 @@ function UserMenu({ user, onManageUsers, onLogout }) {
                 onClick={() => { setOpen(false); onManageUsers() }}
                 className="w-full flex items-center gap-2.5 px-4 py-2.5 text-xs text-gray-700 hover:bg-gray-50 transition-colors"
               >
-                <span>👥</span> 접근 권한 관리
+                <span>👥</span> {lang === 'en' ? 'Manage Access' : '접근 권한 관리'}
               </button>
             )}
             <button
               onClick={() => { setOpen(false); onLogout() }}
               className="w-full flex items-center gap-2.5 px-4 py-2.5 text-xs text-red-500 hover:bg-red-50 transition-colors border-t border-gray-50"
             >
-              <span>🚪</span> 로그아웃
+              <span>🚪</span> {lang === 'en' ? 'Log out' : '로그아웃'}
             </button>
           </div>
         </>
