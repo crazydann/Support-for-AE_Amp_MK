@@ -310,10 +310,13 @@ function TodoView({ report, t, lang }) {
 
 // 타입별 아이콘/색상
 const activityTypeConfig = {
-  email:   { icon: '✉', color: 'text-blue-500',  bg: 'bg-blue-50',   label: '이메일', label_en: 'Email' },
-  meeting: { icon: '📅', color: 'text-purple-500', bg: 'bg-purple-50', label: '미팅',   label_en: 'Meeting' },
-  slack:   { icon: '💬', color: 'text-green-500', bg: 'bg-green-50',  label: '슬랙',   label_en: 'Slack' },
-  memo:    { icon: '📝', color: 'text-orange-500', bg: 'bg-orange-50', label: '메모',   label_en: 'Memo' },
+  email:   { icon: '✉',  color: 'text-blue-500',   bg: 'bg-blue-50',   label: '이메일', label_en: 'Email' },
+  gmail:   { icon: '✉',  color: 'text-blue-500',   bg: 'bg-blue-50',   label: '이메일', label_en: 'Email' },
+  meeting: { icon: '📅', color: 'text-purple-500',  bg: 'bg-purple-50', label: '미팅',   label_en: 'Meeting' },
+  slack:   { icon: '💬', color: 'text-green-500',   bg: 'bg-green-50',  label: '슬랙',   label_en: 'Slack' },
+  sfdc:    { icon: '☁',  color: 'text-indigo-500',  bg: 'bg-indigo-50', label: 'SFDC',   label_en: 'SFDC' },
+  glean:   { icon: '🔍', color: 'text-violet-500',  bg: 'bg-violet-50', label: 'Glean',  label_en: 'Glean' },
+  memo:    { icon: '📝', color: 'text-orange-500',  bg: 'bg-orange-50', label: '메모',   label_en: 'Memo' },
 }
 
 function ActivityFeed({ history, lang }) {
@@ -350,7 +353,7 @@ function ActivityFeed({ history, lang }) {
   )
 }
 
-function SubAccountRow({ account, expanded, onToggle, t, lang, tr: trProp, relatedActions, relatedRisks, accountNotes = [], onAudit }) {
+function SubAccountRow({ account, expanded, onToggle, t, lang, tr: trProp, relatedActions, relatedRisks, accountNotes = [], accountIntelEntries = [], onAudit }) {
   const { tr: trHook } = useTranslations(lang)
   const tr = trProp || trHook
   const pt = makePT(lang, tr)
@@ -361,15 +364,39 @@ function SubAccountRow({ account, expanded, onToggle, t, lang, tr: trProp, relat
   const dealStage = pt(account, 'deal_stage')
   const nextAction = pt(account, 'next_action')
 
-  // notes.json 메모를 activity_history 형식으로 변환해 합치기
+  // notes.json 메모를 activity_history 형식으로 변환
   const noteActivities = accountNotes.map(n => ({
     date: n.date || n.created_at?.slice(0, 10) || '',
     type: 'memo',
     summary: n.content,
     summary_en: n.content,
+    _source: 'note',
   }))
-  const mergedHistory = [...(account.activity_history || []), ...noteActivities]
+
+  // intel_log 항목을 activity_history 형식으로 변환 (SFDC/Gmail/Slack/미팅/메모)
+  const intelActivities = accountIntelEntries.map(e => {
+    const tp = e.type || e.log_type || 'memo'
+    const typeMap = { gmail: 'email', slack: 'slack', meeting: 'meeting', sfdc: 'memo', glean: 'memo', memo: 'memo' }
+    return {
+      date: e.date || '',
+      type: typeMap[tp] || 'memo',
+      summary: e.summary || '',
+      summary_en: e.summary || '',
+      _source: 'intel',
+      _sourceType: tp,
+    }
+  })
+
+  // activity_history + 메모 + intel_log 병합 → 날짜순 정렬, 중복 제거
+  const seen = new Set()
+  const mergedHistory = [...(account.activity_history || []), ...noteActivities, ...intelActivities]
     .sort((a, b) => (b.date || '').localeCompare(a.date || ''))
+    .filter(item => {
+      const key = `${item.date}|${(item.summary || '').slice(0, 40)}`
+      if (seen.has(key)) return false
+      seen.add(key)
+      return true
+    })
 
   return (
     <div className={`rounded-xl border ${expanded ? cfg.border : 'border-gray-200'} overflow-hidden ml-3`}>
@@ -441,10 +468,18 @@ function SubAccountRow({ account, expanded, onToggle, t, lang, tr: trProp, relat
             </div>
           )}
 
-          {/* 활동 이력 (메인) - activity_history + 메모 합산 */}
+          {/* 활동 이력 (메인) - activity_history + 메모 + intel_log 통합 */}
           <div className="bg-white rounded-lg p-2.5">
             <p className="text-xs font-semibold text-gray-600 mb-2 flex items-center gap-1.5">
               {lang === 'en' ? 'Activity History' : '활동 이력'}
+              <span className="text-xs bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded-full font-normal">
+                {mergedHistory.length}
+              </span>
+              {intelActivities.length > 0 && (
+                <span className="text-xs bg-indigo-100 text-indigo-600 px-1.5 py-0.5 rounded-full font-normal">
+                  +{intelActivities.length} {lang === 'en' ? 'synced' : '싱크'}
+                </span>
+              )}
               {noteActivities.length > 0 && (
                 <span className="text-xs bg-orange-100 text-orange-600 px-1.5 py-0.5 rounded-full font-normal">
                   +{noteActivities.length} {lang === 'en' ? 'memo' : '메모'}
@@ -520,15 +555,19 @@ function AccountView({ report, t, lang }) {
   const [expandedGroup, setExpandedGroup] = useState(null)
   const [expandedAccount, setExpandedAccount] = useState(null)
   const [notes, setNotes] = useState([])
+  const [intelFeed, setIntelFeed] = useState([])
   const [syncing, setSyncing] = useState(false)
   const [syncMsg, setSyncMsg] = useState(null)
   const [auditAccount, setAuditAccount] = useState(null)
 
   useEffect(() => {
-    fetch(`${API}/api/intel/notes`)
-      .then(r => r.json())
-      .then(d => setNotes(d.notes || []))
-      .catch(() => {})
+    Promise.all([
+      fetch(`${API}/api/intel/notes`).then(r => r.json()).catch(() => ({ notes: [] })),
+      fetch(`${API}/api/intel/weekly-feed?days=365`).then(r => r.json()).catch(() => ({ entries: [] })),
+    ]).then(([notesData, feedData]) => {
+      setNotes(notesData.notes || [])
+      setIntelFeed(feedData.entries || [])
+    })
   }, [])
 
   const handleSync = async () => {
@@ -689,6 +728,7 @@ function AccountView({ report, t, lang }) {
                       relatedActions={actionItems.filter(a => a.account === account.key_account)}
                       relatedRisks={risks.filter(r => r.account === account.key_account)}
                       accountNotes={notes.filter(n => n.account === account.key_account)}
+                      accountIntelEntries={intelFeed.filter(e => e.account === account.key_account)}
                       onAudit={setAuditAccount}
                     />
                   )

@@ -138,6 +138,34 @@ async def create_note(note: NoteCreate):
         except Exception:
             pass
 
+        # ── 계정 지정 메모: weekly_report activity_history 자동 업데이트 ──
+        if acct:
+            try:
+                report = _read_report()
+                accounts = report.get("accounts", [])
+                updated = False
+                for acc in accounts:
+                    if acc.get("key_account") == acct:
+                        history = acc.setdefault("activity_history", [])
+                        # 중복 방지: 같은 날 같은 요약이면 skip
+                        existing_summaries = {h.get("summary", "")[:60] for h in history}
+                        entry_summary = f"[메모] {preview}"
+                        if entry_summary[:60] not in existing_summaries:
+                            history.insert(0, {
+                                "date": now.strftime("%Y-%m-%d"),
+                                "type": "memo",
+                                "summary": entry_summary,
+                            })
+                            # 최근 50건만 유지
+                            acc["activity_history"] = history[:50]
+                            acc["last_activity"] = now.strftime("%Y-%m-%d")
+                        updated = True
+                        break
+                if updated:
+                    REPORT_FILE.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
+            except Exception:
+                pass
+
         created_notes.append(new_note)
 
     # 단일 계정 저장 시 하위 호환성 유지
