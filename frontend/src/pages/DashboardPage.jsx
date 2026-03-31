@@ -730,6 +730,7 @@ const WEEKLY_CHANNELS = [
 function WeeklyView({ t, lang }) {
   const [feed, setFeed] = useState(null)
   const [synthesis, setSynthesis] = useState(null)
+  const [loadingSynthesis, setLoadingSynthesis] = useState(true)
   const [loadingFeed, setLoadingFeed] = useState(true)
   const [syncing, setSyncing] = useState(false)
   const [syncMsg, setSyncMsg] = useState(null)
@@ -744,12 +745,15 @@ function WeeklyView({ t, lang }) {
     if (lang === 'en') prefetch(allTextsRef.current)
   }, [lang])
 
-  useEffect(() => {
+  const loadSynthesis = () => {
+    setLoadingSynthesis(true)
     fetch(`${API}/api/intel/weekly-synthesis`)
       .then(r => r.json())
-      .then(d => { if (d?.period) setSynthesis(d) })
-      .catch(() => {})
-  }, [])
+      .then(d => { setSynthesis(d?.period ? d : null); setLoadingSynthesis(false) })
+      .catch(() => setLoadingSynthesis(false))
+  }
+
+  useEffect(() => { loadSynthesis() }, [])
 
   // 액션 상태 로드
   useEffect(() => {
@@ -993,7 +997,14 @@ function WeeklyView({ t, lang }) {
       )}
 
       {/* ── 주간 AI 합성 리포트 ── */}
-      {synthesis && (
+      {loadingSynthesis && (
+        <div className="bg-white rounded-xl border border-gray-200 p-4 space-y-2 animate-pulse">
+          <div className="h-3 bg-gray-100 rounded w-1/3" />
+          <div className="h-3 bg-gray-100 rounded w-2/3" />
+          <div className="h-3 bg-gray-100 rounded w-1/2" />
+        </div>
+      )}
+      {!loadingSynthesis && synthesis && (
         <div className="space-y-2.5">
           {/* 이번 주 핵심 */}
           <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">

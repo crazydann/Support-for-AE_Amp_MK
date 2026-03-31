@@ -484,22 +484,134 @@ DEFAULT_SYNTHESIS = {
     ],
 }
 
+def _generate_synthesis_from_report() -> dict:
+    """weekly_report.json + intel_log.jsonl 에서 실시간으로 synthesis 생성"""
+    from datetime import timedelta
+    today = datetime.now()
+    dow = today.weekday()  # 0=Mon
+    this_monday = today - timedelta(days=dow)
+    this_sunday = this_monday + timedelta(days=6)
+    week_start = this_monday.strftime("%Y-%m-%d")
+    week_end = this_sunday.strftime("%Y-%m-%d")
+    period = f"{week_start} ~ {week_end}"
+
+    report = _read_report()
+    action_items = report.get("action_items", [])
+    risks_raw = report.get("risks", [])
+    accounts = report.get("accounts", [])
+
+    # ── highlights: urgent 액션 최대 4개 ──
+    urgent = [a for a in action_items if a.get("priority") == "urgent"][:4]
+    highlights = []
+    for a in urgent:
+        due_str = a.get("due") or a.get("due_date") or ""
+        d_label = ""
+        if due_str:
+            try:
+                diff = (datetime.strptime(due_str, "%Y-%m-%d") - today).days
+                d_label = f" (D{diff:+d})" if diff != 0 else " (오늘)"
+            except Exception:
+                pass
+        highlights.append({
+            "type": "hot",
+            "account": a.get("account", ""),
+            "title": (a.get("action") or "")[:50] + d_label,
+            "desc": (a.get("action") or ""),
+        })
+
+    # ── new_pipeline: prospect 계정 ──
+    prospects = [a for a in accounts if a.get("status") == "prospect"]
+    new_pipeline = [
+        {"account": p.get("key_account", ""), "desc": p.get("notes_summary", p.get("strategy", ""))}
+        for p in prospects[:5]
+    ]
+
+    # ── risks: 상위 3개 ──
+    risks = [
+        {"account": r.get("account", ""), "desc": r.get("risk", r.get("desc", ""))}
+        for r in risks_raw[:3]
+    ]
+
+    # ── 이번 주 미팅 (intel_log) ──
+    meeting_accounts: list = []
+    meeting_count = 0
+    try:
+        log_file = DATA_DIR / "intel_log.jsonl"
+        if log_file.exists():
+            with log_file.open(encoding="utf-8") as f:
+                for line in f:
+                    line = line.strip()
+                    if not line:
+                        continue
+                    try:
+                        e = json.loads(line)
+                    except Exception:
+                        continue
+                    e_type = e.get("type") or e.get("log_type") or ""
+                    e_date = e.get("date") or ""
+                    if e_type == "meeting" and week_start <= e_date <= week_end:
+                        meeting_count += 1
+                        acc = e.get("account") or ""
+                        if acc and acc not in meeting_accounts:
+                            meeting_accounts.append(acc)
+    except Exception:
+        pass
+
+    # ── insights: urgent 중 상위 3개 재활용 ──
+    insights = []
+    for a in (urgent[:3] if urgent else action_items[:3]):
+        insights.append({
+            "title": a.get("account", ""),
+            "desc": (a.get("action") or "")[:80],
+        })
+
+    return {
+        "generated_at": today.strftime("%Y-%m-%d"),
+        "period": period,
+        "period_label": "",
+        "highlights": highlights,
+        "new_pipeline": new_pipeline,
+        "risks": risks,
+        "meeting_count": meeting_count,
+        "meeting_accounts": meeting_accounts,
+        "insights": insights,
+    }
+
+
 @router.get("/weekly-synthesis")
 async def get_weekly_synthesis():
-    """주간 AI 합성 리포트 반환"""
-    if not WEEKLY_SYNTHESIS_FILE.exists():
-        # 파일이 없으면 기본 데이터를 디스크에 저장하고 반환
-        WEEKLY_SYNTHESIS_FILE.write_text(json.dumps(DEFAULT_SYNTHESIS, ensure_ascii=False, indent=2), encoding="utf-8")
-        return DEFAULT_SYNTHESIS
-    return json.loads(WEEKLY_SYNTHESIS_FILE.read_text(encoding="utf-8"))
+    """주간 AI 합성 리포트 반환 — 파일 있으면 파일, 없으면 weekly_report에서 실시간 생성"""
+    # 파일이 있고 7일 이내면 파일 우선
+    if WEEKLY_SYNTHESIS_FILE.exists():
+        try:
+            data = json.loads(WEEKLY_SYNTHESIS_FILE.read_text(encoding="utf-8"))
+            if data.get("period"):
+                return data
+        except Exception:
+            pass
+    # 파일 없거나 손상 → 실시간 생성 후 저장
+    data = _generate_synthesis_from_report()
+    try:
+        WEEKLY_SYNTHESIS_FILE.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+    except Exception:
+        pass
+    return data
 
 
 @router.post("/weekly-synthesis")
 async def update_weekly_synthesis(body: dict):
-    """주간 AI 합성 리포트 저장"""
+    """주간 AI 합성 리포트 저장 (Claude 분석 결과 수동 저장용)"""
     body["generated_at"] = datetime.now().strftime("%Y-%m-%d")
     WEEKLY_SYNTHESIS_FILE.write_text(json.dumps(body, ensure_ascii=False, indent=2), encoding="utf-8")
     return {"ok": True}
+
+
+@router.post("/weekly-synthesis/regenerate")
+async def regenerate_weekly_synthesis():
+    """weekly_report.json에서 synthesis 강제 재생성"""
+    data = _generate_synthesis_from_report()
+    WEEKLY_SYNTHESIS_FILE.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+    return data
 
 
 # ── Weekly Feed API (non-SFDC: Gmail/Slack/Calendar/Glean/Memo) ──────────────
