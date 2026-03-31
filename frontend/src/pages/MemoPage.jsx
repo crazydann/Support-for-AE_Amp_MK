@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from 'react'
 import { useLang } from '../contexts/LanguageContext'
+import { useTranslations } from '../hooks/useTranslations'
 
 const API = import.meta.env.VITE_API_URL || ''
 
@@ -39,7 +40,8 @@ function detectAccount(text) {
 }
 
 export default function MemoPage() {
-  const { t } = useLang()
+  const { t, lang } = useLang()
+  const { tr } = useTranslations(lang)
   const [notes, setNotes] = useState([])
   const [text, setText] = useState('')
   const [isListening, setIsListening] = useState(false)
@@ -152,11 +154,11 @@ export default function MemoPage() {
               <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              계정 감지됨:
+              {lang === 'en' ? 'Account detected:' : '계정 감지됨:'}
               <span className="bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full font-medium">{autoDetected}</span>
             </span>
           ) : text.trim() ? (
-            <span className="text-xs text-gray-400">계정 미감지 (일반 메모로 저장)</span>
+            <span className="text-xs text-gray-400">{lang === 'en' ? 'No account detected (saved as general memo)' : '계정 미감지 (일반 메모로 저장)'}</span>
           ) : null}
         </div>
 
@@ -229,16 +231,17 @@ export default function MemoPage() {
             <p className="text-xs mt-1">{t('noMemoSub')}</p>
           </div>
         ) : (
-          filtered.map(note => <NoteCard key={note.id} note={note} onDelete={deleteNote} t={t} />)
+          filtered.map(note => <NoteCard key={note.id} note={note} onDelete={deleteNote} t={t} lang={lang} tr={tr} />)
         )}
       </div>
     </div>
   )
 }
 
-function NoteCard({ note, onDelete, t }) {
+function NoteCard({ note, onDelete, t, lang, tr }) {
   const [expanded, setExpanded] = useState(false)
-  const isLong = note.content.length > 120
+  const displayContent = (lang === 'en' && tr) ? tr(note.content) : note.content
+  const isLong = displayContent.length > 120
 
   return (
     <div className="bg-white rounded-xl border border-gray-200 p-4 space-y-2">
@@ -269,7 +272,7 @@ function NoteCard({ note, onDelete, t }) {
         className={`text-sm text-gray-800 leading-relaxed ${!expanded && isLong ? 'line-clamp-3' : ''}`}
         onClick={() => isLong && setExpanded(!expanded)}
       >
-        {note.content}
+        {displayContent}
       </p>
       {isLong && (
         <button onClick={() => setExpanded(!expanded)} className="text-xs text-purple-500">

@@ -1,3 +1,4 @@
+from contextlib import asynccontextmanager
 from pathlib import Path
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -9,10 +10,46 @@ from .routers import company, intel, auth
 
 settings = Settings()
 
+# ── 스케줄러 초기화 ────────────────────────────────────────────────────────────
+try:
+    from apscheduler.schedulers.asyncio import AsyncIOScheduler
+    from apscheduler.triggers.cron import CronTrigger
+    _scheduler = AsyncIOScheduler(timezone="UTC")
+    _SCHEDULER_AVAILABLE = True
+except ImportError:
+    _scheduler = None
+    _SCHEDULER_AVAILABLE = False
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # ── 앱 시작 ──
+    if _SCHEDULER_AVAILABLE and _scheduler:
+        from .services.scheduler import daily_update_job
+        # 매일 오전 5시 KST = UTC 20:00
+        _scheduler.add_job(
+            daily_update_job,
+            CronTrigger(hour=20, minute=0, timezone="UTC"),
+            id="daily_update",
+            replace_existing=True,
+            misfire_grace_time=3600,  # 1시간 내 missed job 실행
+        )
+        _scheduler.start()
+        import logging
+        logging.getLogger(__name__).info(
+            "[Scheduler] Started — daily update at 05:00 KST (20:00 UTC)"
+        )
+    yield
+    # ── 앱 종료 ──
+    if _SCHEDULER_AVAILABLE and _scheduler and _scheduler.running:
+        _scheduler.shutdown(wait=False)
+
+
 app = FastAPI(
     title="AE Automation Service",
     description="Amplitude AE를 위한 고객사 인텔리전스 플랫폼",
     version="1.0.0",
+    lifespan=lifespan,
 )
 
 app.add_middleware(
@@ -55,7 +92,36 @@ app.include_router(intel.router)
 
 @app.get("/health")
 async def health():
-    return {"status": "ok", "service": "AE Automation Service"}
+    scheduler_info = {}
+    if _SCHEDULER_AVAILABLE and _scheduler:
+        jobs = _scheduler.get_jobs()
+        scheduler_info = {
+            "running": _scheduler.running,
+            "jobs": [
+                {
+                    "id": j.id,
+                    "next_run_kst": (
+                        j.next_run_time.astimezone(
+                            __import__("datetime").timezone(
+                                __import__("datetime").timedelta(hours=9)
+                            )
+                        ).strftime("%Y-%m-%d %H:%M KST")
+                        if j.next_run_time else None
+                    ),
+                }
+                for j in jobs
+            ],
+        }
+    return {"status": "ok", "service": "AE Automation Service", "scheduler": scheduler_info}
+
+
+@app.post("/api/intel/scheduler/run-now")
+async def run_scheduler_now():
+    """스케줄러 수동 즉시 실행 (테스트/긴급 업데이트용)"""
+    import asyncio as _asyncio
+    from .services.scheduler import daily_update_job
+    _asyncio.create_task(daily_update_job())
+    return {"ok": True, "message": "Daily update job triggered (running in background)"}
 
 
 # 프론트엔드 정적 파일 서빙

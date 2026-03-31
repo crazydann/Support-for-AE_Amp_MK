@@ -16,3 +16,4 @@ google-auth-oauthlib==1.2.1
 google-api-python-client==2.151.0
 slack-sdk==3.33.0
 python-jose[cryptography]==3.3.0
+apscheduler>=3.10.4
