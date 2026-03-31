@@ -171,7 +171,7 @@ export default function App() {
 
       {/* 상단 헤더 */}
       <header className="bg-white border-b border-gray-200 px-4 py-3 sticky top-0 z-10">
-        <div className="max-w-lg mx-auto flex items-center gap-1">
+        <div className="max-w-screen-2xl mx-auto flex items-center gap-2">
           {/* 왼쪽: 언어 토글 + 로고 */}
           <div className="flex items-center gap-2 shrink-0">
             <div className="flex items-center bg-gray-100 rounded-lg p-0.5">
@@ -203,11 +203,25 @@ export default function App() {
             </div>
           </div>
 
+          {/* PC 전용: 탭 네비게이션 */}
+          <div className="hidden lg:flex items-center gap-1 ml-4 shrink-0">
+            {TABS.map(({ id, label }) => (
+              <button key={id}
+                onClick={() => { setTab(id); if (id !== 'companies') setCurrentCompany(null) }}
+                className={`text-sm font-medium px-3 py-1.5 rounded-lg transition-all ${
+                  tab === id ? 'bg-purple-100 text-purple-700' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+                }`}
+              >{label}</button>
+            ))}
+          </div>
+
           {/* 가운데: 계정 검색 */}
-          {tab === 'dashboard' && <AccountSearch />}
+          <div className="flex-1 min-w-0">
+            {tab === 'dashboard' && <AccountSearch />}
+          </div>
 
           {/* 오른쪽: 뷰 토글 + 유저 메뉴 */}
-          <div className="flex items-center gap-1 shrink-0 ml-auto">
+          <div className="flex items-center gap-1 shrink-0 ml-auto lg:ml-0">
             {tab === 'dashboard' && (
               <div className="flex items-center bg-gray-100 rounded-lg p-0.5">
                 <button
@@ -252,12 +266,12 @@ export default function App() {
         </div>
       </header>
 
-      <main className="flex-1 max-w-lg mx-auto w-full px-4 pt-5">
+      <main className="flex-1 max-w-screen-2xl mx-auto w-full px-4 lg:px-8 pt-5 pb-24 lg:pb-8">
         {renderContent()}
       </main>
 
-      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-10">
-        <div className="max-w-lg mx-auto grid grid-cols-3">
+      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-10 lg:hidden">
+        <div className="max-w-screen-2xl mx-auto grid grid-cols-3">
           {TABS.map(({ id, label, icon: Icon }) => (
             <button
               key={id}

@@ -172,7 +172,7 @@ function TodoView({ report, t, lang }) {
   const priorityConfig = getPriorityConfig(t)
 
   return (
-    <div className="space-y-5 pb-24">
+    <div className="space-y-5 pb-24 lg:pb-8">
       {/* 요약 통계 */}
       <div className="grid grid-cols-4 gap-2">
         <div className="bg-white rounded-xl border border-gray-200 p-3 text-center">
@@ -201,6 +201,10 @@ function TodoView({ report, t, lang }) {
         </div>
       )}
 
+      {/* PC: 2컬럼 (할일+리스크 / 최근동향) */}
+      <div className="lg:grid lg:grid-cols-2 lg:gap-5 space-y-5 lg:space-y-0 lg:items-start">
+      <div className="space-y-5">
+
       {/* 할 일 */}
       {actions.length > 0 && (
         <div className="space-y-2">
@@ -226,6 +230,9 @@ function TodoView({ report, t, lang }) {
           })}
         </div>
       )}
+
+      </div>{/* end 좌 (할일+리스크) */}
+      <div className="space-y-5">
 
       {/* 최근 고객 동향 */}
       {activityFeedAccounts.length > 0 && (
@@ -293,6 +300,8 @@ function TodoView({ report, t, lang }) {
           ))}
         </div>
       )}
+      </div>{/* end 우 (최근동향) */}
+      </div>{/* end 2컬럼 */}
     </div>
   )
 }
@@ -588,7 +597,7 @@ function AccountView({ report, t, lang }) {
         onClose={() => setAuditAccount(null)}
       />
     )}
-    <div className="space-y-3 pb-24">
+    <div className="space-y-3 pb-24 lg:pb-8">
       {/* 총 ARR + 동기화 버튼 */}
       <div className="bg-purple-50 border border-purple-200 rounded-xl px-4 py-2.5 flex items-center justify-between gap-2">
         <span className="text-xs text-purple-600 font-medium">
@@ -627,6 +636,7 @@ function AccountView({ report, t, lang }) {
       )}
 
       {/* 그룹 목록 */}
+      <div className="lg:grid lg:grid-cols-2 lg:gap-3 space-y-3 lg:space-y-0">
       {groups.map(groupName => {
         const groupAccounts = groupMap[groupName]
         const groupArr = groupAccounts.reduce((s, a) => s + parseInt(a.arr || 0), 0)
@@ -688,6 +698,7 @@ function AccountView({ report, t, lang }) {
           </div>
         )
       })}
+      </div>{/* end 그룹 목록 grid */}
     </div>
     </>
   )
@@ -899,7 +910,7 @@ function WeeklyView({ t, lang }) {
   )
 
   return (
-    <div className="space-y-3 pb-24">
+    <div className="pb-24 lg:pb-8">
 
       {/* ── 헤더 카드 ── */}
       <div className="bg-gradient-to-br from-purple-600 to-indigo-600 rounded-2xl p-4 text-white">
@@ -941,6 +952,12 @@ function WeeklyView({ t, lang }) {
         </div>
         {syncMsg && <p className="mt-2 text-xs opacity-80">{syncMsg}</p>}
       </div>
+
+      {/* ── 반응형 2컬럼 그리드: 좌(합성) + 우(할일+피드) ── */}
+      <div className="mt-3 space-y-3 lg:grid lg:grid-cols-[3fr_2fr] lg:gap-4 lg:space-y-0 lg:items-start">
+
+        {/* 좌: 핵심 카드 */}
+        <div className="space-y-3">
 
       {/* ── 이번 주 핵심 ── */}
       {highlights.length > 0 && (
@@ -1022,6 +1039,11 @@ function WeeklyView({ t, lang }) {
           </div>
         </div>
       )}
+
+        </div>{/* end 좌측 컬럼 */}
+
+        {/* 우: 할 일 + 피드 */}
+        <div className="space-y-3">
 
       {/* ── 할 일 ── */}
       {actionItems.length > 0 && (
@@ -1127,6 +1149,9 @@ function WeeklyView({ t, lang }) {
           <p className="text-xs text-gray-400 mt-1">{lang === 'en' ? 'Use the Sync button to fetch data' : '동기화 버튼으로 데이터를 가져오세요'}</p>
         </div>
       )}
+
+        </div>{/* end 우측 컬럼 */}
+      </div>{/* end 2컬럼 그리드 */}
     </div>
   )
 }
