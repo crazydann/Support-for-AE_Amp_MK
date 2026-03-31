@@ -462,7 +462,13 @@ DEFAULT_SYNTHESIS = {
         {"type": "won", "account": "하이마트", "title": "양사 서명 완료 ✓", "desc": "오더폼 서명 완료"},
         {"type": "won", "account": "CJ CheilJedang", "title": "갱신 Closed Won ✓", "desc": "ARR Change 0.0 (Q-91980)"},
     ],
-    "new_pipeline": ["카카오뱅크 데모·POC 제안 (3/24)", "우리카드 미팅 (3/24)", "SSG.com 저녁·퀵미팅 (3/27, 3/30)", "Dunamu 저녁 (3/25)", "Lotte 3연전: 저녁(3/24) → 롯데마트 상무(3/26) → 롯데온 상무(3/27)"],
+    "new_pipeline": [
+        {"account": "KakaoBank", "desc": "데모·POC 제안 (3/24) — 첫 접점 확보"},
+        {"account": "Woori Card", "desc": "미팅 진행 (3/24) — 관계 구축 단계"},
+        {"account": "SSG.com", "desc": "저녁·퀵미팅 (3/27, 3/30) — Martinee 파트너 연계"},
+        {"account": "Dunamu", "desc": "저녁 미팅 (3/25) — Experiment Add-on 크로스셀 기회"},
+        {"account": "Lotte", "desc": "3연전: 저녁(3/24) → 롯데마트 상무(3/26) → 롯데온 상무(3/27)"},
+    ],
     "risks": [
         {"account": "Naver Corp", "desc": "김철은이 PoC 미진행 결정 공식 통보. 내부 집중 과제 전환으로 단기 클로징 어려움. MK 커피챗으로 관계 유지 중"},
         {"account": "TVING", "desc": "Experiment 데모 완료했지만 오프라인 집체교육 거부, 샌드박스만 요청 → 의사결정 더딜 수 있음"},

@@ -1023,14 +1023,18 @@ function WeeklyView({ t, lang }) {
             {/* 신규 파이프라인 */}
             {(synthesis.new_pipeline || []).length > 0 && (
               <div className="px-4 py-3 bg-blue-50 border-t border-blue-100">
-                <p className="text-xs font-bold text-blue-700 mb-2">{lang === 'en' ? '📈 New Pipeline' : '📈 신규 파이프라인 미팅'}</p>
-                <ul className="space-y-1">
-                  {synthesis.new_pipeline.map((item, i) => (
-                    <li key={i} className="text-xs text-blue-800 flex items-start gap-1.5">
-                      <span className="text-blue-400 shrink-0">•</span>{item}
-                    </li>
-                  ))}
-                </ul>
+                <p className="text-xs font-bold text-blue-700 mb-2">{lang === 'en' ? '📈 New Pipeline' : '📈 신규 파이프라인'}</p>
+                <div className="space-y-1.5">
+                  {synthesis.new_pipeline.map((item, i) => {
+                    const isObj = typeof item === 'object' && item !== null
+                    return (
+                      <div key={i} className="flex items-start gap-2">
+                        {isObj && <span className="text-xs font-bold text-blue-700 bg-blue-100 px-1.5 py-0.5 rounded shrink-0">{item.account}</span>}
+                        <p className="text-xs text-blue-800 leading-relaxed">{isObj ? item.desc : item}</p>
+                      </div>
+                    )
+                  })}
+                </div>
               </div>
             )}
           </div>
@@ -1110,7 +1114,7 @@ function WeeklyView({ t, lang }) {
               const aid = makeActionId(item)
               const status = actionStatuses[aid] || {}
               const noteOpen = expandedNotes[aid]
-              const d = daysUntil(item.due_date)
+              const d = daysUntil(item.due || item.due_date)
               const priConfig = getPriorityConfig(t)
               const priCfg = item.priority ? priConfig[item.priority] : null
               return (
