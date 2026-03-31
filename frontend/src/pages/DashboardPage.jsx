@@ -729,215 +729,161 @@ const WEEKLY_CHANNELS = [
 
 function WeeklyView({ t, lang }) {
   const [feed, setFeed] = useState(null)
-  const [loadingFeed, setLoadingFeed] = useState(true)
+  const [loading, setLoading] = useState(true)
   const [syncing, setSyncing] = useState(false)
   const [syncMsg, setSyncMsg] = useState(null)
-  const [actionStatuses, setActionStatuses] = useState({})
-  const [expandedNotes, setExpandedNotes] = useState({})
+  const [statuses, setStatuses] = useState({})
+  const [openNotes, setOpenNotes] = useState({})
   const [showDone, setShowDone] = useState(false)
-  const saveTimers = useRef({})
-  const allTextsRef = useRef([])
-  const { tr, prefetch } = useTranslations(lang)
+  const timers = useRef({})
+  const { tr } = useTranslations(lang)
 
   useEffect(() => {
-    if (lang === 'en') prefetch(allTextsRef.current)
-  }, [lang])
-
-  // 액션 상태 로드
-  useEffect(() => {
-    fetch(`${API}/api/intel/action-status`)
-      .then(r => r.json())
-      .then(d => setActionStatuses(d.statuses || {}))
-      .catch(() => {})
-  }, [])
-
-  useEffect(() => {
-    fetch(`${API}/api/intel/weekly-feed?days=365`)
-      .then(r => r.json())
-      .then(d => {
-        setFeed(d)
-        setLoadingFeed(false)
-        const texts = (d.entries || []).map(e => e.summary || e.title || '').filter(Boolean)
-        allTextsRef.current = texts
-        prefetch(texts)
-      })
-      .catch(() => setLoadingFeed(false))
+    Promise.all([
+      fetch(`${API}/api/intel/weekly-feed?days=365`).then(r => r.json()),
+      fetch(`${API}/api/intel/action-status`).then(r => r.json()).catch(() => ({ statuses: {} })),
+    ]).then(([feedData, statusData]) => {
+      setFeed(feedData)
+      setStatuses(statusData.statuses || {})
+      setLoading(false)
+    }).catch(() => setLoading(false))
   }, [])
 
   const handleSync = async () => {
     setSyncing(true); setSyncMsg(null)
     try {
-      const res = await fetch(`${API}/api/intel/sync?force=true`, { method: 'POST' })
-      const data = await res.json()
-      setSyncMsg(lang === 'en' ? `Sync done (${data.added || 0} added)` : `동기화 완료 (${data.added || 0}건 추가)`)
-      const r2 = await fetch(`${API}/api/intel/weekly-feed?days=365`)
-      setFeed(await r2.json())
-      setTimeout(() => setSyncMsg(null), 4000)
-    } catch {
-      setSyncMsg(lang === 'en' ? 'Sync failed' : '동기화 실패')
+      await fetch(`${API}/api/intel/sync?force=true`, { method: 'POST' })
+      const [feedData] = await Promise.all([fetch(`${API}/api/intel/weekly-feed?days=365`).then(r => r.json())])
+      setFeed(feedData)
+      setSyncMsg(lang === 'en' ? 'Sync done' : '동기화 완료')
       setTimeout(() => setSyncMsg(null), 3000)
-    } finally { setSyncing(false) }
+    } catch { setSyncMsg('동기화 실패') } finally { setSyncing(false) }
   }
 
-  // 액션 완료 토글
-  const toggleActionDone = (actionId, currentDone) => {
-    const next = { ...actionStatuses, [actionId]: { ...(actionStatuses[actionId] || {}), done: !currentDone, updated_at: new Date().toISOString() } }
-    setActionStatuses(next)
-    fetch(`${API}/api/intel/action-status`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action_id: actionId, done: !currentDone, note: actionStatuses[actionId]?.note || '' })
-    }).catch(() => {})
+  const toggleDone = (id, wasDone) => {
+    const cur = statuses[id] || {}
+    const next = { ...statuses, [id]: { ...cur, done: !wasDone } }
+    setStatuses(next)
+    fetch(`${API}/api/intel/action-status`, { method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action_id: id, done: !wasDone, note: cur.note || '' }) }).catch(() => {})
   }
 
-  // 노트 저장 (디바운스 1.5s)
-  const handleNoteChange = (actionId, note) => {
-    const next = { ...actionStatuses, [actionId]: { ...(actionStatuses[actionId] || {}), note } }
-    setActionStatuses(next)
-    if (saveTimers.current[actionId]) clearTimeout(saveTimers.current[actionId])
-    saveTimers.current[actionId] = setTimeout(() => {
-      fetch(`${API}/api/intel/action-status`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action_id: actionId, done: actionStatuses[actionId]?.done || false, note })
-      }).catch(() => {})
+  const saveNote = (id, note) => {
+    setStatuses(p => ({ ...p, [id]: { ...(p[id] || {}), note } }))
+    clearTimeout(timers.current[id])
+    timers.current[id] = setTimeout(() => {
+      const cur = statuses[id] || {}
+      fetch(`${API}/api/intel/action-status`, { method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action_id: id, done: cur.done || false, note }) }).catch(() => {})
     }, 1500)
   }
 
   const today = new Date()
+
+  // ── 날짜 계산 ──
+  const dow = today.getDay() || 7
+  const thisMon = new Date(today); thisMon.setDate(today.getDate() - dow + 1)
+  const lastMon = new Date(thisMon); lastMon.setDate(thisMon.getDate() - 7)
+  const sixAgo  = new Date(today); sixAgo.setMonth(today.getMonth() - 6)
+  const thisMonStr = thisMon.toISOString().slice(0, 10)
+  const lastMonStr = lastMon.toISOString().slice(0, 10)
+  const sixAgoStr  = sixAgo.toISOString().slice(0, 10)
+
+  const fmtRange = mon => {
+    const sun = new Date(mon); sun.setDate(mon.getDate() + 6)
+    const f = d => d.toLocaleDateString(lang === 'ko' ? 'ko-KR' : 'en-US', { month: 'short', day: 'numeric' })
+    return `${f(mon)} – ${f(sun)}`
+  }
+
+  // ── 피드 데이터 ──
   const allEntries  = feed?.entries || []
   const actionItems = feed?.action_items || []
-  const accountMeta = feed?.account_meta || {}
 
-  // ── feed에서 synthesis 실시간 계산 ──
-  const synthesis = (() => {
-    if (!feed) return null
-    const priOrder = { urgent: 0, high: 1, medium: 2 }
-    const sorted = [...actionItems].sort((a, b) => (priOrder[a.priority] ?? 9) - (priOrder[b.priority] ?? 9))
-    const highlights = sorted.slice(0, 4).map(a => {
-      const due = a.due || a.due_date || ''
-      let dLabel = ''
-      if (due) {
-        const diff = Math.ceil((new Date(due) - today) / 86400000)
-        dLabel = diff === 0 ? ' (오늘)' : ` (D${diff > 0 ? '-' : '+'}${Math.abs(diff)})`
-      }
-      return { type: 'hot', account: a.account || '', title: (a.action || '').slice(0, 50) + dLabel, desc: a.action || '' }
-    })
-    const risks = (feed.risks || []).slice(0, 3).map(r => ({ account: r.account || '', desc: r.risk || r.desc || '' }))
-    const thisMon = new Date(today); thisMon.setDate(today.getDate() - ((today.getDay() || 7) - 1))
-    const thisSun = new Date(thisMon); thisSun.setDate(thisMon.getDate() + 6)
-    const wStart = thisMon.toISOString().slice(0, 10)
-    const wEnd   = thisSun.toISOString().slice(0, 10)
-    const weekMeetings = allEntries.filter(e => (e.type || e.log_type) === 'meeting' && (e.date || '') >= wStart && (e.date || '') <= wEnd)
-    const meetingAccounts = [...new Set(weekMeetings.map(e => e.account).filter(Boolean))]
-    const prospects = actionItems.filter(a => a.account && !risks.find(r => r.account === a.account))
-    const newPipeline = [...new Map(prospects.map(a => [a.account, a])).values()].slice(0, 5)
-      .map(a => ({ account: a.account, desc: (a.action || '').slice(0, 60) }))
-    const insights = sorted.slice(0, 3).map(a => ({ title: a.account || '', desc: (a.action || '').slice(0, 80) }))
-    return { highlights, risks, newPipeline, meetingCount: weekMeetings.length, meetingAccounts, insights }
-  })()
+  // dedup
+  const seen = new Set()
+  const entries = allEntries.filter(e => {
+    const k = `${e.account || ''}|${(e.summary || '').slice(0, 50)}`
+    if (seen.has(k)) return false; seen.add(k); return true
+  })
 
-  // ── 날짜 경계 계산 ──
-  const dow = today.getDay() || 7
-  const thisMonday = new Date(today); thisMonday.setDate(today.getDate() - dow + 1)
-  const lastMonday = new Date(thisMonday); lastMonday.setDate(thisMonday.getDate() - 7)
-  const sixMonthsAgo = new Date(today); sixMonthsAgo.setMonth(today.getMonth() - 6)
-  const thisMondayStr   = thisMonday.toISOString().slice(0, 10)
-  const lastMondayStr   = lastMonday.toISOString().slice(0, 10)
-  const sixMonthsAgoStr = sixMonthsAgo.toISOString().slice(0, 10)
+  const thisWeek = entries.filter(e => (e.date || '') >= thisMonStr)
+  const lastWeek = entries.filter(e => { const d = e.date || ''; return d >= lastMonStr && d < thisMonStr })
+  const earlier  = entries.filter(e => (e.date || '') >= sixAgoStr && (e.date || '') < lastMonStr)
+  const archived = entries.filter(e => (e.date || '') < sixAgoStr)
 
-  // ── 피드 중복 제거 ──
-  const seenIds = new Set()
-  const seenFingerprints = new Set()
-  const dedupedEntries = []
-  for (const e of allEntries) {
-    const sid = e.source_id || e.id
-    if (sid && seenIds.has(sid)) continue
-    if (sid) seenIds.add(sid)
-    const raw = (e.summary || e.title || '').replace(/\s+/g, ' ').toLowerCase().slice(0, 60)
-    const fp = `${e.account || ''}|${raw}`
-    if (seenFingerprints.has(fp)) continue
-    seenFingerprints.add(fp)
-    dedupedEntries.push(e)
-  }
+  // ── 할일 분류 ──
+  const priOrder = { urgent: 0, high: 1, medium: 2 }
+  const sortedActions = [...actionItems].sort((a, b) => (priOrder[a.priority] ?? 9) - (priOrder[b.priority] ?? 9))
+  const pendingTasks = sortedActions.filter(a => !statuses[makeActionId(a)]?.done)
+  const doneTasks    = sortedActions.filter(a =>  statuses[makeActionId(a)]?.done)
 
-  // ── 6개월 기준 분리 ──
-  const activeEntries   = dedupedEntries.filter(e => (e.date || '') >= sixMonthsAgoStr)
-  const archivedEntries = dedupedEntries.filter(e => (e.date || '') < sixMonthsAgoStr)
-  const thisWeekEntries = activeEntries.filter(e => (e.date || '') >= thisMondayStr)
-  const lastWeekEntries = activeEntries.filter(e => { const d = e.date || ''; return d >= lastMondayStr && d < thisMondayStr })
-  const earlierEntries  = activeEntries.filter(e => (e.date || '') < lastMondayStr)
+  const priCfg = { urgent: { label: '긴급', label_en: 'Urgent', cls: 'bg-red-50 text-red-600 border border-red-200' },
+                   high:   { label: '높음', label_en: 'High',   cls: 'bg-orange-50 text-orange-600 border border-orange-200' },
+                   medium: { label: '보통', label_en: 'Normal', cls: 'bg-blue-50 text-blue-600 border border-blue-200' } }
 
-  // ── 데이터 소스 확인 ──
-  const sourceTypes = new Set(dedupedEntries.map(e => e.type || e.log_type || ''))
-  const missingGmail   = !sourceTypes.has('gmail')
-  const missingMeeting = !sourceTypes.has('meeting')
+  // ── 이번 주 핵심 (urgent/high만) ──
+  const highlights = sortedActions.filter(a => a.priority === 'urgent' || a.priority === 'high').slice(0, 5)
 
-  // ── 주간 날짜 포맷 ──
-  const fmtWeekRange = (mon) => {
-    const sun = new Date(mon); sun.setDate(mon.getDate() + 6)
-    const fmt = d => d.toLocaleDateString(lang === 'en' ? 'en-US' : 'ko-KR', { month: 'short', day: 'numeric' })
-    return `${fmt(mon)} – ${fmt(sun)}`
-  }
+  // ── 리스크 ──
+  const risks = (feed?.risks || []).slice(0, 4)
 
-  // ── 우선순위 정렬 ──
-  const TYPE_PRIORITY = { memo: 0, meeting: 1, gmail: 2, slack: 3, glean: 4 }
-  function sortByPriority(entries) {
-    return [...entries].sort((a, b) => {
-      const pa = TYPE_PRIORITY[a.type || a.log_type || 'etc'] ?? 5
-      const pb = TYPE_PRIORITY[b.type || b.log_type || 'etc'] ?? 5
-      if (pa !== pb) return pa - pb
-      return (b.date || '').localeCompare(a.date || '')
-    })
-  }
+  // ── 미팅 ──
+  const weekMeetings = thisWeek.filter(e => (e.type || e.log_type) === 'meeting')
+  const meetingAccounts = [...new Set(weekMeetings.map(e => e.account).filter(Boolean))]
 
-  // ── 단일 항목 행 ──
+  // ── 영업 인사이트 (urgent 상위 3개) ──
+  const insights = sortedActions.slice(0, 3)
+
+  // ── 신규 파이프라인 (high priority 계정 중 리스크 아닌 것) ──
+  const riskAccounts = new Set(risks.map(r => r.account))
+  const pipelineMap = new Map()
+  sortedActions.filter(a => a.account && !riskAccounts.has(a.account)).forEach(a => {
+    if (!pipelineMap.has(a.account)) pipelineMap.set(a.account, a)
+  })
+  const pipeline = [...pipelineMap.values()].slice(0, 5)
+
+  const TYPE_PRI = { memo: 0, meeting: 1, gmail: 2, slack: 3, glean: 4 }
+  const sortEntries = arr => [...arr].sort((a, b) => {
+    const pa = TYPE_PRI[a.type || a.log_type] ?? 5, pb = TYPE_PRI[b.type || b.log_type] ?? 5
+    if (pa !== pb) return pa - pb
+    return (b.date || '').localeCompare(a.date || '')
+  })
+
   function EntryRow({ item }) {
-    const itemType = item.type || item.log_type || 'memo'
-    const chCfg = WEEKLY_CHANNELS.find(c => c.type === itemType) || WEEKLY_CHANNELS[4]
-    const text = tr(cleanSummary(item.summary || item.title || ''))
-    const dateStr = item.date ? item.date.slice(5) : ''
-    const isMemo = itemType === 'memo'
+    const tp = item.type || item.log_type || 'memo'
+    const ch = WEEKLY_CHANNELS.find(c => c.type === tp) || WEEKLY_CHANNELS[4]
     return (
-      <div className={`flex gap-2.5 items-start py-2.5 border-b border-gray-50 last:border-0 ${isMemo ? 'bg-orange-50 -mx-3 px-3' : ''}`}>
-        <span className="text-sm shrink-0 mt-0.5">{chCfg.icon}</span>
-        <span className="text-xs text-gray-400 shrink-0 w-9 mt-0.5">{dateStr}</span>
+      <div className="flex gap-2.5 items-start py-2.5 border-b border-gray-50 last:border-0">
+        <span className="text-sm shrink-0 mt-0.5">{ch.icon}</span>
+        <span className="text-xs text-gray-400 shrink-0 w-9 mt-0.5">{(item.date || '').slice(5)}</span>
         <div className="flex-1 min-w-0">
-          {item.account && (
-            <span className={`inline-block text-xs font-semibold px-1.5 py-0.5 rounded mr-1.5 mb-0.5 ${chCfg.pill}`}>{item.account}</span>
-          )}
-          <span className={`text-xs leading-relaxed ${isMemo ? 'text-orange-900 font-medium' : 'text-gray-700'}`}>{text}</span>
+          {item.account && <span className={`inline-block text-xs font-semibold px-1.5 py-0.5 rounded mr-1.5 mb-0.5 ${ch.pill}`}>{item.account}</span>}
+          <span className="text-xs text-gray-700 leading-relaxed">{cleanSummary(item.summary || item.title || '')}</span>
         </div>
       </div>
     )
   }
 
-  // ── 기간 섹션 ──
-  function PeriodSection({ entries, title, dateRange, defaultOpen = true }) {
-    const [open, setOpen] = useState(defaultOpen)
-    const [showAll, setShowAll] = useState(false)
-    if (entries.length === 0) return null
-    const sorted = sortByPriority(entries)
-    const visible = showAll ? sorted : sorted.slice(0, 15)
+  function FeedSection({ items, title, range, open: defOpen = true }) {
+    const [op, setOp] = useState(defOpen)
+    const [all, setAll] = useState(false)
+    if (!items.length) return null
+    const sorted = sortEntries(items)
+    const visible = all ? sorted : sorted.slice(0, 15)
     return (
       <div>
-        <button onClick={() => setOpen(o => !o)}
-          className="w-full flex items-center gap-2 py-2.5 px-1 hover:bg-gray-50 rounded-lg">
-          <span className="text-xs font-bold text-gray-700 uppercase tracking-wider">{title}</span>
-          {dateRange && <span className="text-xs text-gray-400">{dateRange}</span>}
-          <span className="ml-auto text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">{entries.length}</span>
-          <svg className={`w-3.5 h-3.5 text-gray-400 transition-transform ${open ? 'rotate-180' : ''}`}
-            fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-          </svg>
+        <button onClick={() => setOp(o => !o)} className="w-full flex items-center gap-2 py-2.5 px-1 hover:bg-gray-50 rounded-lg">
+          <span className="text-xs font-bold text-gray-700">{title}</span>
+          {range && <span className="text-xs text-gray-400">{range}</span>}
+          <span className="ml-auto text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">{items.length}</span>
+          <svg className={`w-3.5 h-3.5 text-gray-400 transition-transform ${op ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7"/></svg>
         </button>
-        {open && (
-          <div className="bg-white rounded-xl border border-gray-200 overflow-hidden px-3">
-            {visible.map((item, i) => <EntryRow key={i} item={item} />)}
-            {!showAll && sorted.length > 15 && (
-              <button onClick={() => setShowAll(true)}
-                className="w-full py-2 text-xs text-gray-400 hover:text-purple-600 border-t border-gray-50">
-                +{sorted.length - 15} {lang === 'en' ? 'more' : '건 더 보기'}
+        {op && (
+          <div className="bg-white rounded-xl border border-gray-200 px-3">
+            {visible.map((e, i) => <EntryRow key={i} item={e} />)}
+            {!all && sorted.length > 15 && (
+              <button onClick={() => setAll(true)} className="w-full py-2 text-xs text-gray-400 hover:text-purple-600 border-t border-gray-50">
+                +{sorted.length - 15}건 더 보기
               </button>
             )}
           </div>
@@ -946,281 +892,207 @@ function WeeklyView({ t, lang }) {
     )
   }
 
-  // ── 액션 아이템 섹션 ──
-  const doneItems    = actionItems.filter(a => actionStatuses[makeActionId(a)]?.done)
-  const pendingItems = actionItems.filter(a => !actionStatuses[makeActionId(a)]?.done)
-
-  if (loadingFeed) return (
+  if (loading) return (
     <div className="flex items-center justify-center h-48">
-      <div className="text-center space-y-2">
-        <div className="w-6 h-6 border-2 border-purple-500 border-t-transparent rounded-full animate-spin mx-auto" />
-        <p className="text-xs text-gray-400">{lang === 'en' ? 'Loading…' : '불러오는 중…'}</p>
-      </div>
+      <div className="w-6 h-6 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />
     </div>
   )
 
   return (
     <div className="space-y-3 pb-24">
-      {/* ── 헤더 ── */}
+
+      {/* ── 헤더 카드 ── */}
       <div className="bg-gradient-to-br from-purple-600 to-indigo-600 rounded-2xl p-4 text-white">
         <div className="flex items-start justify-between gap-2 mb-3">
           <div>
-            <p className="text-xs font-medium opacity-70">{lang === 'en' ? 'Weekly Report' : '주간 보고'} · AE MK</p>
-            <p className="text-sm font-bold mt-0.5">
-              {today.toLocaleDateString(lang === 'en' ? 'en-US' : 'ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })}
-            </p>
-            <p className="text-xs opacity-60 mt-0.5">{fmtWeekRange(thisMonday)}</p>
+            <p className="text-xs font-medium opacity-70">주간 보고 · AE MK</p>
+            <p className="text-lg font-bold mt-0.5">{today.toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+            <p className="text-xs opacity-60 mt-0.5">{fmtRange(thisMon)}</p>
           </div>
           <button onClick={handleSync} disabled={syncing}
-            className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold shrink-0 ${syncing ? 'bg-white/10 text-white/50 cursor-not-allowed' : 'bg-white/20 hover:bg-white/30 text-white'}`}>
-            <svg className={`w-3 h-3 ${syncing ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-white/20 hover:bg-white/30 disabled:opacity-50">
+            <svg className={`w-3.5 h-3.5 ${syncing ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
             </svg>
-            {syncing ? (lang === 'en' ? 'Syncing…' : '동기화 중…') : (lang === 'en' ? 'Sync' : '동기화')}
+            {syncing ? '동기화 중…' : '동기화'}
           </button>
         </div>
-        {/* 통계 */}
         <div className="flex gap-2 flex-wrap">
-          {pendingItems.length > 0 && (
-            <div className="bg-white/15 rounded-lg px-3 py-1.5 text-center">
-              <p className="text-sm font-bold">{doneItems.length}/{actionItems.length}</p>
-              <p className="text-xs opacity-70">✅ {lang === 'en' ? 'Tasks' : '할일'}</p>
-            </div>
-          )}
-          {[
-            { type: 'memo',    icon: '📝', label: '메모',   label_en: 'Memo' },
-            { type: 'meeting', icon: '📅', label: '일정',   label_en: 'Schedule' },
-            { type: 'gmail',   icon: '✉',  label: '이메일', label_en: 'Email' },
-            { type: 'slack',   icon: '💬', label: '슬랙',   label_en: 'Slack' },
-          ].map(c => {
-            const cnt = thisWeekEntries.filter(e => (e.type || e.log_type || '') === c.type).length
-            if (!cnt) return null
+          {[{ tp: 'meeting', icon: '📅', label: '일정' }, { tp: 'gmail', icon: '✉', label: '이메일' }, { tp: 'slack', icon: '💬', label: '슬랙' }].map(c => {
+            const n = thisWeek.filter(e => (e.type || e.log_type) === c.tp).length
+            if (!n) return null
             return (
-              <div key={c.type} className="bg-white/15 rounded-lg px-3 py-1.5 text-center">
-                <p className="text-sm font-bold">{cnt}</p>
-                <p className="text-xs opacity-70">{c.icon} {lang === 'en' ? c.label_en : c.label}</p>
+              <div key={c.tp} className="bg-white/15 rounded-xl px-3 py-1.5 text-center min-w-[52px]">
+                <p className="text-sm font-bold">{n}</p>
+                <p className="text-xs opacity-70">{c.icon} {c.label}</p>
               </div>
             )
           })}
-          {thisWeekEntries.length === 0 && pendingItems.length === 0 && (
-            <p className="text-xs opacity-60">{lang === 'en' ? 'No activity this week yet' : '이번 주 활동 없음'}</p>
+          {actionItems.length > 0 && (
+            <div className="bg-white/15 rounded-xl px-3 py-1.5 text-center min-w-[52px]">
+              <p className="text-sm font-bold">{doneTasks.length}/{actionItems.length}</p>
+              <p className="text-xs opacity-70">✅ 할일</p>
+            </div>
           )}
         </div>
+        {syncMsg && <p className="mt-2 text-xs opacity-80">{syncMsg}</p>}
       </div>
 
-      {syncMsg && (
-        <div className={`text-xs font-medium px-3 py-2 rounded-xl text-center border ${syncMsg.includes('실패') || syncMsg.includes('failed') ? 'bg-red-50 text-red-600 border-red-200' : 'bg-green-50 text-green-600 border-green-200'}`}>{syncMsg}</div>
-      )}
-
-      {/* ── 주간 AI 합성 리포트 ── */}
-      {loadingFeed && (
-        <div className="bg-white rounded-xl border border-gray-200 p-4 space-y-2 animate-pulse">
-          <div className="h-3 bg-gray-100 rounded w-1/3" />
-          <div className="h-3 bg-gray-100 rounded w-2/3" />
-          <div className="h-3 bg-gray-100 rounded w-1/2" />
+      {/* ── 이번 주 핵심 ── */}
+      {highlights.length > 0 && (
+        <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
+          <div className="px-4 py-3 border-b border-gray-100 bg-gray-50">
+            <span className="text-xs font-bold text-gray-700">🔥 이번 주 핵심</span>
+          </div>
+          <div className="divide-y divide-gray-50">
+            {highlights.map((a, i) => {
+              const due = a.due || a.due_date || ''
+              const diff = due ? Math.ceil((new Date(due) - today) / 86400000) : null
+              const pc = priCfg[a.priority]
+              return (
+                <div key={i} className="px-4 py-3 flex items-start gap-2">
+                  <span className="text-xs font-semibold text-purple-700 bg-purple-50 px-2 py-0.5 rounded shrink-0 mt-0.5">{a.account}</span>
+                  <div className="flex-1 min-w-0">
+                    {pc && <span className={`inline-block text-xs font-medium px-1.5 py-0.5 rounded mr-1.5 ${pc.cls}`}>{pc.label}</span>}
+                    {diff !== null && <span className={`text-xs font-medium mr-1.5 ${diff < 0 ? 'text-red-500' : diff <= 3 ? 'text-orange-500' : 'text-gray-400'}`}>{diff < 0 ? `D+${Math.abs(diff)}` : `D-${diff}`}</span>}
+                    <span className="text-xs text-gray-700 leading-relaxed">{a.action}</span>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
         </div>
       )}
-      {synthesis && synthesis.highlights.length > 0 && (
-        <div className="space-y-2.5">
-          {/* 이번 주 핵심 */}
-          <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-            <div className="px-4 py-2.5 border-b border-gray-100">
-              <span className="text-xs font-bold text-gray-800">🔥 {lang === 'en' ? 'This Week Highlights' : '이번 주 핵심'}</span>
-            </div>
-            <div className="divide-y divide-gray-50">
-              {synthesis.highlights.map((h, i) => (
-                <div key={i} className="px-4 py-2.5 flex items-start gap-2">
-                  <span className="text-xs font-bold text-orange-600 bg-orange-50 px-1.5 py-0.5 rounded shrink-0 mt-0.5">{h.account}</span>
-                  <p className="text-xs text-gray-700 leading-relaxed">{h.title}</p>
+
+      {/* ── 신규 파이프라인 ── */}
+      {pipeline.length > 0 && (
+        <div className="bg-blue-50 rounded-2xl border border-blue-100 px-4 py-3">
+          <p className="text-xs font-bold text-blue-700 mb-2">📈 신규 파이프라인</p>
+          <div className="space-y-1.5">
+            {pipeline.map((a, i) => (
+              <div key={i} className="flex items-start gap-2">
+                <span className="text-xs font-bold text-blue-700 bg-blue-100 px-1.5 py-0.5 rounded shrink-0">{a.account}</span>
+                <p className="text-xs text-blue-800 leading-relaxed">{(a.action || '').slice(0, 60)}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ── 리스크 시그널 ── */}
+      {risks.length > 0 && (
+        <div className="bg-white rounded-2xl border border-amber-200 overflow-hidden">
+          <div className="px-4 py-2.5 bg-amber-50 border-b border-amber-100">
+            <span className="text-xs font-bold text-amber-800">⚠️ 리스크 시그널</span>
+          </div>
+          <div className="divide-y divide-gray-50">
+            {risks.map((r, i) => (
+              <div key={i} className="px-4 py-2.5 flex items-start gap-2">
+                <span className="text-xs font-bold text-red-600 bg-red-50 px-1.5 py-0.5 rounded shrink-0 mt-0.5">{r.account}</span>
+                <p className="text-xs text-gray-700 leading-relaxed">{r.risk || r.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ── 미팅 밀도 + 영업 인사이트 ── */}
+      {(weekMeetings.length > 0 || insights.length > 0) && (
+        <div className="grid grid-cols-2 gap-2">
+          <div className="bg-white rounded-2xl border border-gray-200 p-3">
+            <p className="text-xs font-bold text-gray-600 mb-1">📅 미팅 밀도</p>
+            <p className="text-2xl font-bold text-purple-600">{weekMeetings.length}</p>
+            <p className="text-xs text-gray-400 mb-1">이번 주 고객 미팅</p>
+            {meetingAccounts.length > 0 && <p className="text-xs text-gray-500 leading-relaxed">{meetingAccounts.join(', ')}</p>}
+          </div>
+          <div className="bg-white rounded-2xl border border-gray-200 p-3">
+            <p className="text-xs font-bold text-gray-600 mb-2">💡 영업 인사이트</p>
+            <div className="space-y-1.5">
+              {insights.map((a, i) => (
+                <div key={i}>
+                  <p className="text-xs font-semibold text-gray-700">{a.account}</p>
+                  <p className="text-xs text-gray-500 leading-relaxed">{(a.action || '').slice(0, 55)}</p>
                 </div>
               ))}
             </div>
-            {/* 신규 파이프라인 */}
-            {synthesis.newPipeline.length > 0 && (
-              <div className="px-4 py-3 bg-blue-50 border-t border-blue-100">
-                <p className="text-xs font-bold text-blue-700 mb-2">📈 {lang === 'en' ? 'New Pipeline' : '신규 파이프라인'}</p>
-                <div className="space-y-1.5">
-                  {synthesis.newPipeline.map((item, i) => (
-                    <div key={i} className="flex items-start gap-2">
-                      <span className="text-xs font-bold text-blue-700 bg-blue-100 px-1.5 py-0.5 rounded shrink-0">{item.account}</span>
-                      <p className="text-xs text-blue-800 leading-relaxed">{item.desc}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* 리스크 시그널 */}
-          {synthesis.risks.length > 0 && (
-            <div className="bg-white rounded-xl border border-amber-200 overflow-hidden">
-              <div className="px-4 py-2.5 border-b border-amber-100 bg-amber-50">
-                <span className="text-xs font-bold text-amber-800">⚠️ {lang === 'en' ? 'Risk Signals' : '리스크 시그널'}</span>
-              </div>
-              <div className="divide-y divide-gray-50">
-                {synthesis.risks.map((r, i) => (
-                  <div key={i} className="px-4 py-2.5 flex items-start gap-2">
-                    <span className="text-xs font-bold text-red-600 bg-red-50 px-1.5 py-0.5 rounded shrink-0 mt-0.5">{r.account}</span>
-                    <p className="text-xs text-gray-700 leading-relaxed">{r.desc}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* 미팅 밀도 + 인사이트 */}
-          <div className="grid grid-cols-2 gap-2">
-            <div className="bg-white rounded-xl border border-gray-200 p-3">
-              <p className="text-xs font-bold text-gray-700 mb-1">📅 {lang === 'en' ? 'Meetings' : '미팅 밀도'}</p>
-              <p className="text-2xl font-bold text-purple-600">{synthesis.meetingCount}</p>
-              <p className="text-xs text-gray-400">{lang === 'en' ? 'this week' : '이번 주'}</p>
-              {synthesis.meetingAccounts.length > 0 && (
-                <p className="text-xs text-gray-500 mt-1 leading-relaxed">{synthesis.meetingAccounts.join(', ')}</p>
-              )}
-            </div>
-            <div className="bg-white rounded-xl border border-gray-200 p-3">
-              <p className="text-xs font-bold text-gray-700 mb-2">💡 {lang === 'en' ? 'Insights' : '영업 인사이트'}</p>
-              <div className="space-y-2">
-                {synthesis.insights.map((ins, i) => (
-                  <div key={i}>
-                    <p className="text-xs font-semibold text-gray-700">{ins.title}</p>
-                    <p className="text-xs text-gray-500 leading-relaxed">{ins.desc}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
           </div>
         </div>
       )}
 
-      {/* ── 데이터 소스 경고 ── */}
-      {(missingGmail || missingMeeting) && allEntries.length > 0 && (
-        <div className="bg-amber-50 border border-amber-200 rounded-xl px-3 py-2.5 flex gap-2 items-start">
-          <span className="text-sm shrink-0">⚠️</span>
-          <p className="text-xs text-amber-800">
-            {lang === 'en'
-              ? `${[missingGmail && 'Gmail', missingMeeting && 'Calendar'].filter(Boolean).join(' & ')} not synced yet. Showing Slack data only.`
-              : `${[missingGmail && '이메일', missingMeeting && '캘린더'].filter(Boolean).join('·')} 데이터가 없습니다. 동기화 버튼을 눌러 전체 데이터를 불러오세요.`}
-          </p>
-        </div>
-      )}
-
-      {allEntries.length === 0 && actionItems.length === 0 && (
-        <div className="bg-gray-50 border border-dashed border-gray-200 rounded-xl p-6 text-center space-y-1.5">
-          <p className="text-sm font-medium text-gray-500">{lang === 'en' ? 'No activity synced yet' : '동기화된 활동 없음'}</p>
-          <p className="text-xs text-gray-400">{lang === 'en' ? 'Press "Sync" to fetch emails, calendar, and Slack' : '"동기화" 버튼으로 이메일·캘린더·Slack 데이터를 가져오세요'}</p>
-        </div>
-      )}
-
-      {/* ── 할 일 (Action Items) ── */}
+      {/* ── 할 일 ── */}
       {actionItems.length > 0 && (
-        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
           <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
-            <span className="text-xs font-bold text-gray-800 uppercase tracking-wider">
-              {lang === 'en' ? 'Tasks' : '할 일'}
-            </span>
-            <span className="text-xs text-gray-400">{doneItems.length}/{actionItems.length} {lang === 'en' ? 'done' : '완료'}</span>
+            <span className="text-xs font-bold text-gray-700">✅ 할 일</span>
+            <span className="text-xs text-gray-400">{doneTasks.length}/{actionItems.length} 완료</span>
           </div>
 
-          {/* 미완료 항목 */}
+          {/* 미완료 */}
           <div className="divide-y divide-gray-50">
-            {pendingItems.map((item) => {
-              const aid = makeActionId(item)
-              const status = actionStatuses[aid] || {}
-              const noteOpen = expandedNotes[aid]
-              const d = daysUntil(item.due || item.due_date)
-              const priConfig = getPriorityConfig(t)
-              const priCfg = item.priority ? priConfig[item.priority] : null
+            {pendingTasks.map(item => {
+              const id = makeActionId(item)
+              const st = statuses[id] || {}
+              const noteOn = openNotes[id]
+              const due = item.due || item.due_date || ''
+              const diff = due ? Math.ceil((new Date(due) - today) / 86400000) : null
+              const pc = priCfg[item.priority]
               return (
-                <div key={aid} className="px-3 py-3 space-y-1.5">
+                <div key={id} className="px-3 py-3">
                   <div className="flex items-start gap-2.5">
-                    <button
-                      onClick={() => toggleActionDone(aid, false)}
-                      className="w-5 h-5 rounded border-2 border-gray-300 hover:border-purple-400 shrink-0 mt-0.5 transition-colors flex items-center justify-center"
-                    />
+                    {/* 완료 체크박스 */}
+                    <button onClick={() => toggleDone(id, false)}
+                      className="w-5 h-5 rounded border-2 border-gray-300 hover:border-purple-400 shrink-0 mt-0.5 flex items-center justify-center transition-colors" />
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-1.5 flex-wrap mb-0.5">
-                        {item.account && (
-                          <span className="text-xs font-semibold text-purple-700 bg-purple-50 px-1.5 py-0.5 rounded">{item.account}</span>
-                        )}
-                        {priCfg && (
-                          <span className={`text-xs px-1.5 py-0.5 rounded border font-medium ${priCfg.bg} ${priCfg.color}`}>{priCfg.label}</span>
-                        )}
-                        {d !== null && (
-                          <span className={`text-xs font-medium ${d < 0 ? 'text-red-500' : d <= 7 ? 'text-orange-500' : 'text-gray-400'}`}>
-                            {d < 0 ? `D+${Math.abs(d)}` : `D-${d}`}
-                          </span>
-                        )}
+                      <div className="flex items-center gap-1.5 flex-wrap mb-1">
+                        {item.account && <span className="text-xs font-semibold text-purple-700 bg-purple-50 px-1.5 py-0.5 rounded">{item.account}</span>}
+                        {pc && <span className={`text-xs font-medium px-1.5 py-0.5 rounded ${pc.cls}`}>{pc.label}</span>}
+                        {diff !== null && <span className={`text-xs font-medium ${diff < 0 ? 'text-red-500' : diff <= 3 ? 'text-orange-500' : 'text-gray-400'}`}>{diff < 0 ? `D+${Math.abs(diff)}` : `D-${diff}`}</span>}
                       </div>
-                      <p className="text-xs text-gray-800 leading-relaxed">
-                        {lang === 'en' ? tr(item.action || '') : (item.action || '')}
-                      </p>
-                      {status.note && !noteOpen && (
-                        <p className="text-xs text-gray-400 mt-0.5 italic truncate">{status.note}</p>
-                      )}
+                      <p className="text-xs text-gray-800 leading-relaxed">{item.action}</p>
+                      {st.note && !noteOn && <p className="text-xs text-gray-400 mt-0.5 italic truncate">{st.note}</p>}
                     </div>
-                    <button
-                      onClick={() => setExpandedNotes(p => ({ ...p, [aid]: !p[aid] }))}
-                      className="text-gray-300 hover:text-purple-400 shrink-0 mt-0.5 transition-colors"
-                      title={lang === 'en' ? 'Add note' : '메모 추가'}
-                    >
+                    {/* 메모 토글 */}
+                    <button onClick={() => setOpenNotes(p => ({ ...p, [id]: !p[id] }))}
+                      className="text-gray-300 hover:text-purple-400 shrink-0 mt-1 transition-colors">
                       <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                       </svg>
                     </button>
                   </div>
-                  {noteOpen && (
-                    <textarea
-                      value={status.note || ''}
-                      onChange={e => handleNoteChange(aid, e.target.value)}
-                      placeholder={lang === 'en' ? 'Add progress note…' : '진행 메모 입력…'}
-                      rows={2}
-                      className="w-full text-xs border border-gray-200 rounded-lg px-2.5 py-2 text-gray-700 placeholder-gray-300 resize-none focus:outline-none focus:ring-1 focus:ring-purple-300 ml-7"
-                    />
+                  {noteOn && (
+                    <textarea value={st.note || ''} onChange={e => saveNote(id, e.target.value)}
+                      placeholder="진행 메모 입력…" rows={2}
+                      className="mt-1.5 ml-7 w-[calc(100%-1.75rem)] text-xs border border-gray-200 rounded-lg px-2.5 py-2 text-gray-700 placeholder-gray-300 resize-none focus:outline-none focus:ring-1 focus:ring-purple-300" />
                   )}
                 </div>
               )
             })}
           </div>
 
-          {/* 완료 항목 토글 */}
-          {doneItems.length > 0 && (
+          {/* 완료 항목 */}
+          {doneTasks.length > 0 && (
             <div className="border-t border-gray-100">
-              <button
-                onClick={() => setShowDone(p => !p)}
-                className="w-full px-4 py-2.5 flex items-center gap-2 hover:bg-gray-50 transition-colors"
-              >
-                <span className="text-xs text-gray-400">
-                  ✅ {lang === 'en' ? `Done (${doneItems.length})` : `완료 ${doneItems.length}건`}
-                </span>
-                <svg className={`w-3.5 h-3.5 text-gray-300 ml-auto transition-transform ${showDone ? 'rotate-180' : ''}`}
-                  fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              <button onClick={() => setShowDone(p => !p)} className="w-full px-4 py-2.5 flex items-center gap-2 hover:bg-gray-50 transition-colors">
+                <span className="text-xs text-gray-400">완료 {doneTasks.length}건</span>
+                <svg className={`w-3.5 h-3.5 text-gray-300 ml-auto transition-transform ${showDone ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7"/>
                 </svg>
               </button>
               {showDone && (
                 <div className="divide-y divide-gray-50 bg-gray-50">
-                  {doneItems.map((item) => {
-                    const aid = makeActionId(item)
-                    const status = actionStatuses[aid] || {}
+                  {doneTasks.map(item => {
+                    const id = makeActionId(item)
+                    const st = statuses[id] || {}
                     return (
-                      <div key={aid} className="px-3 py-2.5 flex items-start gap-2.5">
-                        <button
-                          onClick={() => toggleActionDone(aid, true)}
-                          className="w-5 h-5 rounded border-2 border-green-400 bg-green-400 shrink-0 mt-0.5 flex items-center justify-center"
-                        >
-                          <svg width="10" height="10" fill="none" stroke="white" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                          </svg>
+                      <div key={id} className="px-3 py-2.5 flex items-start gap-2.5">
+                        <button onClick={() => toggleDone(id, true)}
+                          className="w-5 h-5 rounded border-2 border-green-400 bg-green-400 shrink-0 mt-0.5 flex items-center justify-center">
+                          <svg width="10" height="10" fill="none" stroke="white" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7"/></svg>
                         </button>
                         <div className="flex-1 min-w-0">
-                          {item.account && (
-                            <span className="text-xs text-gray-400 mr-1.5">{item.account}</span>
-                          )}
-                          <span className="text-xs text-gray-400 line-through">
-                            {lang === 'en' ? tr(item.action || '') : (item.action || '')}
-                          </span>
-                          {status.note && <p className="text-xs text-gray-300 mt-0.5 italic">{status.note}</p>}
+                          {item.account && <span className="text-xs text-gray-400 mr-1.5">{item.account}</span>}
+                          <span className="text-xs text-gray-400 line-through">{item.action}</span>
+                          {st.note && <p className="text-xs text-gray-300 mt-0.5 italic">{st.note}</p>}
                         </div>
                       </div>
                     )
@@ -1233,32 +1105,23 @@ function WeeklyView({ t, lang }) {
       )}
 
       {/* ── 이번 주 활동 ── */}
-      <PeriodSection
-        entries={thisWeekEntries}
-        title={lang === 'en' ? 'This Week' : '이번 주 활동'}
-        dateRange={fmtWeekRange(thisMonday)}
-        defaultOpen={true}
-      />
+      <FeedSection items={thisWeek} title="이번 주" range={fmtRange(thisMon)} open={true} />
 
       {/* ── 지난 주 활동 ── */}
-      <PeriodSection
-        entries={lastWeekEntries}
-        title={lang === 'en' ? 'Last Week' : '지난 주 활동'}
-        dateRange={fmtWeekRange(lastMonday)}
-        defaultOpen={true}
-      />
+      <FeedSection items={lastWeek} title="지난 주" range={fmtRange(lastMon)} open={true} />
 
-      {/* ── 2주~6개월 이전 ── */}
-      <PeriodSection
-        entries={earlierEntries}
-        title={lang === 'en' ? 'Earlier' : '이전 활동'}
-        dateRange={lang === 'en' ? 'within 6 months' : '6개월 이내'}
-        defaultOpen={false}
-      />
+      {/* ── 이전 활동 ── */}
+      <FeedSection items={earlier} title="이전 활동" range="6개월 이내" open={false} />
 
-      {/* ── 6개월 이전 아카이브 ── */}
-      {archivedEntries.length > 0 && (
-        <WeeklyArchive entries={archivedEntries} lang={lang} tr={tr} />
+      {/* ── 아카이브 ── */}
+      {archived.length > 0 && <WeeklyArchive entries={archived} lang={lang} tr={tr} />}
+
+      {/* ── 빈 상태 ── */}
+      {!entries.length && !actionItems.length && (
+        <div className="bg-gray-50 border border-dashed border-gray-200 rounded-2xl p-8 text-center">
+          <p className="text-sm text-gray-500 font-medium">동기화된 활동 없음</p>
+          <p className="text-xs text-gray-400 mt-1">동기화 버튼으로 데이터를 가져오세요</p>
+        </div>
       )}
     </div>
   )
