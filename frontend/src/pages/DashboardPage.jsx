@@ -729,8 +729,6 @@ const WEEKLY_CHANNELS = [
 
 function WeeklyView({ t, lang }) {
   const [feed, setFeed] = useState(null)
-  const [synthesis, setSynthesis] = useState(null)
-  const [loadingSynthesis, setLoadingSynthesis] = useState(true)
   const [loadingFeed, setLoadingFeed] = useState(true)
   const [syncing, setSyncing] = useState(false)
   const [syncMsg, setSyncMsg] = useState(null)
@@ -744,16 +742,6 @@ function WeeklyView({ t, lang }) {
   useEffect(() => {
     if (lang === 'en') prefetch(allTextsRef.current)
   }, [lang])
-
-  const loadSynthesis = () => {
-    setLoadingSynthesis(true)
-    fetch(`${API}/api/intel/weekly-synthesis`)
-      .then(r => r.json())
-      .then(d => { setSynthesis(d?.period ? d : null); setLoadingSynthesis(false) })
-      .catch(() => setLoadingSynthesis(false))
-  }
-
-  useEffect(() => { loadSynthesis() }, [])
 
   // 액션 상태 로드
   useEffect(() => {
@@ -820,6 +808,34 @@ function WeeklyView({ t, lang }) {
   const allEntries  = feed?.entries || []
   const actionItems = feed?.action_items || []
   const accountMeta = feed?.account_meta || {}
+
+  // ── feed에서 synthesis 실시간 계산 ──
+  const synthesis = (() => {
+    if (!feed) return null
+    const priOrder = { urgent: 0, high: 1, medium: 2 }
+    const sorted = [...actionItems].sort((a, b) => (priOrder[a.priority] ?? 9) - (priOrder[b.priority] ?? 9))
+    const highlights = sorted.slice(0, 4).map(a => {
+      const due = a.due || a.due_date || ''
+      let dLabel = ''
+      if (due) {
+        const diff = Math.ceil((new Date(due) - today) / 86400000)
+        dLabel = diff === 0 ? ' (오늘)' : ` (D${diff > 0 ? '-' : '+'}${Math.abs(diff)})`
+      }
+      return { type: 'hot', account: a.account || '', title: (a.action || '').slice(0, 50) + dLabel, desc: a.action || '' }
+    })
+    const risks = (feed.risks || []).slice(0, 3).map(r => ({ account: r.account || '', desc: r.risk || r.desc || '' }))
+    const thisMon = new Date(today); thisMon.setDate(today.getDate() - ((today.getDay() || 7) - 1))
+    const thisSun = new Date(thisMon); thisSun.setDate(thisMon.getDate() + 6)
+    const wStart = thisMon.toISOString().slice(0, 10)
+    const wEnd   = thisSun.toISOString().slice(0, 10)
+    const weekMeetings = allEntries.filter(e => (e.type || e.log_type) === 'meeting' && (e.date || '') >= wStart && (e.date || '') <= wEnd)
+    const meetingAccounts = [...new Set(weekMeetings.map(e => e.account).filter(Boolean))]
+    const prospects = actionItems.filter(a => a.account && !risks.find(r => r.account === a.account))
+    const newPipeline = [...new Map(prospects.map(a => [a.account, a])).values()].slice(0, 5)
+      .map(a => ({ account: a.account, desc: (a.action || '').slice(0, 60) }))
+    const insights = sorted.slice(0, 3).map(a => ({ title: a.account || '', desc: (a.action || '').slice(0, 80) }))
+    return { highlights, risks, newPipeline, meetingCount: weekMeetings.length, meetingAccounts, insights }
+  })()
 
   // ── 날짜 경계 계산 ──
   const dow = today.getDay() || 7
@@ -997,68 +1013,53 @@ function WeeklyView({ t, lang }) {
       )}
 
       {/* ── 주간 AI 합성 리포트 ── */}
-      {loadingSynthesis && (
+      {loadingFeed && (
         <div className="bg-white rounded-xl border border-gray-200 p-4 space-y-2 animate-pulse">
           <div className="h-3 bg-gray-100 rounded w-1/3" />
           <div className="h-3 bg-gray-100 rounded w-2/3" />
           <div className="h-3 bg-gray-100 rounded w-1/2" />
         </div>
       )}
-      {!loadingSynthesis && synthesis && (
+      {synthesis && synthesis.highlights.length > 0 && (
         <div className="space-y-2.5">
           {/* 이번 주 핵심 */}
           <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-            <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
-              <div>
-                <span className="text-xs font-bold text-gray-800 uppercase tracking-wider">🔥 {lang === 'en' ? 'This Week Highlights' : '이번 주 핵심'}</span>
-                {synthesis.period_label && <span className="ml-2 text-xs text-purple-600 font-medium bg-purple-50 px-2 py-0.5 rounded-full">{synthesis.period_label}</span>}
-              </div>
-              <span className="text-xs text-gray-300">{synthesis.period}</span>
+            <div className="px-4 py-2.5 border-b border-gray-100">
+              <span className="text-xs font-bold text-gray-800">🔥 {lang === 'en' ? 'This Week Highlights' : '이번 주 핵심'}</span>
             </div>
             <div className="divide-y divide-gray-50">
-              {(synthesis.highlights || []).map((h, i) => (
-                <div key={i} className="px-4 py-3 flex items-start gap-3">
-                  <span className={`text-sm shrink-0 mt-0.5 ${h.type === 'won' ? '✅' : '🔥'}`}>
-                    {h.type === 'won' ? '✅' : '🔥'}
-                  </span>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap mb-0.5">
-                      <span className={`text-xs font-bold px-1.5 py-0.5 rounded ${h.type === 'won' ? 'bg-green-100 text-green-700' : 'bg-red-50 text-red-700'}`}>{h.account}</span>
-                      <span className="text-xs font-semibold text-gray-800">{h.title}</span>
-                    </div>
-                    <p className="text-xs text-gray-500 leading-relaxed">{h.desc}</p>
-                  </div>
+              {synthesis.highlights.map((h, i) => (
+                <div key={i} className="px-4 py-2.5 flex items-start gap-2">
+                  <span className="text-xs font-bold text-orange-600 bg-orange-50 px-1.5 py-0.5 rounded shrink-0 mt-0.5">{h.account}</span>
+                  <p className="text-xs text-gray-700 leading-relaxed">{h.title}</p>
                 </div>
               ))}
             </div>
             {/* 신규 파이프라인 */}
-            {(synthesis.new_pipeline || []).length > 0 && (
+            {synthesis.newPipeline.length > 0 && (
               <div className="px-4 py-3 bg-blue-50 border-t border-blue-100">
-                <p className="text-xs font-bold text-blue-700 mb-2">{lang === 'en' ? '📈 New Pipeline' : '📈 신규 파이프라인'}</p>
+                <p className="text-xs font-bold text-blue-700 mb-2">📈 {lang === 'en' ? 'New Pipeline' : '신규 파이프라인'}</p>
                 <div className="space-y-1.5">
-                  {synthesis.new_pipeline.map((item, i) => {
-                    const isObj = typeof item === 'object' && item !== null
-                    return (
-                      <div key={i} className="flex items-start gap-2">
-                        {isObj && <span className="text-xs font-bold text-blue-700 bg-blue-100 px-1.5 py-0.5 rounded shrink-0">{item.account}</span>}
-                        <p className="text-xs text-blue-800 leading-relaxed">{isObj ? item.desc : item}</p>
-                      </div>
-                    )
-                  })}
+                  {synthesis.newPipeline.map((item, i) => (
+                    <div key={i} className="flex items-start gap-2">
+                      <span className="text-xs font-bold text-blue-700 bg-blue-100 px-1.5 py-0.5 rounded shrink-0">{item.account}</span>
+                      <p className="text-xs text-blue-800 leading-relaxed">{item.desc}</p>
+                    </div>
+                  ))}
                 </div>
               </div>
             )}
           </div>
 
           {/* 리스크 시그널 */}
-          {(synthesis.risks || []).length > 0 && (
+          {synthesis.risks.length > 0 && (
             <div className="bg-white rounded-xl border border-amber-200 overflow-hidden">
               <div className="px-4 py-2.5 border-b border-amber-100 bg-amber-50">
                 <span className="text-xs font-bold text-amber-800">⚠️ {lang === 'en' ? 'Risk Signals' : '리스크 시그널'}</span>
               </div>
               <div className="divide-y divide-gray-50">
                 {synthesis.risks.map((r, i) => (
-                  <div key={i} className="px-4 py-3 flex items-start gap-3">
+                  <div key={i} className="px-4 py-2.5 flex items-start gap-2">
                     <span className="text-xs font-bold text-red-600 bg-red-50 px-1.5 py-0.5 rounded shrink-0 mt-0.5">{r.account}</span>
                     <p className="text-xs text-gray-700 leading-relaxed">{r.desc}</p>
                   </div>
@@ -1071,16 +1072,18 @@ function WeeklyView({ t, lang }) {
           <div className="grid grid-cols-2 gap-2">
             <div className="bg-white rounded-xl border border-gray-200 p-3">
               <p className="text-xs font-bold text-gray-700 mb-1">📅 {lang === 'en' ? 'Meetings' : '미팅 밀도'}</p>
-              <p className="text-2xl font-bold text-purple-600">{synthesis.meeting_count}</p>
-              <p className="text-xs text-gray-400">{lang === 'en' ? 'customer meetings' : '고객 미팅'}</p>
-              <p className="text-xs text-gray-500 mt-1 leading-relaxed">{(synthesis.meeting_accounts || []).join(', ')}</p>
+              <p className="text-2xl font-bold text-purple-600">{synthesis.meetingCount}</p>
+              <p className="text-xs text-gray-400">{lang === 'en' ? 'this week' : '이번 주'}</p>
+              {synthesis.meetingAccounts.length > 0 && (
+                <p className="text-xs text-gray-500 mt-1 leading-relaxed">{synthesis.meetingAccounts.join(', ')}</p>
+              )}
             </div>
             <div className="bg-white rounded-xl border border-gray-200 p-3">
               <p className="text-xs font-bold text-gray-700 mb-2">💡 {lang === 'en' ? 'Insights' : '영업 인사이트'}</p>
               <div className="space-y-2">
-                {(synthesis.insights || []).map((ins, i) => (
+                {synthesis.insights.map((ins, i) => (
                   <div key={i}>
-                    <p className="text-xs font-semibold text-gray-800">{ins.title}</p>
+                    <p className="text-xs font-semibold text-gray-700">{ins.title}</p>
                     <p className="text-xs text-gray-500 leading-relaxed">{ins.desc}</p>
                   </div>
                 ))}
