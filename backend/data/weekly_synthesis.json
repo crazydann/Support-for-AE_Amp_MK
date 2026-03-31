@@ -1,73 +1,83 @@
 {
-  "generated_at": "2026-03-30",
-  "period": "2026-03-16 ~ 2026-03-30",
-  "period_label": "Q1 마감 주간",
+  "generated_at": "2026-03-31",
+  "period": "2026-03-30 ~ 2026-04-05",
+  "period_label": "Q1 마감·Q2 킥오프",
   "highlights": [
     {
       "type": "hot",
       "account": "CJ Olive Young",
-      "title": "$450K 오더폼 접수·서명 진행 중",
-      "desc": "4/1 계약 시작 예정. SR·Heatmap 도입 문의(이수빈)까지 고객이 실질적 준비 시작 → 거의 확정 단계"
+      "title": "$450K 오더폼 서명 요청 발송",
+      "desc": "MK → 박소현(CJ OliveNetworks) OF 전달 완료, DC CC 서명 요청. 글로벌 견적도 별도 논의 중. 4/1 계약 시작 목표"
     },
     {
-      "type": "won",
-      "account": "하이마트",
-      "title": "양사 서명 완료 ✓",
-      "desc": "오더폼 서명 완료"
+      "type": "hot",
+      "account": "신세계 DF",
+      "title": "4/2 마케팅·AI 임원 데모 (D-2)",
+      "desc": "오후 2~3시 임원 데모 + 3~4시 RFP 논의. Use Case 및 RFP 항목 준비 최우선"
     },
     {
-      "type": "won",
-      "account": "CJ CheilJedang",
-      "title": "갱신 Closed Won ✓",
-      "desc": "ARR Change 0.0 (Q-91980)"
+      "type": "hot",
+      "account": "CJ CheilJedang (The Market)",
+      "title": "MTU 817% 오버리지 — 즉각 대응 필요",
+      "desc": "CSM과 함께 업그레이드 제안 준비 및 고객 연락 필요. 방치 시 이탈 리스크"
+    },
+    {
+      "type": "hot",
+      "account": "LG Uplus (CTO)",
+      "title": "갱신 D-31 긴급",
+      "desc": "Stage2에 불과, EB 미컨펌 상태. infiniSTAR 갱신 Closed Lost 선례 있음 → 즉각 대응"
     }
   ],
   "new_pipeline": [
     {
+      "account": "SSG.com",
+      "desc": "퀵미팅 x2 (3/30) — Martinee 파트너 연계, 적극 논의 중"
+    },
+    {
       "account": "KakaoBank",
-      "desc": "데모·POC 제안 (3/24) — 첫 접점 확보"
+      "desc": "데모·POC 제안 (3/24) — 첫 접점 확보, 후속 미팅 필요"
     },
     {
       "account": "Woori Card",
-      "desc": "미팅 진행 (3/24) — 관계 구축 단계"
-    },
-    {
-      "account": "SSG.com",
-      "desc": "저녁·퀵미팅 (3/27, 3/30) — Martinee 파트너 연계"
+      "desc": "미팅 진행 (3/24) — 관계 구축 단계, 니즈 파악 중"
     },
     {
       "account": "Dunamu",
-      "desc": "저녁 미팅 (3/25) — Experiment Add-on 크로스셀 기회"
+      "desc": "저녁 미팅 (3/25) — Experiment Add-on 크로스셀 기회 포착"
     },
     {
       "account": "Lotte",
-      "desc": "3연전: 저녁(3/24) → 롯데마트 상무(3/26) → 롯데온 상무(3/27)"
+      "desc": "롯데마트 상무 + 롯데온 상무 연속 미팅 — 그룹 MTU 전략 전개 적기"
     }
   ],
   "risks": [
     {
-      "account": "Naver Corp",
-      "desc": "김철은이 PoC 미진행 결정 공식 통보. 내부 집중 과제 전환으로 단기 클로징 어려움. MK 커피챗으로 관계 유지 중"
+      "account": "LG Uplus (CTO)",
+      "desc": "D-31 만료. 갱신 Stage2에 불과, EB 미컨펌. infiniSTAR 갱신 Closed Lost 선례 있어 위험도 높음"
     },
     {
       "account": "TVING",
-      "desc": "Experiment 데모 완료했지만 오프라인 집체교육 거부, 샌드박스만 요청 → 의사결정 더딜 수 있음"
+      "desc": "D-62 만료. Stage5 진행 중이나 클로징이 만료일보다 늦어질 위험. Experiment 샌드박스만 요청"
+    },
+    {
+      "account": "Naver Corp",
+      "desc": "PoC 전면 중단. CTO→회장 인하우스 결정. Naver Shopping Q2 딜 Q4로 슬립, 여름까지 재개 불가"
     }
   ],
-  "meeting_count": 17,
-  "meeting_accounts": ["Shinsegae DF", "Hyundai Dept Store", "Golfzon", "Naver", "TVING", "Samsung", "KakaoBank", "Woori Card", "Lotte(×3)", "Dunamu", "SSG.com(×2)", "Oliveyoung(×2)"],
+  "meeting_count": 4,
+  "meeting_accounts": ["CJ Olive Young Global", "CJ Olive Young", "SSG.com(×2)"],
   "insights": [
     {
-      "title": "Lotte 그룹 집중 공략",
-      "desc": "롯데마트·롯데온 상무급 미팅 연속 진행 중. 그룹 MTU 전략 전개 적기"
+      "title": "이번 주 최우선: CJ Olive Young 클로징",
+      "desc": "OF 서명 요청 발송 완료. 박소현 사인 받는 즉시 Stage6 Closed Won 전환"
     },
     {
-      "title": "CJ 그룹 Q1 클로징 마무리",
-      "desc": "올리브영·케이카·CJ CheilJedang·하이마트 4개 딜 동시 진행. 박소현(CJ OliveNetworks) 파트너십이 핵심 레버"
+      "title": "4/2 신세계 DF 임원 데모 준비",
+      "desc": "마케팅+AI 임원 대상 데모. RFP 항목 사전 정리 필수. Enterprise 레퍼런스(올리브영) 적극 활용"
     },
     {
-      "title": "Dunamu Experiment Add-on",
-      "desc": "저녁 미팅까지 진행. 2026 Experiment Add-on 타깃으로 follow-up 필요"
+      "title": "LG Uplus D-31 — 지금이 골든타임",
+      "desc": "infiniSTAR Closed Lost 전례를 반면교사로. 이번 주 EB 컨펌 + 조건 협의 착수 필수"
     }
   ]
 }
