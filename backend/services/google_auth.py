@@ -10,7 +10,7 @@ from google.auth.transport.requests import Request
 logger = logging.getLogger(__name__)
 
 SCOPES = [
-    "https://www.googleapis.com/auth/gmail.readonly",
+    "https://mail.google.com/",
     "https://www.googleapis.com/auth/calendar.readonly",
 ]
 

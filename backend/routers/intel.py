@@ -906,7 +906,7 @@ async def check_services():
             _creds = GCredentials(
                 token=None, refresh_token=_gref, client_id=_gid, client_secret=_gsec,
                 token_uri="https://oauth2.googleapis.com/token",
-                scopes=["https://www.googleapis.com/auth/gmail.readonly"],
+                scopes=["https://mail.google.com/"],
             )
             try:
                 _creds.refresh(GRequest())
