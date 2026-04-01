@@ -23,6 +23,29 @@ NOTES_FILE  = DATA_DIR / "notes.json"
 REPORT_FILE = DATA_DIR / "weekly_report.json"
 
 
+# ── 수동 동기화 엔드포인트 (프론트 동기화 버튼용) ──────────────
+@router.post("/sync")
+@router.get("/sync")
+async def manual_sync(force: bool = True):
+    """Gmail/Calendar/Slack 동기화 + weekly_report 합성 (동기화 버튼 연결)"""
+    try:
+        from ..services.scheduler import daily_update_job
+        import asyncio as _asyncio
+        result = await _asyncio.wait_for(daily_update_job(), timeout=120)
+        added = (result.get("sync") or {}).get("added", 0)
+        errors = result.get("errors", [])
+        return {
+            "ok": True,
+            "added": added,
+            "errors": errors,
+            "message": f"동기화 완료 — {added}건 추가" + (f", 오류 {len(errors)}건" if errors else ""),
+        }
+    except _asyncio.TimeoutError:
+        return {"ok": False, "added": 0, "message": "Sync timed out (120s)"}
+    except Exception as e:
+        return {"ok": False, "added": 0, "message": str(e)}
+
+
 # ── notes.json fallback 헬퍼 ──────────────────────────────
 def _read_notes_local() -> list[dict]:
     if not NOTES_FILE.exists():
