@@ -572,16 +572,21 @@ function AccountView({ report, t, lang }) {
 
   const handleSync = async () => {
     setSyncing(true)
-    setSyncMsg(null)
+    setSyncMsg(lang === 'en' ? 'Syncing...' : '동기화 중...')
     try {
       const res = await fetch(`${API}/api/intel/sync?force=true`, { method: 'POST' })
       const data = await res.json()
-      setSyncMsg(lang === 'en' ? `Sync done (${data.added || 0} added)` : `동기화 완료 (${data.added || 0}건 추가)`)
-      setTimeout(() => setSyncMsg(null), 4000)
+      const added = data.added || 0
+      const memoAdded = (data.result?.memo_sync?.added) || 0
+      const msg = lang === 'en'
+        ? `Sync done (${added} new, ${memoAdded} memos) — reloading...`
+        : `동기화 완료 (신규 ${added}건, 메모 ${memoAdded}건) — 새로고침 중...`
+      setSyncMsg(msg)
+      // 모든 데이터 새로고침 (Weekly / Account / Todo 전체 반영)
+      setTimeout(() => window.location.reload(), 1500)
     } catch {
       setSyncMsg(lang === 'en' ? 'Sync failed' : '동기화 실패')
       setTimeout(() => setSyncMsg(null), 3000)
-    } finally {
       setSyncing(false)
     }
   }

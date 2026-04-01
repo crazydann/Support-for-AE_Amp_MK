@@ -41,6 +41,61 @@ async def daily_update_job():
         results["errors"].append(msg)
         logger.error(f"[Scheduler] ✗ {msg}")
 
+    # ── 1.5단계: Google Sheets 메모 → intel_log 수집 ─────────────────
+    try:
+        from .notes_sheets_service import read_notes, is_available
+        from .intel_memory_service import _sync_append_log
+        from .account_keywords import detect_account
+
+        if is_available():
+            notes = await read_notes()
+            memo_added = 0
+            # 이미 처리된 memo id 목록 (intel_log에서 확인)
+            from pathlib import Path as _Path
+            import json as _json
+            intel_log_file = _Path(__file__).parent.parent / "data" / "intel_log.jsonl"
+            existing_ids: set = set()
+            if intel_log_file.exists():
+                for line in intel_log_file.read_text(encoding="utf-8").splitlines():
+                    try:
+                        entry = _json.loads(line)
+                        src_id = entry.get("source_id") or entry.get("memo_id")
+                        if src_id:
+                            existing_ids.add(src_id)
+                    except Exception:
+                        pass
+
+            for note in notes:
+                note_id = note.get("id", "")
+                if note_id and note_id in existing_ids:
+                    continue
+                content = note.get("content", "")
+                account = note.get("account") or detect_account(content)
+                date = (note.get("created_at") or note.get("date") or "")[:10]
+                preview = content[:80].replace("\n", " ")
+                _sync_append_log({
+                    "ts": note.get("created_at") or datetime.now(timezone.utc).isoformat(),
+                    "date": date,
+                    "type": "memo",
+                    "log_type": "memo",
+                    "account": account,
+                    "summary": f"[메모] {preview}",
+                    "source": "sheets_memo",
+                    "source_id": note_id,
+                    "memo_id": note_id,
+                })
+                existing_ids.add(note_id)
+                memo_added += 1
+
+            logger.info(f"[Scheduler] ✓ Sheets memo sync — {memo_added}건 추가")
+            results["memo_sync"] = {"added": memo_added}
+        else:
+            logger.info("[Scheduler] Sheets memo sync 스킵 (env 미설정)")
+    except Exception as e:
+        msg = f"Memo sync failed: {e}"
+        results["errors"].append(msg)
+        logger.error(f"[Scheduler] ✗ {msg}")
+
     # 잠시 대기 (sync 후 파일 write 완료 보장)
     await asyncio.sleep(2)
 
