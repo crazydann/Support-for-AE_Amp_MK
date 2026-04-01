@@ -118,11 +118,16 @@ async def health():
 @app.post("/api/intel/scheduler/run-now")
 @app.get("/api/intel/scheduler/run-now")
 async def run_scheduler_now():
-    """스케줄러 수동 즉시 실행 (테스트/긴급 업데이트용) - GET/POST 모두 지원"""
+    """스케줄러 수동 즉시 실행 - 결과 직접 반환 (GET/POST 모두 지원)"""
     import asyncio as _asyncio
     from .services.scheduler import daily_update_job
-    _asyncio.create_task(daily_update_job())
-    return {"ok": True, "message": "Daily update job triggered (running in background)"}
+    try:
+        result = await _asyncio.wait_for(daily_update_job(), timeout=120)
+        return {"ok": True, "message": "Daily update completed", "result": result}
+    except _asyncio.TimeoutError:
+        return {"ok": False, "message": "Job timed out after 120s (still running in background)"}
+    except Exception as e:
+        return {"ok": False, "message": f"Job failed: {str(e)}"}
 
 
 # 프론트엔드 정적 파일 서빙
