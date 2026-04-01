@@ -871,3 +871,174 @@ async def agent_audit_stream(account_name: str):
             "X-Accel-Buffering": "no",
         },
     )
+
+
+# ── 서비스 연결 진단 엔드포인트 ──────────────────────────────
+@router.get("/check")
+async def check_services():
+    """
+    모든 서비스 연결 상태 확인 (Google OAuth, Sheets, Slack, Scheduler, 데이터)
+    브라우저에서 /api/intel/check 로 접속해 전체 상태 확인 가능
+    """
+    result = {}
+
+    # ── 1. Google OAuth / Gmail ──────────────────────────────
+    try:
+        from ..services.google_auth import get_google_credentials
+        creds = get_google_credentials()
+        if creds and creds.valid:
+            import httpx
+            r = httpx.get(
+                "https://gmail.googleapis.com/gmail/v1/users/me/profile",
+                headers={"Authorization": f"Bearer {creds.token}"},
+                timeout=10,
+            )
+            if r.status_code == 200:
+                profile = r.json()
+                result["gmail"] = {"ok": True, "email": profile.get("emailAddress"), "msg": "Connected"}
+            else:
+                result["gmail"] = {"ok": False, "msg": f"API error {r.status_code}"}
+        elif creds is None:
+            result["gmail"] = {"ok": False, "msg": "Missing env vars (GOOGLE_CLIENT_ID / SECRET / REFRESH_TOKEN)"}
+        else:
+            result["gmail"] = {"ok": False, "msg": "Token invalid / refresh failed"}
+    except Exception as e:
+        result["gmail"] = {"ok": False, "msg": str(e)}
+
+    # ── 2. Google Calendar ───────────────────────────────────
+    try:
+        from ..services.google_auth import get_google_credentials
+        creds = get_google_credentials()
+        if creds and creds.valid:
+            import httpx
+            r = httpx.get(
+                "https://www.googleapis.com/calendar/v3/calendars/primary",
+                headers={"Authorization": f"Bearer {creds.token}"},
+                timeout=10,
+            )
+            if r.status_code == 200:
+                cal = r.json()
+                result["google_calendar"] = {"ok": True, "calendar": cal.get("summary"), "msg": "Connected"}
+            else:
+                result["google_calendar"] = {"ok": False, "msg": f"API error {r.status_code}"}
+        else:
+            result["google_calendar"] = {"ok": False, "msg": "No valid credentials (see gmail check)"}
+    except Exception as e:
+        result["google_calendar"] = {"ok": str(e)}
+
+    # ── 3. Google Sheets ─────────────────────────────────────
+    try:
+        spreadsheet_id = os.environ.get("NOTES_SPREADSHEET_ID")
+        if not spreadsheet_id:
+            result["google_sheets"] = {"ok": False, "msg": "NOTES_SPREADSHEET_ID not set"}
+        else:
+            import gspread
+            from google.oauth2.service_account import Credentials as SACredentials
+            sa_json = os.environ.get("GOOGLE_SERVICE_ACCOUNT_JSON")
+            if not sa_json:
+                result["google_sheets"] = {"ok": False, "msg": "GOOGLE_SERVICE_ACCOUNT_JSON not set"}
+            else:
+                import json as _json
+                sa_info = _json.loads(sa_json)
+                scopes = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
+                sa_creds = SACredentials.from_service_account_info(sa_info, scopes=scopes)
+                gc = gspread.authorize(sa_creds)
+                sh = gc.open_by_key(spreadsheet_id)
+                worksheets = [w.title for w in sh.worksheets()]
+                result["google_sheets"] = {"ok": True, "spreadsheet": sh.title, "sheets": worksheets, "msg": "Connected"}
+    except Exception as e:
+        result["google_sheets"] = {"ok": False, "msg": str(e)}
+
+    # ── 4. Slack ─────────────────────────────────────────────
+    try:
+        slack_token = os.environ.get("SLACK_USER_TOKEN") or os.environ.get("SLACK_BOT_TOKEN")
+        if not slack_token:
+            result["slack"] = {"ok": False, "msg": "SLACK_USER_TOKEN / SLACK_BOT_TOKEN not set"}
+        else:
+            import httpx
+            r = httpx.get(
+                "https://slack.com/api/auth.test",
+                headers={"Authorization": f"Bearer {slack_token}"},
+                timeout=10,
+            )
+            data = r.json()
+            if data.get("ok"):
+                result["slack"] = {"ok": True, "user": data.get("user"), "team": data.get("team"), "msg": "Connected"}
+            else:
+                result["slack"] = {"ok": False, "msg": data.get("error", "unknown error")}
+    except Exception as e:
+        result["slack"] = {"ok": False, "msg": str(e)}
+
+    # ── 5. Scheduler ─────────────────────────────────────────
+    try:
+        from ..main import _scheduler, _SCHEDULER_AVAILABLE
+        if not _SCHEDULER_AVAILABLE:
+            result["scheduler"] = {"ok": False, "msg": "APScheduler not installed"}
+        elif not _scheduler:
+            result["scheduler"] = {"ok": False, "msg": "Scheduler not initialized"}
+        else:
+            jobs = _scheduler.get_jobs()
+            job_info = []
+            for j in jobs:
+                import datetime as _dt
+                kst = _dt.timezone(_dt.timedelta(hours=9))
+                job_info.append({
+                    "id": j.id,
+                    "next_run_kst": j.next_run_time.astimezone(kst).strftime("%Y-%m-%d %H:%M KST") if j.next_run_time else None,
+                })
+            result["scheduler"] = {"ok": _scheduler.running, "running": _scheduler.running, "jobs": job_info, "msg": "Running" if _scheduler.running else "Stopped"}
+    except Exception as e:
+        result["scheduler"] = {"ok": False, "msg": str(e)}
+
+    # ── 6. 데이터 통계 ───────────────────────────────────────
+    try:
+        intel_log_file = DATA_DIR.parent / "data" / "intel_log.jsonl"
+        if not intel_log_file.exists():
+            intel_log_file = DATA_DIR / "intel_log.jsonl"
+
+        if intel_log_file.exists():
+            lines = [l for l in intel_log_file.read_text(encoding="utf-8").splitlines() if l.strip()]
+            entries = []
+            for line in lines:
+                try:
+                    entries.append(json.loads(line))
+                except Exception:
+                    pass
+            by_type: dict = {}
+            for e in entries:
+                t = e.get("log_type") or e.get("type") or "unknown"
+                by_type[t] = by_type.get(t, 0) + 1
+            last_entry = entries[-1] if entries else {}
+            result["intel_log"] = {
+                "ok": True,
+                "total": len(entries),
+                "by_type": by_type,
+                "last_entry_date": last_entry.get("date") or last_entry.get("created_at", "")[:10],
+            }
+        else:
+            result["intel_log"] = {"ok": False, "msg": "intel_log.jsonl not found"}
+    except Exception as e:
+        result["intel_log"] = {"ok": False, "msg": str(e)}
+
+    try:
+        report = _read_report()
+        result["weekly_report"] = {
+            "ok": True,
+            "generated_at": report.get("generated_at"),
+            "accounts": len(report.get("accounts", [])),
+            "action_items": len(report.get("action_items", [])),
+        }
+    except Exception as e:
+        result["weekly_report"] = {"ok": False, "msg": str(e)}
+
+    # ── 요약 ─────────────────────────────────────────────────
+    services = ["gmail", "google_calendar", "google_sheets", "slack", "scheduler"]
+    ok_count = sum(1 for s in services if result.get(s, {}).get("ok"))
+    result["_summary"] = {
+        "checked_at": datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC"),
+        "healthy": ok_count,
+        "total": len(services),
+        "status": "All systems operational" if ok_count == len(services) else f"{ok_count}/{len(services)} services OK",
+    }
+
+    return result
