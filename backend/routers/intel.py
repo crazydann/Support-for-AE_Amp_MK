@@ -882,6 +882,17 @@ async def check_services():
     """
     result = {}
 
+    # ── 0. 환경변수 존재 여부 디버그 ────────────────────────────
+    _gid = os.environ.get("GOOGLE_CLIENT_ID", "")
+    _gsec = os.environ.get("GOOGLE_CLIENT_SECRET", "")
+    _gref = os.environ.get("GOOGLE_REFRESH_TOKEN", "")
+    result["_env_debug"] = {
+        "GOOGLE_CLIENT_ID": f"{_gid[:12]}..." if _gid else "MISSING",
+        "GOOGLE_CLIENT_SECRET": f"{_gsec[:8]}..." if _gsec else "MISSING",
+        "GOOGLE_REFRESH_TOKEN": f"{_gref[:8]}..." if _gref else "MISSING",
+        "SLACK_USER_TOKEN": "SET" if os.environ.get("SLACK_USER_TOKEN") else "MISSING",
+    }
+
     # ── 1. Google OAuth / Gmail ──────────────────────────────
     try:
         from ..services.google_auth import get_google_credentials
