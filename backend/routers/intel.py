@@ -895,24 +895,33 @@ async def check_services():
 
     # ── 1. Google OAuth / Gmail ──────────────────────────────
     try:
-        from ..services.google_auth import get_google_credentials
-        creds = get_google_credentials()
-        if creds and creds.valid:
-            import httpx
-            r = httpx.get(
-                "https://gmail.googleapis.com/gmail/v1/users/me/profile",
-                headers={"Authorization": f"Bearer {creds.token}"},
-                timeout=10,
-            )
-            if r.status_code == 200:
-                profile = r.json()
-                result["gmail"] = {"ok": True, "email": profile.get("emailAddress"), "msg": "Connected"}
-            else:
-                result["gmail"] = {"ok": False, "msg": f"API error {r.status_code}"}
-        elif creds is None:
-            result["gmail"] = {"ok": False, "msg": "Missing env vars (GOOGLE_CLIENT_ID / SECRET / REFRESH_TOKEN)"}
+        from google.oauth2.credentials import Credentials as GCredentials
+        from google.auth.transport.requests import Request as GRequest
+        _gid = os.environ.get("GOOGLE_CLIENT_ID", "")
+        _gsec = os.environ.get("GOOGLE_CLIENT_SECRET", "")
+        _gref = os.environ.get("GOOGLE_REFRESH_TOKEN", "")
+        if not all([_gid, _gsec, _gref]):
+            result["gmail"] = {"ok": False, "msg": "Missing env vars"}
         else:
-            result["gmail"] = {"ok": False, "msg": "Token invalid / refresh failed"}
+            _creds = GCredentials(
+                token=None, refresh_token=_gref, client_id=_gid, client_secret=_gsec,
+                token_uri="https://oauth2.googleapis.com/token",
+                scopes=["https://www.googleapis.com/auth/gmail.readonly"],
+            )
+            try:
+                _creds.refresh(GRequest())
+                import httpx
+                r = httpx.get(
+                    "https://gmail.googleapis.com/gmail/v1/users/me/profile",
+                    headers={"Authorization": f"Bearer {_creds.token}"},
+                    timeout=10,
+                )
+                if r.status_code == 200:
+                    result["gmail"] = {"ok": True, "email": r.json().get("emailAddress"), "msg": "Connected"}
+                else:
+                    result["gmail"] = {"ok": False, "msg": f"Gmail API error {r.status_code}: {r.text[:200]}"}
+            except Exception as refresh_err:
+                result["gmail"] = {"ok": False, "msg": f"Token refresh failed: {str(refresh_err)}"}
     except Exception as e:
         result["gmail"] = {"ok": False, "msg": str(e)}
 
