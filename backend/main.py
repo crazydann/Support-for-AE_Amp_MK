@@ -116,8 +116,9 @@ async def health():
 
 
 @app.post("/api/intel/scheduler/run-now")
+@app.get("/api/intel/scheduler/run-now")
 async def run_scheduler_now():
-    """스케줄러 수동 즉시 실행 (테스트/긴급 업데이트용)"""
+    """스케줄러 수동 즉시 실행 (테스트/긴급 업데이트용) - GET/POST 모두 지원"""
     import asyncio as _asyncio
     from .services.scheduler import daily_update_job
     _asyncio.create_task(daily_update_job())
