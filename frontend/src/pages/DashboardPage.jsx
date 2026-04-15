@@ -579,11 +579,11 @@ function AccountView({ report, t, lang }) {
       const added = data.added || 0
       const memoAdded = (data.result?.memo_sync?.added) || 0
       const msg = lang === 'en'
-        ? `Sync done (${added} new, ${memoAdded} memos) — reloading...`
-        : `동기화 완료 (신규 ${added}건, 메모 ${memoAdded}건) — 새로고침 중...`
+        ? `Sync done (${added} new, ${memoAdded} memos) — refreshing in 10s...`
+        : `동기화 완료 (신규 ${added}건, 메모 ${memoAdded}건) — 10초 후 새로고침...`
       setSyncMsg(msg)
-      // 모든 데이터 새로고침 (Weekly / Account / Todo 전체 반영)
-      setTimeout(() => window.location.reload(), 1500)
+      // 합성이 백그라운드에서 완료될 시간을 준 후 새로고침
+      setTimeout(() => window.location.reload(), 10000)
     } catch {
       setSyncMsg(lang === 'en' ? 'Sync failed' : '동기화 실패')
       setTimeout(() => setSyncMsg(null), 3000)

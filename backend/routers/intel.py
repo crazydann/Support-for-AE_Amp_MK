@@ -22,28 +22,98 @@ DATA_DIR = Path(__file__).parent.parent / "data"
 NOTES_FILE  = DATA_DIR / "notes.json"
 REPORT_FILE = DATA_DIR / "weekly_report.json"
 
+# 합성 백그라운드 실행 여부 추적
+_synthesis_running = False
+
 
 # ── 수동 동기화 엔드포인트 (프론트 동기화 버튼용) ──────────────
 @router.post("/sync")
 @router.get("/sync")
 async def manual_sync(force: bool = True):
-    """Gmail/Calendar/Slack 동기화 + weekly_report 합성 (동기화 버튼 연결)"""
+    """
+    Gmail/Calendar/Slack 데이터 수집 (빠름, 30초 이내) + 합성은 백그라운드 실행.
+    동기화 버튼에서 호출.
+    """
+    global _synthesis_running
+    import asyncio as _asyncio
+
+    # ── 1단계: 데이터 수집 (빠름) ─────────────────────────────
+    sync_result = {"added": 0, "skipped": False, "error": None}
+    memo_added = 0
+    errors = []
+
     try:
-        from ..services.scheduler import daily_update_job
-        import asyncio as _asyncio
-        result = await _asyncio.wait_for(daily_update_job(), timeout=120)
-        added = (result.get("sync") or {}).get("added", 0)
-        errors = result.get("errors", [])
-        return {
-            "ok": True,
-            "added": added,
-            "errors": errors,
-            "message": f"동기화 완료 — {added}건 추가" + (f", 오류 {len(errors)}건" if errors else ""),
-        }
+        from ..services.report_sync import run_sync_async
+        sync_result = await _asyncio.wait_for(run_sync_async(force=True), timeout=60)
     except _asyncio.TimeoutError:
-        return {"ok": False, "added": 0, "message": "Sync timed out (120s)"}
+        errors.append("Gmail/Slack sync timed out (60s)")
     except Exception as e:
-        return {"ok": False, "added": 0, "message": str(e)}
+        errors.append(f"Sync error: {str(e)}")
+
+    # ── 1.5단계: Sheets 메모 수집 (빠름) ────────────────────────
+    try:
+        from ..services.notes_sheets_service import read_notes, is_available
+        from ..services.intel_memory_service import _sync_append_log
+        from ..services.account_keywords import detect_account
+        from pathlib import Path as _Path
+
+        if is_available():
+            notes = await read_notes()
+            intel_log_file = _Path(__file__).parent.parent / "data" / "intel_log.jsonl"
+            existing_ids: set = set()
+            if intel_log_file.exists():
+                import json as _json
+                for line in intel_log_file.read_text(encoding="utf-8").splitlines():
+                    try:
+                        src_id = _json.loads(line).get("source_id") or _json.loads(line).get("memo_id")
+                        if src_id:
+                            existing_ids.add(src_id)
+                    except Exception:
+                        pass
+            from datetime import datetime as _dt, timezone as _tz
+            for note in notes:
+                note_id = note.get("id", "")
+                if note_id and note_id in existing_ids:
+                    continue
+                content = note.get("content", "")
+                account = note.get("account") or detect_account(content)
+                date = (note.get("created_at") or note.get("date") or "")[:10]
+                _sync_append_log({
+                    "ts": note.get("created_at") or _dt.now(_tz.utc).isoformat(),
+                    "date": date, "type": "memo", "log_type": "memo",
+                    "account": account, "summary": f"[메모] {content[:80]}",
+                    "source": "sheets_memo", "source_id": note_id, "memo_id": note_id,
+                })
+                existing_ids.add(note_id)
+                memo_added += 1
+    except Exception as e:
+        errors.append(f"Memo sync error: {str(e)}")
+
+    # ── 2단계: 합성은 백그라운드 실행 (논블로킹) ─────────────────
+    if not _synthesis_running:
+        async def _run_synthesis_bg():
+            global _synthesis_running
+            _synthesis_running = True
+            try:
+                from ..services import synthesis_service as synth
+                loop = _asyncio.get_event_loop()
+                await loop.run_in_executor(None, synth.run_full_synthesis, 60)
+            except Exception as ex:
+                import logging as _log
+                _log.getLogger(__name__).error(f"[BG Synthesis] failed: {ex}")
+            finally:
+                _synthesis_running = False
+        _asyncio.create_task(_run_synthesis_bg())
+
+    added = sync_result.get("added", 0)
+    return {
+        "ok": True,
+        "added": added,
+        "memo_added": memo_added,
+        "synthesis": "running in background" if not _synthesis_running else "already running",
+        "errors": errors,
+        "message": f"동기화 완료 — 신규 {added}건, 메모 {memo_added}건" + (f" (오류: {len(errors)}건)" if errors else ""),
+    }
 
 
 # ── notes.json fallback 헬퍼 ──────────────────────────────
