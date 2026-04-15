@@ -92,7 +92,10 @@ def run_sync(force: bool = False) -> dict:
         logger.error(f"Slack sync 오류: {e}")
 
     if not all_activities:
-        # sync 성공했지만 새 데이터 없음
+        # sync 성공했지만 새 데이터 없음 — generated_at은 업데이트
+        report = _read_report()
+        report["generated_at"] = datetime.now(timezone.utc).isoformat()
+        _write_report(report)
         state["last_sync"] = datetime.now(timezone.utc).isoformat()
         _write_sync_state(state)
         return {"added": 0, "skipped": False, "error": None}
@@ -164,7 +167,15 @@ def run_sync(force: bool = False) -> dict:
 
     # 저장
     report["accounts"] = list(accounts.values())
+    report["generated_at"] = datetime.now(timezone.utc).isoformat()  # 동기화 시간 즉시 반영
     _write_report(report)
+
+    # Sheets에도 백업
+    try:
+        from .intel_memory_service import save_report_to_sheets
+        save_report_to_sheets(report)
+    except Exception:
+        pass
 
     # sync 상태 업데이트 (processed_ids 최대 2000개 유지)
     all_processed = list(processed_ids) + new_ids
