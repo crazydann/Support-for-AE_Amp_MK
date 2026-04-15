@@ -399,6 +399,13 @@ def update_report_from_synthesis(synthesis_results: list) -> dict:
 
     _write_report(report)
 
+    # Sheets에도 백업 (재배포 후 복원용)
+    try:
+        from .intel_memory_service import save_report_to_sheets
+        save_report_to_sheets(report)
+    except Exception as e:
+        logger.warning(f"weekly_report Sheets 백업 실패 (로컬엔 저장됨): {e}")
+
     return {"actions_added": actions_added, "risks_updated": risks_updated}
 
 

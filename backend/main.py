@@ -23,7 +23,17 @@ except ImportError:
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # ── 앱 시작 ──
+    # ── 앱 시작: Sheets에서 데이터 복원 ──
+    try:
+        from .services.intel_memory_service import restore_on_startup
+        restore_result = await restore_on_startup()
+        import logging as _logging
+        _logging.getLogger(__name__).info(f"[Startup] 복원 결과: {restore_result}")
+    except Exception as e:
+        import logging as _logging
+        _logging.getLogger(__name__).warning(f"[Startup] 복원 실패 (계속 진행): {e}")
+
+    # ── 스케줄러 시작 ──
     if _SCHEDULER_AVAILABLE and _scheduler:
         from .services.scheduler import daily_update_job
         # 매일 오전 5시 KST = UTC 20:00

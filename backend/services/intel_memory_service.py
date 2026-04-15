@@ -32,9 +32,11 @@ MEMORY_FILE     = DATA_DIR / "account_memory.json"
 # ── Sheets 탭 이름 ──────────────────────────────────────────
 SHEET_INTEL_LOG = "Intel Log"
 SHEET_MEMORY    = "Account Memory"
+SHEET_REPORT    = "Weekly Report"
 
 INTEL_LOG_HEADERS = ["ts", "date", "type", "account", "summary", "source"]
 MEMORY_HEADERS    = ["account", "date", "insight", "type", "source"]
+REPORT_HEADERS    = ["key", "value", "updated_at"]
 
 
 # ══════════════════════════════════════════════════════════════
@@ -255,3 +257,141 @@ def is_available() -> bool:
         os.environ.get("NOTES_SPREADSHEET_ID")
         and os.environ.get("GOOGLE_SERVICE_ACCOUNT_JSON")
     )
+
+
+# ══════════════════════════════════════════════════════════════
+# Weekly Report Sheets 백업/복원
+# ══════════════════════════════════════════════════════════════
+
+REPORT_FILE = DATA_DIR / "weekly_report.json"
+
+
+def save_report_to_sheets(report: dict) -> bool:
+    """weekly_report.json 전체를 Sheets 'Weekly Report' 탭에 JSON으로 백업"""
+    try:
+        ws = _get_worksheet(SHEET_REPORT, REPORT_HEADERS)
+        if not ws:
+            return False
+        json_str = json.dumps(report, ensure_ascii=False)
+        now = datetime.now(timezone.utc).isoformat()
+        rows = ws.get_all_values()
+        # 헤더 제외하고 데이터 행이 있으면 업데이트, 없으면 추가
+        if len(rows) >= 2:
+            ws.update("A2:C2", [["weekly_report", json_str, now]], value_input_option="RAW")
+        else:
+            ws.append_row(["weekly_report", json_str, now], value_input_option="RAW")
+        logger.info(f"[Sheets] weekly_report 백업 완료 ({len(report.get('accounts', []))}개 계정)")
+        return True
+    except Exception as e:
+        logger.warning(f"weekly_report Sheets 백업 실패: {e}")
+        return False
+
+
+def restore_report_from_sheets() -> dict | None:
+    """Sheets 'Weekly Report' 탭에서 weekly_report.json 복원"""
+    try:
+        ws = _get_worksheet(SHEET_REPORT, REPORT_HEADERS)
+        if not ws:
+            return None
+        rows = ws.get_all_values()
+        for row in rows[1:]:  # 헤더 스킵
+            if len(row) >= 2 and row[0] == "weekly_report" and row[1]:
+                report = json.loads(row[1])
+                logger.info(f"[Sheets] weekly_report 복원 완료 ({len(report.get('accounts', []))}개 계정, {row[2] if len(row) > 2 else ''})")
+                return report
+    except Exception as e:
+        logger.warning(f"weekly_report Sheets 복원 실패: {e}")
+    return None
+
+
+def restore_intel_log_from_sheets() -> int:
+    """Sheets 'Intel Log' 탭에서 intel_log.jsonl 복원. 복원된 항목 수 반환."""
+    try:
+        ws = _get_worksheet(SHEET_INTEL_LOG, INTEL_LOG_HEADERS)
+        if not ws:
+            return 0
+        rows = ws.get_all_values()
+        if len(rows) <= 1:  # 헤더만 있거나 빈 경우
+            return 0
+        DATA_DIR.mkdir(exist_ok=True)
+        count = 0
+        with open(INTEL_LOG_FILE, "w", encoding="utf-8") as f:
+            for row in rows[1:]:  # 헤더 스킵
+                if not row or not any(row):
+                    continue
+                entry = {
+                    "ts":      row[0] if len(row) > 0 else "",
+                    "date":    row[1] if len(row) > 1 else "",
+                    "type":    row[2] if len(row) > 2 else "",
+                    "account": row[3] if len(row) > 3 else "",
+                    "summary": row[4] if len(row) > 4 else "",
+                    "source":  row[5] if len(row) > 5 else "",
+                }
+                f.write(json.dumps(entry, ensure_ascii=False) + "\n")
+                count += 1
+        logger.info(f"[Sheets] intel_log 복원 완료 ({count}건)")
+        return count
+    except Exception as e:
+        logger.warning(f"intel_log Sheets 복원 실패: {e}")
+        return 0
+
+
+async def restore_on_startup() -> dict:
+    """
+    서버 시작 시 Sheets에서 로컬 파일 복원.
+    로컬 파일이 비어있거나 오래된 경우에만 복원.
+    """
+    loop = asyncio.get_event_loop()
+    result = {"intel_log": 0, "weekly_report": False}
+
+    # ── intel_log 복원 ────────────────────────────────────────
+    local_count = 0
+    if INTEL_LOG_FILE.exists():
+        try:
+            local_count = sum(1 for line in INTEL_LOG_FILE.read_text(encoding="utf-8").splitlines() if line.strip())
+        except Exception:
+            pass
+
+    if local_count < 10:  # 로컬에 10건 미만이면 Sheets에서 복원
+        count = await loop.run_in_executor(None, restore_intel_log_from_sheets)
+        result["intel_log"] = count
+        logger.info(f"[Startup] intel_log 복원: {count}건 (기존 로컬: {local_count}건)")
+    else:
+        logger.info(f"[Startup] intel_log 로컬 정상 ({local_count}건) — 복원 스킵")
+
+    # ── weekly_report 복원 ───────────────────────────────────
+    needs_restore = False
+    if not REPORT_FILE.exists():
+        needs_restore = True
+    else:
+        try:
+            report = json.loads(REPORT_FILE.read_text(encoding="utf-8"))
+            accounts = report.get("accounts", [])
+            generated_at = report.get("generated_at", "")
+            # 계정이 없거나 generated_at이 없으면 복원
+            if not accounts or not generated_at:
+                needs_restore = True
+            else:
+                # 30일 이상 오래된 경우 복원 시도
+                try:
+                    from datetime import timedelta
+                    age = datetime.now(timezone.utc) - datetime.fromisoformat(generated_at.replace("Z", "+00:00"))
+                    if age.days > 30:
+                        needs_restore = True
+                except Exception:
+                    pass
+        except Exception:
+            needs_restore = True
+
+    if needs_restore:
+        restored = await loop.run_in_executor(None, restore_report_from_sheets)
+        if restored:
+            REPORT_FILE.write_text(json.dumps(restored, ensure_ascii=False, indent=2), encoding="utf-8")
+            result["weekly_report"] = True
+            logger.info(f"[Startup] weekly_report 복원 완료")
+        else:
+            logger.info("[Startup] weekly_report Sheets 백업 없음 — 기존 파일 유지")
+    else:
+        logger.info("[Startup] weekly_report 로컬 정상 — 복원 스킵")
+
+    return result
