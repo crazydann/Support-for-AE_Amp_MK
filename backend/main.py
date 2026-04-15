@@ -24,14 +24,28 @@ except ImportError:
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # ── 앱 시작: Sheets에서 데이터 복원 ──
+    import logging as _logging
     try:
         from .services.intel_memory_service import restore_on_startup
         restore_result = await restore_on_startup()
-        import logging as _logging
         _logging.getLogger(__name__).info(f"[Startup] 복원 결과: {restore_result}")
     except Exception as e:
-        import logging as _logging
         _logging.getLogger(__name__).warning(f"[Startup] 복원 실패 (계속 진행): {e}")
+
+    # ── sync_state.json 초기화 (없으면 생성) ──
+    try:
+        from pathlib import Path as _Path
+        import json as _json
+        sync_state_file = _Path(__file__).parent / "data" / "sync_state.json"
+        sync_state_file.parent.mkdir(exist_ok=True)
+        if not sync_state_file.exists():
+            sync_state_file.write_text(
+                _json.dumps({"last_sync": None, "processed_ids": []}, ensure_ascii=False),
+                encoding="utf-8"
+            )
+            _logging.getLogger(__name__).info("[Startup] sync_state.json 초기화 완료")
+    except Exception as e:
+        _logging.getLogger(__name__).warning(f"[Startup] sync_state 초기화 실패: {e}")
 
     # ── 스케줄러 시작 ──
     if _SCHEDULER_AVAILABLE and _scheduler:

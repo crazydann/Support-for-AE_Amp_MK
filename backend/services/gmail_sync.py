@@ -47,18 +47,10 @@ def _get_header(headers: list[dict], name: str) -> str:
     return ""
 
 
-def fetch_recent_emails(days_back: int = 14, processed_ids: set = None) -> list[dict]:
+def fetch_recent_emails(days_back: int = 7, processed_ids: set = None) -> list[dict]:
     """
     최근 N일간 이메일에서 계정 관련 항목 추출.
     Returns: list of activity entries
-    {
-        account: str,
-        date: str (YYYY-MM-DD),
-        type: "email",
-        source_id: str (gmail message id),
-        summary: str,
-        summary_en: str,
-    }
     """
     if processed_ids is None:
         processed_ids = set()
@@ -71,17 +63,14 @@ def fetch_recent_emails(days_back: int = 14, processed_ids: set = None) -> list[
     try:
         service = build("gmail", "v1", credentials=creds)
 
-        # 날짜 계산 (Gmail 쿼리는 YYYY/MM/DD 형식)
         from datetime import timedelta
         since_date = (datetime.now(timezone.utc) - timedelta(days=days_back)).strftime("%Y/%m/%d")
-        # 받은 메일 + 보낸 메일 모두 포함
         query = f"(in:inbox OR in:sent) after:{since_date}"
 
         results = service.users().messages().list(
-            userId="me", q=query, maxResults=100
+            userId="me", q=query, maxResults=30  # 100→30으로 제한
         ).execute()
 
-        # 내 이메일 주소 확인 (보낸 메일 판별용)
         try:
             profile = service.users().getProfile(userId="me").execute()
             my_email = profile.get("emailAddress", "").lower()
@@ -89,75 +78,89 @@ def fetch_recent_emails(days_back: int = 14, processed_ids: set = None) -> list[
             my_email = ""
 
         messages = results.get("messages", [])
+        # 이미 처리된 것 먼저 제외
+        messages = [m for m in messages if m["id"] not in processed_ids]
+
+        if not messages:
+            return []
+
         activities = []
 
-        for msg_ref in messages:
-            msg_id = msg_ref["id"]
-            if msg_id in processed_ids:
-                continue
+        # ── Gmail batch API로 한 번에 여러 메시지 조회 ────────────────
+        import googleapiclient.http as ghttp
 
-            try:
-                msg = service.users().messages().get(
-                    userId="me", id=msg_id, format="metadata",
-                    metadataHeaders=["From", "To", "Cc", "Subject", "Date"]
-                ).execute()
-
-                headers = msg.get("payload", {}).get("headers", [])
-                subject = _get_header(headers, "Subject")
-                from_raw = _get_header(headers, "From")
-                to_raw   = _get_header(headers, "To")
-                cc_raw   = _get_header(headers, "Cc")
-                date_raw = _get_header(headers, "Date")
-
-                # 검색 텍스트 조합
-                search_text = f"{subject} {from_raw} {to_raw} {cc_raw}"
-
-                account = match_account(search_text)
-                if not account:
-                    continue
-
-                # 날짜 파싱
+        def _make_batch_callback(result_list):
+            def callback(request_id, response, exception):
+                if exception or not response:
+                    return
                 try:
-                    from email.utils import parsedate_to_datetime
-                    dt = parsedate_to_datetime(date_raw)
-                    date_str = dt.strftime("%Y-%m-%d")
-                except Exception:
-                    ts = int(msg.get("internalDate", 0)) / 1000
-                    date_str = datetime.fromtimestamp(ts).strftime("%Y-%m-%d")
+                    headers = response.get("payload", {}).get("headers", [])
+                    subject  = _get_header(headers, "Subject")
+                    from_raw = _get_header(headers, "From")
+                    to_raw   = _get_header(headers, "To")
+                    cc_raw   = _get_header(headers, "Cc")
+                    date_raw = _get_header(headers, "Date")
 
-                # 보낸 메일 여부 판별
-                _, sender_email = _parse_email_address(from_raw)
-                is_sent = my_email and sender_email == my_email
+                    search_text = f"{subject} {from_raw} {to_raw} {cc_raw}"
+                    account = match_account(search_text)
+                    if not account:
+                        return
 
-                if is_sent:
-                    # 보낸 메일: 수신자 이름 표시
-                    to_name, _ = _parse_email_address(to_raw)
-                    display_name = to_name or to_raw.split("@")[0]
-                    short_subject = subject[:60] + ("..." if len(subject) > 60 else "")
-                    summary    = f"[발신] → {display_name}: {short_subject}"
-                    summary_en = f"[Sent] → {display_name}: {short_subject}"
-                else:
-                    # 받은 메일: 발신자 이름 표시
-                    sender_name, _ = _parse_email_address(from_raw)
-                    display_name = sender_name or sender_email.split("@")[0]
-                    short_subject = subject[:60] + ("..." if len(subject) > 60 else "")
-                    summary    = f"[수신] {display_name}: {short_subject}"
-                    summary_en = f"[Received] {display_name}: {short_subject}"
+                    try:
+                        from email.utils import parsedate_to_datetime
+                        dt = parsedate_to_datetime(date_raw)
+                        date_str = dt.strftime("%Y-%m-%d")
+                    except Exception:
+                        ts = int(response.get("internalDate", 0)) / 1000
+                        date_str = datetime.fromtimestamp(ts).strftime("%Y-%m-%d")
 
-                activities.append({
-                    "account": account,
-                    "date": date_str,
-                    "type": "gmail",
-                    "source_id": f"gmail_{msg_id}",
-                    "summary": summary,
-                    "summary_en": summary_en,
-                })
+                    _, sender_email = _parse_email_address(from_raw)
+                    is_sent = my_email and sender_email == my_email
 
+                    if is_sent:
+                        to_name, _ = _parse_email_address(to_raw)
+                        display_name = to_name or to_raw.split("@")[0]
+                        short_subject = subject[:60] + ("..." if len(subject) > 60 else "")
+                        summary    = f"[발신] → {display_name}: {short_subject}"
+                        summary_en = f"[Sent] → {display_name}: {short_subject}"
+                    else:
+                        sender_name, _ = _parse_email_address(from_raw)
+                        display_name = sender_name or sender_email.split("@")[0]
+                        short_subject = subject[:60] + ("..." if len(subject) > 60 else "")
+                        summary    = f"[수신] {display_name}: {short_subject}"
+                        summary_en = f"[Received] {display_name}: {short_subject}"
+
+                    result_list.append({
+                        "account": account,
+                        "date": date_str,
+                        "type": "gmail",
+                        "source_id": f"gmail_{response['id']}",
+                        "summary": summary,
+                        "summary_en": summary_en,
+                    })
+                except Exception as ex:
+                    logger.debug(f"배치 콜백 오류: {ex}")
+            return callback
+
+        # 10건씩 배치 처리 (API 제한 준수)
+        BATCH_SIZE = 10
+        for i in range(0, len(messages), BATCH_SIZE):
+            batch_msgs = messages[i:i + BATCH_SIZE]
+            batch = service.new_batch_http_request()
+            for msg_ref in batch_msgs:
+                batch.add(
+                    service.users().messages().get(
+                        userId="me", id=msg_ref["id"], format="metadata",
+                        metadataHeaders=["From", "To", "Cc", "Subject", "Date"]
+                    ),
+                    callback=_make_batch_callback(activities),
+                )
+            try:
+                batch.execute()
             except Exception as e:
-                logger.debug(f"메시지 {msg_id} 처리 오류: {e}")
-                continue
+                logger.warning(f"Gmail 배치 오류: {e}")
 
-        logger.info(f"Gmail sync: {len(activities)}개 활동 추출 (총 {len(messages)}개 메시지 검색)")
+        logger.info(f"Gmail sync: {len(activities)}개 활동 추출 (총 {len(messages)}개 메시지)")
         return activities
 
     except Exception as e:
