@@ -309,16 +309,24 @@ def update_report_from_synthesis(synthesis_results: list) -> dict:
     """
     합성 결과 리스트를 받아 weekly_report.json 업데이트.
 
-    - action_items에 새 액션 추가 (중복 방지)
-    - risks에 새 리스크 추가 (중복 방지)
-    - strategy_summary 업데이트 (활성 딜 하이라이트)
-    - 기존 notes_summary, activity_history는 유지
+    - 기존 합성(_source=synthesis) 항목은 삭제 후 새 항목으로 교체
+    - 수동 추가 항목(_source 없거나 manual)은 유지
+    - strategy_summary 업데이트
 
     Returns: {"actions_added": N, "risks_updated": N}
     """
     report = _read_report()
-    existing_actions = report.get("action_items", [])
-    existing_risks = report.get("risks", [])
+    today_str = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+
+    # ── 수동 항목만 유지 (합성 항목 제거) ──────────────────────
+    existing_actions = [
+        a for a in report.get("action_items", [])
+        if a.get("_source", "manual") not in ("synthesis", "synth", "auto")
+    ]
+    existing_risks = [
+        r for r in report.get("risks", [])
+        if r.get("_source", "manual") not in ("synthesis", "synth", "auto")
+    ]
 
     actions_added = 0
     risks_updated = 0
@@ -328,28 +336,21 @@ def update_report_from_synthesis(synthesis_results: list) -> dict:
         new_actions = result.get("recommended_actions", [])
         new_risks = result.get("risks", [])
 
-        # ── action_items 추가 (중복 방지) ──
+        # ── action_items 추가 ──
         for new_action in new_actions:
             new_text = new_action.get("action", "")
-            # 같은 account의 기존 액션과 유사한 내용이면 스킵
-            is_dup = any(
-                ea.get("account") == account_name
-                and _is_similar_action(ea.get("action", ""), new_text)
-                for ea in existing_actions
-            )
-            if not is_dup and new_text:
+            if new_text:
+                new_action["_source"] = "synthesis"
+                new_action["_updated"] = today_str
                 existing_actions.append(new_action)
                 actions_added += 1
 
-        # ── risks 추가 (중복 방지) ──
+        # ── risks 추가 ──
         for new_risk in new_risks:
             new_risk_text = new_risk.get("risk", "")
-            is_dup = any(
-                er.get("account") == account_name
-                and _is_similar_action(er.get("risk", ""), new_risk_text)
-                for er in existing_risks
-            )
-            if not is_dup and new_risk_text:
+            if new_risk_text:
+                new_risk["_source"] = "synthesis"
+                new_risk["_updated"] = today_str
                 existing_risks.append(new_risk)
                 risks_updated += 1
 

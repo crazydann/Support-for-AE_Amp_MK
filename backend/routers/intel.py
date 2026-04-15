@@ -89,28 +89,38 @@ async def manual_sync(force: bool = True):
     except Exception as e:
         errors.append(f"Memo sync error: {str(e)}")
 
-    # ── 2단계: 합성은 백그라운드 실행 (논블로킹) ─────────────────
-    if not _synthesis_running:
-        async def _run_synthesis_bg():
-            global _synthesis_running
-            _synthesis_running = True
-            try:
-                from ..services import synthesis_service as synth
-                loop = _asyncio.get_event_loop()
-                await loop.run_in_executor(None, synth.run_full_synthesis, 60)
-            except Exception as ex:
-                import logging as _log
-                _log.getLogger(__name__).error(f"[BG Synthesis] failed: {ex}")
-            finally:
-                _synthesis_running = False
-        _asyncio.create_task(_run_synthesis_bg())
+    # ── 2단계: 합성 실행 (최대 45초, 완료되면 즉시 반영) ───────────
+    synth_result = {}
+    try:
+        from ..services import synthesis_service as synth
+        loop = _asyncio.get_event_loop()
+        synth_result = await _asyncio.wait_for(
+            loop.run_in_executor(None, synth.run_full_synthesis, 60),
+            timeout=45
+        )
+    except _asyncio.TimeoutError:
+        # 타임아웃 시 백그라운드로 계속 실행
+        if not _synthesis_running:
+            async def _run_synthesis_bg():
+                global _synthesis_running
+                _synthesis_running = True
+                try:
+                    await loop.run_in_executor(None, synth.run_full_synthesis, 60)
+                except Exception:
+                    pass
+                finally:
+                    _synthesis_running = False
+            _asyncio.create_task(_run_synthesis_bg())
+        synth_result = {"note": "synthesis timed out, running in background"}
+    except Exception as ex:
+        errors.append(f"Synthesis error: {str(ex)}")
 
     added = sync_result.get("added", 0)
     return {
         "ok": True,
         "added": added,
         "memo_added": memo_added,
-        "synthesis": "running in background" if not _synthesis_running else "already running",
+        "synthesis": synth_result,
         "errors": errors,
         "message": f"동기화 완료 — 신규 {added}건, 메모 {memo_added}건" + (f" (오류: {len(errors)}건)" if errors else ""),
     }
