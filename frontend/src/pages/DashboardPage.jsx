@@ -560,7 +560,7 @@ function SubAccountRow({ account, expanded, onToggle, t, lang, tr: trProp, relat
   )
 }
 
-function AccountView({ report, t, lang, currentUser }) {
+function AccountView({ report, t, lang, currentUser, onRefreshReport }) {
   const { tr } = useTranslations(lang)
   const [expandedGroup, setExpandedGroup] = useState(null)
   const [expandedAccount, setExpandedAccount] = useState(null)
@@ -570,6 +570,15 @@ function AccountView({ report, t, lang, currentUser }) {
   const [syncMsg, setSyncMsg] = useState(null)
   const [auditAccount, setAuditAccount] = useState(null)
   const [aeFilter, setAeFilter] = useState('all') // 'all' | 'mine'
+
+  const refreshAll = () => Promise.all([
+    fetch(`${API}/api/intel/notes`).then(r => r.json()).catch(() => ({ notes: [] })),
+    fetch(`${API}/api/intel/weekly-feed?days=365`).then(r => r.json()).catch(() => ({ entries: [] })),
+  ]).then(([notesData, feedData]) => {
+    setNotes(notesData.notes || [])
+    setIntelFeed(feedData.entries || [])
+    onRefreshReport?.()
+  })
 
   useEffect(() => {
     Promise.all([
@@ -588,13 +597,16 @@ function AccountView({ report, t, lang, currentUser }) {
       const res = await fetch(`${API}/api/intel/sync?force=true`, { method: 'POST' })
       const data = await res.json()
       const added = data.added || 0
-      const memoAdded = (data.result?.memo_sync?.added) || 0
-      const msg = lang === 'en'
-        ? `Sync done (${added} new, ${memoAdded} memos) — refreshing in 10s...`
-        : `동기화 완료 (신규 ${added}건, 메모 ${memoAdded}건) — 10초 후 새로고침...`
-      setSyncMsg(msg)
-      // 합성이 백그라운드에서 완료될 시간을 준 후 새로고침
-      setTimeout(() => window.location.reload(), 10000)
+      const memoAdded = data.memo_added || 0
+      setSyncMsg(lang === 'en'
+        ? `Sync done (${added} new, ${memoAdded} memos)`
+        : `동기화 완료 (신규 ${added}건, 메모 ${memoAdded}건)`)
+      // 즉시 모든 데이터 재조회 (page reload 없음)
+      await refreshAll()
+      setSyncing(false)
+      // 백그라운드 합성 완료 후 한 번 더 갱신 (15초 후)
+      setTimeout(() => onRefreshReport?.(), 15000)
+      setTimeout(() => setSyncMsg(null), 5000)
     } catch {
       setSyncMsg(lang === 'en' ? 'Sync failed' : '동기화 실패')
       setTimeout(() => setSyncMsg(null), 3000)
@@ -819,7 +831,7 @@ const WEEKLY_CHANNELS = [
   { type: 'memo',    icon: '📝', label: '메모',   label_en: 'Memo',     color: 'text-orange-700', bg: 'bg-orange-50',  border: 'border-orange-200', pill: 'bg-orange-100 text-orange-700' },
 ]
 
-function WeeklyView({ t, lang, currentUser }) {
+function WeeklyView({ t, lang, currentUser, onRefreshReport }) {
   const [feed, setFeed] = useState(null)
   const [loading, setLoading] = useState(true)
   const [syncing, setSyncing] = useState(false)
@@ -844,11 +856,22 @@ function WeeklyView({ t, lang, currentUser }) {
   const handleSync = async () => {
     setSyncing(true); setSyncMsg(null)
     try {
-      await fetch(`${API}/api/intel/sync?force=true`, { method: 'POST' })
-      const [feedData] = await Promise.all([fetch(`${API}/api/intel/weekly-feed?days=365`).then(r => r.json())])
+      const res = await fetch(`${API}/api/intel/sync?force=true`, { method: 'POST' })
+      const data = await res.json()
+      const added = data.added || 0
+      const memoAdded = data.memo_added || 0
+      const feedData = await fetch(`${API}/api/intel/weekly-feed?days=365`).then(r => r.json())
       setFeed(feedData)
-      setSyncMsg(lang === 'en' ? 'Sync done' : '동기화 완료')
-      setTimeout(() => setSyncMsg(null), 3000)
+      onRefreshReport?.()
+      setSyncMsg(lang === 'en'
+        ? `Sync done (${added} new, ${memoAdded} memos)`
+        : `동기화 완료 (신규 ${added}건, 메모 ${memoAdded}건)`)
+      setTimeout(() => setSyncMsg(null), 5000)
+      // 백그라운드 합성 완료 후 한 번 더 갱신
+      setTimeout(() => {
+        fetch(`${API}/api/intel/weekly-feed?days=365`).then(r => r.json()).then(setFeed)
+        onRefreshReport?.()
+      }, 15000)
     } catch { setSyncMsg(lang === 'en' ? 'Sync failed' : '동기화 실패') } finally { setSyncing(false) }
   }
 
@@ -1298,12 +1321,13 @@ export default function DashboardPage({ dashView = 'todo', currentUser = null })
   const [report, setReport] = useState(null)
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
+  const fetchReport = () =>
     fetch(`${API}/api/intel/report`)
       .then(r => r.json())
       .then(data => { setReport(data); setLoading(false) })
       .catch(() => setLoading(false))
-  }, [])
+
+  useEffect(() => { fetchReport() }, [])
 
   if (loading) return (
     <div className="flex items-center justify-center h-64">
@@ -1335,8 +1359,8 @@ export default function DashboardPage({ dashView = 'todo', currentUser = null })
       {dashView === 'todo'
         ? <TodoView report={report} t={t} lang={lang} />
         : dashView === 'weekly'
-        ? <WeeklyView t={t} lang={lang} currentUser={currentUser} />
-        : <AccountView report={report} t={t} lang={lang} currentUser={currentUser} />
+        ? <WeeklyView t={t} lang={lang} currentUser={currentUser} onRefreshReport={fetchReport} />
+        : <AccountView report={report} t={t} lang={lang} currentUser={currentUser} onRefreshReport={fetchReport} />
       }
     </div>
   )
