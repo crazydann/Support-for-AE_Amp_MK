@@ -68,7 +68,7 @@ def fetch_recent_emails(days_back: int = 7, processed_ids: set = None) -> list[d
         query = f"(in:inbox OR in:sent) after:{since_date}"
 
         results = service.users().messages().list(
-            userId="me", q=query, maxResults=30  # 100→30으로 제한
+            userId="me", q=query, maxResults=100
         ).execute()
 
         try:

@@ -91,19 +91,19 @@ def _run_sync_inner(force: bool = False) -> dict:
 
     # 데이터 수집
     try:
-        emails = fetch_recent_emails(days_back=7, processed_ids=processed_ids)
+        emails = fetch_recent_emails(days_back=30, processed_ids=processed_ids)
         all_activities.extend(emails)
     except Exception as e:
         logger.error(f"Gmail sync 오류: {e}")
 
     try:
-        meetings = fetch_recent_meetings(days_back=7, processed_ids=processed_ids)
+        meetings = fetch_recent_meetings(days_back=30, processed_ids=processed_ids)
         all_activities.extend(meetings)
     except Exception as e:
         logger.error(f"Calendar sync 오류: {e}")
 
     try:
-        slack_msgs = fetch_recent_slack_messages(days_back=7, processed_ids=processed_ids)
+        slack_msgs = fetch_recent_slack_messages(days_back=30, processed_ids=processed_ids)
         all_activities.extend(slack_msgs)
     except Exception as e:
         logger.error(f"Slack sync 오류: {e}")

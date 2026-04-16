@@ -88,8 +88,41 @@ def _get_worksheet(sheet_name: str, headers: list[str]):
 # Layer 1: Intel Log (append-only 원시 로그)
 # ══════════════════════════════════════════════════════════════
 
+_log_seen_ids: set[str] = set()  # 런타임 중복 방지용 캐시
+
+
+def _log_source_ids_from_file() -> set[str]:
+    """intel_log.jsonl에 이미 있는 source_id 집합을 반환 (캐시 초기화용)"""
+    ids: set[str] = set()
+    if not INTEL_LOG_FILE.exists():
+        return ids
+    try:
+        for line in INTEL_LOG_FILE.read_text(encoding="utf-8").splitlines():
+            try:
+                sid = json.loads(line).get("source_id", "")
+                if sid:
+                    ids.add(sid)
+            except Exception:
+                pass
+    except Exception:
+        pass
+    return ids
+
+
 def _sync_append_log(entry: dict) -> bool:
-    """intel_log.jsonl에 한 줄 추가 + Sheets 미러"""
+    """intel_log.jsonl에 한 줄 추가 + Sheets 미러 (source_id 중복 방지)"""
+    global _log_seen_ids
+
+    # source_id가 있는 경우 중복 체크
+    source_id = entry.get("source_id", "")
+    if source_id:
+        # 캐시 미초기화 시 파일에서 로드
+        if not _log_seen_ids:
+            _log_seen_ids = _log_source_ids_from_file()
+        if source_id in _log_seen_ids:
+            return False  # 이미 존재 — 스킵
+        _log_seen_ids.add(source_id)
+
     try:
         DATA_DIR.mkdir(exist_ok=True)
         with open(INTEL_LOG_FILE, "a", encoding="utf-8") as f:

@@ -80,6 +80,9 @@ ACCOUNT_KEYWORDS: dict[str, list[str]] = {
         "인터파크", "interpark", "트리플", "triple", "@interpark.com",
         "interparktriple",
     ],
+    "KakaoBank": [
+        "카카오뱅크", "kakaobank", "kakao bank", "@kakaobank.com",
+    ],
     "Dunamu": [
         "두나무", "dunamu", "upbit", "업비트", "@dunamu.com",
         "lambda 256", "람다256", "stockplus", "스톡플러스",
