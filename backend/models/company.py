@@ -40,6 +40,9 @@ class OrgNode(BaseModel):
 
 OrgNode.model_rebuild()
 
+# dart_service.py 호환용 별칭 (Subsidiary = OrgNode)
+Subsidiary = OrgNode
+
 
 class AppInfo(BaseModel):
     name: str

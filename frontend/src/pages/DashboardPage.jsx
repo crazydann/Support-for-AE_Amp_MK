@@ -434,6 +434,16 @@ function SubAccountRow({ account, expanded, onToggle, t, lang, tr: trProp, relat
       {/* 확장 내용 */}
       {expanded && (
         <div className={`${cfg.bg} border-t ${cfg.border} px-3 py-3 space-y-3`}>
+          {/* AE Owner 표시 (팀 모드) */}
+          {account.ae_owner && (
+            <div className="flex items-center gap-1.5">
+              <span className="text-xs text-gray-400">{lang === 'en' ? 'AE' : '담당 AE'}</span>
+              <span className="text-xs font-medium text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full">
+                {account.ae_owner.split('@')[0]}
+              </span>
+            </div>
+          )}
+
           {/* 기본 정보 1행 */}
           <div className="grid grid-cols-4 gap-1 text-center">
             {account.amplitude_plan && (
@@ -550,7 +560,7 @@ function SubAccountRow({ account, expanded, onToggle, t, lang, tr: trProp, relat
   )
 }
 
-function AccountView({ report, t, lang }) {
+function AccountView({ report, t, lang, currentUser }) {
   const { tr } = useTranslations(lang)
   const [expandedGroup, setExpandedGroup] = useState(null)
   const [expandedAccount, setExpandedAccount] = useState(null)
@@ -559,6 +569,7 @@ function AccountView({ report, t, lang }) {
   const [syncing, setSyncing] = useState(false)
   const [syncMsg, setSyncMsg] = useState(null)
   const [auditAccount, setAuditAccount] = useState(null)
+  const [aeFilter, setAeFilter] = useState('all') // 'all' | 'mine'
 
   useEffect(() => {
     Promise.all([
@@ -599,9 +610,19 @@ function AccountView({ report, t, lang }) {
     setTimeout(() => setSyncMsg(null), 5000)
   }
 
-  const accounts = report.accounts || []
+  const allAccounts = report.accounts || []
   const actionItems = report.action_items || []
   const risks = report.risks || []
+
+  // AE 필터 적용
+  const accounts = aeFilter === 'mine' && currentUser
+    ? allAccounts.filter(a => {
+        const owner = (a.ae_owner || '').toLowerCase()
+        const email = (currentUser.email || '').toLowerCase()
+        const name  = (currentUser.name  || '').toLowerCase()
+        return !owner || owner === email || owner.includes(name.split(' ')[0]) || name.includes(owner)
+      })
+    : allAccounts
 
   // 그룹별로 묶기
   const groupMap = {}
@@ -642,14 +663,29 @@ function AccountView({ report, t, lang }) {
       />
     )}
     <div className="space-y-3 pb-24 lg:pb-8">
-      {/* 총 ARR + 동기화 버튼 */}
+      {/* 총 ARR + AE 필터 + 동기화 버튼 */}
       <div className="bg-purple-50 border border-purple-200 rounded-xl px-4 py-2.5 flex items-center justify-between gap-2">
-        <span className="text-xs text-purple-600 font-medium">
-          {lang === 'en' ? 'Total Managed ARR' : '관리 총 ARR'}
-          <span className="text-gray-400 font-normal ml-1">
-            ({accounts.filter(a => a.arr).length} {lang === 'en' ? 'accounts' : '개'})
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-xs text-purple-600 font-medium">
+            {lang === 'en' ? 'Total Managed ARR' : '관리 총 ARR'}
+            <span className="text-gray-400 font-normal ml-1">
+              ({accounts.filter(a => a.arr).length}/{allAccounts.length} {lang === 'en' ? 'accts' : '개'})
+            </span>
           </span>
-        </span>
+          {/* AE 필터 토글 */}
+          {currentUser && (
+            <div className="flex items-center bg-white border border-purple-200 rounded-lg overflow-hidden">
+              <button
+                onClick={() => setAeFilter('all')}
+                className={`text-xs px-2 py-1 transition-colors ${aeFilter === 'all' ? 'bg-purple-600 text-white font-semibold' : 'text-gray-500 hover:bg-purple-50'}`}
+              >{lang === 'en' ? 'All' : '전체'}</button>
+              <button
+                onClick={() => setAeFilter('mine')}
+                className={`text-xs px-2 py-1 transition-colors ${aeFilter === 'mine' ? 'bg-purple-600 text-white font-semibold' : 'text-gray-500 hover:bg-purple-50'}`}
+              >{lang === 'en' ? 'Mine' : '내 계정'}</button>
+            </div>
+          )}
+        </div>
         <div className="flex items-center gap-2">
           <span className="text-base font-bold text-purple-700">${Math.round(totalArr / 1000)}K</span>
           <button
@@ -783,7 +819,7 @@ const WEEKLY_CHANNELS = [
   { type: 'memo',    icon: '📝', label: '메모',   label_en: 'Memo',     color: 'text-orange-700', bg: 'bg-orange-50',  border: 'border-orange-200', pill: 'bg-orange-100 text-orange-700' },
 ]
 
-function WeeklyView({ t, lang }) {
+function WeeklyView({ t, lang, currentUser }) {
   const [feed, setFeed] = useState(null)
   const [loading, setLoading] = useState(true)
   const [syncing, setSyncing] = useState(false)
@@ -961,7 +997,7 @@ function WeeklyView({ t, lang }) {
       <div className="bg-gradient-to-br from-purple-600 to-indigo-600 rounded-2xl p-4 text-white">
         <div className="flex items-start justify-between gap-2 mb-3">
           <div>
-            <p className="text-xs font-medium opacity-70">{lang === 'en' ? 'Weekly Report · AE MK' : '주간 보고 · AE MK'}</p>
+            <p className="text-xs font-medium opacity-70">{lang === 'en' ? `Weekly Report · ${currentUser?.name || 'AE'}` : `주간 보고 · ${currentUser?.name || 'AE'}`}</p>
             <p className="text-lg font-bold mt-0.5">{today.toLocaleDateString(lang === 'en' ? 'en-US' : 'ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
             <p className="text-xs opacity-60 mt-0.5">{fmtRange(thisMon)}</p>
           </div>
@@ -1257,7 +1293,7 @@ function WeeklyArchive({ entries, lang, tr }) {
 
 // ─── MAIN DASHBOARD ───────────────────────────────────────────────────────────
 
-export default function DashboardPage({ dashView = 'todo' }) {
+export default function DashboardPage({ dashView = 'todo', currentUser = null }) {
   const { t, lang } = useLang()
   const [report, setReport] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -1299,8 +1335,8 @@ export default function DashboardPage({ dashView = 'todo' }) {
       {dashView === 'todo'
         ? <TodoView report={report} t={t} lang={lang} />
         : dashView === 'weekly'
-        ? <WeeklyView t={t} lang={lang} />
-        : <AccountView report={report} t={t} lang={lang} />
+        ? <WeeklyView t={t} lang={lang} currentUser={currentUser} />
+        : <AccountView report={report} t={t} lang={lang} currentUser={currentUser} />
       }
     </div>
   )

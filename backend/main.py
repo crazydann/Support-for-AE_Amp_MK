@@ -78,7 +78,7 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=settings.cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -90,6 +90,8 @@ app.add_middleware(
 async def auth_middleware(request: Request, call_next):
     # Google OAuth 미설정 시 보호 비활성화 (개발 환경)
     if not settings.google_client_id:
+        import logging as _log
+        _log.getLogger(__name__).debug("[Auth] Google OAuth 미설정 — 인증 없이 허용 (개발 모드)")
         return await call_next(request)
 
     path = request.url.path

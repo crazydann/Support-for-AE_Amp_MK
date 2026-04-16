@@ -57,12 +57,29 @@ def _should_sync(state: dict) -> bool:
         return True
 
 
+_sync_lock = False  # 동시 sync 방지용 플래그 (단일 프로세스 내)
+
+
 def run_sync(force: bool = False) -> dict:
     """
     전체 sync 실행.
     force=True이면 interval 무시하고 강제 실행.
     Returns: {"added": int, "skipped": bool, "error": str | None}
     """
+    global _sync_lock
+    if _sync_lock:
+        logger.info("Sync 이미 실행 중 — 스킵 (레이스 컨디션 방지)")
+        return {"added": 0, "skipped": True, "error": "Already running"}
+
+    _sync_lock = True
+    try:
+        return _run_sync_inner(force=force)
+    finally:
+        _sync_lock = False
+
+
+def _run_sync_inner(force: bool = False) -> dict:
+    """실제 sync 로직 (run_sync에서 락 보호 하에 호출)."""
     state = _read_sync_state()
 
     if not force and not _should_sync(state):

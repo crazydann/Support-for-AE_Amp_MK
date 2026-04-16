@@ -100,7 +100,7 @@ export default function App() {
   }
 
   const renderContent = () => {
-    if (tab === 'dashboard') return <DashboardPage onSelectCompany={handleSelectCompany} dashView={dashView} />
+    if (tab === 'dashboard') return <DashboardPage onSelectCompany={handleSelectCompany} dashView={dashView} currentUser={currentUser} />
     if (tab === 'companies') {
       return currentCompany
         ? <BlueprintPage companyName={currentCompany} onBack={() => setCurrentCompany(null)} />

@@ -145,3 +145,7 @@ def match_accounts_all(text: str) -> list[str]:
                 matched.append(account)
                 break
     return matched
+
+
+# match_account의 별칭 (scheduler.py, intel.py에서 사용)
+detect_account = match_account

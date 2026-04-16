@@ -28,8 +28,38 @@ COOKIE_NAME = "ae_session"
 
 
 # ── 허용 목록 헬퍼 ────────────────────────────────────────────────────────────
+# 저장 우선순위: Google Sheets (영구) → 로컬 파일 (개발/fallback)
 
 def _read_users() -> list[str]:
+    """허용 목록 읽기: Sheets 우선 → 로컬 파일 fallback"""
+    # 1. Google Sheets에서 읽기 (Render 재배포 후에도 유지)
+    try:
+        import os, gspread
+        from google.oauth2.service_account import Credentials
+        sa_json_str = os.environ.get("GOOGLE_SERVICE_ACCOUNT_JSON", "")
+        spreadsheet_id = os.environ.get("NOTES_SPREADSHEET_ID", "")
+        if sa_json_str and spreadsheet_id:
+            sa_info = json.loads(sa_json_str)
+            creds = Credentials.from_service_account_info(sa_info, scopes=[
+                "https://www.googleapis.com/auth/spreadsheets",
+            ])
+            client = gspread.authorize(creds)
+            sh = client.open_by_key(spreadsheet_id)
+            try:
+                ws = sh.worksheet("Team Members")
+                rows = ws.get_all_values()
+                # 헤더 제외, email 컬럼 (1번째)
+                emails = [r[0].strip() for r in rows[1:] if r and r[0].strip().endswith("@amplitude.com")]
+                if emails:
+                    # 로컬 파일도 업데이트 (캐시)
+                    USERS_FILE.write_text(json.dumps({"users": emails}, ensure_ascii=False, indent=2))
+                    return emails
+            except Exception:
+                pass  # 탭 없으면 로컬 fallback
+    except Exception:
+        pass
+
+    # 2. 로컬 파일 fallback
     if not USERS_FILE.exists():
         return []
     try:
@@ -39,9 +69,41 @@ def _read_users() -> list[str]:
 
 
 def _write_users(users: list[str]):
+    """허용 목록 저장: 로컬 + Sheets 동시 저장"""
+    # 1. 로컬 저장
+    DATA_DIR.mkdir(exist_ok=True)
     USERS_FILE.write_text(
         json.dumps({"users": users}, ensure_ascii=False, indent=2)
     )
+    # 2. Google Sheets 저장
+    try:
+        import os, gspread
+        from google.oauth2.service_account import Credentials
+        sa_json_str = os.environ.get("GOOGLE_SERVICE_ACCOUNT_JSON", "")
+        spreadsheet_id = os.environ.get("NOTES_SPREADSHEET_ID", "")
+        if sa_json_str and spreadsheet_id:
+            sa_info = json.loads(sa_json_str)
+            creds = Credentials.from_service_account_info(sa_info, scopes=[
+                "https://www.googleapis.com/auth/spreadsheets",
+            ])
+            client = gspread.authorize(creds)
+            sh = client.open_by_key(spreadsheet_id)
+            try:
+                ws = sh.worksheet("Team Members")
+            except Exception:
+                ws = sh.add_worksheet(title="Team Members", rows=100, cols=3)
+                ws.append_row(["email", "name", "added_at"])
+            # 기존 데이터 지우고 재작성
+            existing = ws.get_all_values()
+            header = existing[0] if existing else ["email", "name", "added_at"]
+            existing_emails = {r[0].strip() for r in existing[1:] if r}
+            from datetime import datetime as _dt
+            for email in users:
+                if email not in existing_emails:
+                    ws.append_row([email, "", _dt.utcnow().strftime("%Y-%m-%d")])
+    except Exception as e:
+        import logging
+        logging.getLogger(__name__).warning(f"[Auth] Sheets 허용목록 저장 실패: {e}")
 
 
 # ── JWT 헬퍼 ─────────────────────────────────────────────────────────────────

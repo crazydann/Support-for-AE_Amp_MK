@@ -1165,3 +1165,74 @@ async def check_services():
     }
 
     return result
+
+
+# ── Account Keywords API (frontend 단일 소스 제공) ────────────────────────────
+
+@router.get("/account-keywords")
+async def get_account_keywords():
+    """
+    계정 키워드 맵을 프론트엔드에 제공.
+    프론트엔드(MemoPage)와 백엔드(gmail_sync 등)가 동일한 키워드 맵을 사용하도록 단일 소스화.
+    """
+    from ..services.account_keywords import ACCOUNT_KEYWORDS, INTERNAL_DOMAINS
+    return {
+        "keywords": ACCOUNT_KEYWORDS,
+        "internal_domains": INTERNAL_DOMAINS,
+    }
+
+
+# ── Team API ─────────────────────────────────────────────────────────────────
+
+@router.get("/team/members")
+async def get_team_members():
+    """
+    팀 멤버 목록 반환 (weekly_report의 ae_owner 목록 + 허용 사용자 목록).
+    팀 필터 드롭다운에서 사용.
+    """
+    from ..routers.auth import _read_users
+    from ..config import Settings
+    settings_obj = Settings()
+
+    allowed = _read_users()
+    admin = settings_obj.admin_email
+
+    members = []
+    if admin and admin not in allowed:
+        members.append({"email": admin, "role": "admin"})
+    for email in allowed:
+        members.append({"email": email, "role": "member"})
+
+    # weekly_report에서 ae_owner 값도 수집 (이름 기반)
+    report = _read_report()
+    ae_owners = list({
+        a.get("ae_owner", "")
+        for a in report.get("accounts", [])
+        if a.get("ae_owner")
+    })
+
+    return {
+        "members": members,
+        "ae_owners": ae_owners,
+        "team_name": settings_obj.team_name,
+    }
+
+
+@router.patch("/report/accounts/{account_key}/owner")
+async def set_account_owner(account_key: str, body: dict):
+    """
+    계정의 ae_owner 설정 (팀 확장 시 계정 담당자 지정용).
+    body: {"ae_owner": "myoungkyu.ho@amplitude.com"}
+    """
+    ae_owner = body.get("ae_owner", "").strip()
+    report = _read_report()
+    updated = False
+    for acc in report.get("accounts", []):
+        if acc.get("key_account") == account_key:
+            acc["ae_owner"] = ae_owner
+            updated = True
+            break
+    if not updated:
+        raise HTTPException(status_code=404, detail=f"Account '{account_key}' not found")
+    REPORT_FILE.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
+    return {"ok": True, "account": account_key, "ae_owner": ae_owner}
