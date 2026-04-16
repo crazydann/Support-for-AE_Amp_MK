@@ -1167,6 +1167,115 @@ async def check_services():
     return result
 
 
+# ── Gmail 동기화 진단 엔드포인트 ──────────────────────────────────────────────
+
+@router.get("/debug-gmail")
+async def debug_gmail(days: int = 30):
+    """
+    Gmail 동기화 진단: 실제 fetch 결과를 저장 없이 반환.
+    브라우저에서 /api/intel/debug-gmail 로 접속해 매칭 여부 확인.
+    """
+    import asyncio as _asyncio
+    from ..services.google_auth import get_google_credentials
+    from ..services.account_keywords import match_account, ACCOUNT_KEYWORDS
+
+    result: dict = {
+        "days_back": days,
+        "credentials": False,
+        "emails_fetched": 0,
+        "matched": [],
+        "unmatched_samples": [],
+        "error": None,
+    }
+
+    try:
+        creds = get_google_credentials()
+        if not creds:
+            result["error"] = "Google OAuth 미설정 (GOOGLE_CLIENT_ID / SECRET / REFRESH_TOKEN 확인)"
+            return result
+        result["credentials"] = True
+
+        from googleapiclient.discovery import build
+        import base64 as _b64
+        from datetime import datetime as _dt, timezone as _tz, timedelta as _td
+        from email.utils import parsedate_to_datetime
+
+        service = build("gmail", "v1", credentials=creds)
+        since = (_dt.now(_tz.utc) - _td(days=days)).strftime("%Y/%m/%d")
+        query = f"(in:inbox OR in:sent) after:{since}"
+
+        res = service.users().messages().list(userId="me", q=query, maxResults=100).execute()
+        messages = res.get("messages", [])
+        result["emails_fetched"] = len(messages)
+
+        if not messages:
+            result["error"] = f"Gmail에서 {days}일간 메시지 0건 반환 — 쿼리: {query}"
+            return result
+
+        # Batch로 헤더 조회
+        matched = []
+        unmatched = []
+
+        import googleapiclient.http as _ghttp
+
+        def _cb(msg_list, unm_list):
+            def callback(request_id, response, exception):
+                if exception or not response:
+                    return
+                headers = response.get("payload", {}).get("headers", [])
+                def _hdr(name):
+                    for h in headers:
+                        if h.get("name","").lower() == name.lower():
+                            return h.get("value","")
+                    return ""
+                subject = _hdr("Subject")
+                from_h  = _hdr("From")
+                to_h    = _hdr("To")
+                cc_h    = _hdr("Cc")
+                date_h  = _hdr("Date")
+                search_text = f"{subject} {from_h} {to_h} {cc_h}"
+                account = match_account(search_text)
+                entry = {
+                    "id": response["id"],
+                    "date": date_h[:16],
+                    "subject": subject[:80],
+                    "from": from_h[:60],
+                    "to": to_h[:60],
+                    "matched_account": account,
+                }
+                if account:
+                    msg_list.append(entry)
+                elif len(unm_list) < 10:
+                    unm_list.append(entry)
+            return callback
+
+        BATCH = 10
+        for i in range(0, len(messages), BATCH):
+            batch = service.new_batch_http_request()
+            for msg_ref in messages[i:i+BATCH]:
+                batch.add(
+                    service.users().messages().get(
+                        userId="me", id=msg_ref["id"], format="metadata",
+                        metadataHeaders=["From","To","Cc","Subject","Date"]
+                    ),
+                    callback=_cb(matched, unmatched),
+                )
+            try:
+                batch.execute()
+            except Exception as be:
+                result["batch_error"] = str(be)
+
+        result["matched"] = matched
+        result["matched_count"] = len(matched)
+        result["unmatched_samples"] = unmatched
+        result["unmatched_total"] = result["emails_fetched"] - len(matched)
+
+    except Exception as e:
+        result["error"] = str(e)
+
+    return result
+
+
 # ── Account Keywords API (frontend 단일 소스 제공) ────────────────────────────
 
 @router.get("/account-keywords")
