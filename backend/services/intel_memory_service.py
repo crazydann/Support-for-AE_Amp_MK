@@ -266,21 +266,44 @@ def is_available() -> bool:
 REPORT_FILE = DATA_DIR / "weekly_report.json"
 
 
+def _compress_json(data: dict) -> str:
+    """JSON → gzip 압축 → base64 인코딩 (Sheets 50K 셀 한계 우회)"""
+    import gzip, base64
+    raw = json.dumps(data, ensure_ascii=False).encode("utf-8")
+    compressed = gzip.compress(raw, compresslevel=9)
+    return "gz:" + base64.b64encode(compressed).decode("ascii")
+
+
+def _decompress_json(value: str) -> dict:
+    """base64+gzip → dict 복원"""
+    import gzip, base64
+    if value.startswith("gz:"):
+        compressed = base64.b64decode(value[3:])
+        raw = gzip.decompress(compressed).decode("utf-8")
+        return json.loads(raw)
+    return json.loads(value)  # 구버전 평문 JSON 호환
+
+
 def save_report_to_sheets(report: dict) -> bool:
-    """weekly_report.json 전체를 Sheets 'Weekly Report' 탭에 JSON으로 백업"""
+    """
+    weekly_report.json 전체를 Sheets 'Weekly Report' 탭에 백업.
+    gzip 압축으로 50K 셀 한계 우회 (58K JSON → ~10K 압축).
+    """
     try:
         ws = _get_worksheet(SHEET_REPORT, REPORT_HEADERS)
         if not ws:
             return False
-        json_str = json.dumps(report, ensure_ascii=False)
+        encoded = _compress_json(report)
         now = datetime.now(timezone.utc).isoformat()
         rows = ws.get_all_values()
-        # 헤더 제외하고 데이터 행이 있으면 업데이트, 없으면 추가
         if len(rows) >= 2:
-            ws.update("A2:C2", [["weekly_report", json_str, now]], value_input_option="RAW")
+            ws.update("A2:C2", [["weekly_report", encoded, now]], value_input_option="RAW")
         else:
-            ws.append_row(["weekly_report", json_str, now], value_input_option="RAW")
-        logger.info(f"[Sheets] weekly_report 백업 완료 ({len(report.get('accounts', []))}개 계정)")
+            ws.append_row(["weekly_report", encoded, now], value_input_option="RAW")
+        logger.info(
+            f"[Sheets] weekly_report 백업 완료 "
+            f"({len(report.get('accounts', []))}개 계정, {len(encoded)}자 압축)"
+        )
         return True
     except Exception as e:
         logger.warning(f"weekly_report Sheets 백업 실패: {e}")
@@ -294,10 +317,14 @@ def restore_report_from_sheets() -> dict | None:
         if not ws:
             return None
         rows = ws.get_all_values()
-        for row in rows[1:]:  # 헤더 스킵
+        for row in rows[1:]:
             if len(row) >= 2 and row[0] == "weekly_report" and row[1]:
-                report = json.loads(row[1])
-                logger.info(f"[Sheets] weekly_report 복원 완료 ({len(report.get('accounts', []))}개 계정, {row[2] if len(row) > 2 else ''})")
+                report = _decompress_json(row[1])
+                logger.info(
+                    f"[Sheets] weekly_report 복원 완료 "
+                    f"({len(report.get('accounts', []))}개 계정, "
+                    f"generated_at: {report.get('generated_at', '?')[:19]})"
+                )
                 return report
     except Exception as e:
         logger.warning(f"weekly_report Sheets 복원 실패: {e}")
@@ -339,7 +366,7 @@ def restore_intel_log_from_sheets() -> int:
 async def restore_on_startup() -> dict:
     """
     서버 시작 시 Sheets에서 로컬 파일 복원.
-    로컬 파일이 비어있거나 오래된 경우에만 복원.
+    Sheets에 더 최신 데이터가 있으면 항상 복원 (30일 제한 없음).
     """
     loop = asyncio.get_event_loop()
     result = {"intel_log": 0, "weekly_report": False}
@@ -359,39 +386,47 @@ async def restore_on_startup() -> dict:
     else:
         logger.info(f"[Startup] intel_log 로컬 정상 ({local_count}건) — 복원 스킵")
 
-    # ── weekly_report 복원 ───────────────────────────────────
-    needs_restore = False
-    if not REPORT_FILE.exists():
-        needs_restore = True
-    else:
+    # ── weekly_report 복원: Sheets 데이터가 로컬보다 최신이면 항상 복원 ──
+    local_generated_at = ""
+    local_accounts = 0
+    if REPORT_FILE.exists():
         try:
-            report = json.loads(REPORT_FILE.read_text(encoding="utf-8"))
-            accounts = report.get("accounts", [])
-            generated_at = report.get("generated_at", "")
-            # 계정이 없거나 generated_at이 없으면 복원
-            if not accounts or not generated_at:
-                needs_restore = True
-            else:
-                # 30일 이상 오래된 경우 복원 시도
-                try:
-                    from datetime import timedelta
-                    age = datetime.now(timezone.utc) - datetime.fromisoformat(generated_at.replace("Z", "+00:00"))
-                    if age.days > 30:
-                        needs_restore = True
-                except Exception:
-                    pass
+            local_data = json.loads(REPORT_FILE.read_text(encoding="utf-8"))
+            local_generated_at = local_data.get("generated_at", "")
+            local_accounts = len(local_data.get("accounts", []))
         except Exception:
-            needs_restore = True
+            pass
 
-    if needs_restore:
-        restored = await loop.run_in_executor(None, restore_report_from_sheets)
-        if restored:
+    # Sheets에서 복원 시도
+    restored = await loop.run_in_executor(None, restore_report_from_sheets)
+    if restored:
+        sheets_generated_at = restored.get("generated_at", "")
+        sheets_accounts = len(restored.get("accounts", []))
+
+        # Sheets 버전이 로컬보다 최신이거나, 로컬이 없거나 비어 있으면 복원
+        should_restore = (
+            not local_generated_at          # 로컬에 타임스탬프 없음
+            or not local_accounts           # 로컬에 계정 없음
+            or sheets_generated_at > local_generated_at   # Sheets가 더 최신
+        )
+
+        if should_restore:
             REPORT_FILE.write_text(json.dumps(restored, ensure_ascii=False, indent=2), encoding="utf-8")
             result["weekly_report"] = True
-            logger.info(f"[Startup] weekly_report 복원 완료")
+            logger.info(
+                f"[Startup] weekly_report Sheets 복원 완료 "
+                f"({sheets_accounts}개 계정, {sheets_generated_at}) "
+                f"← 로컬 ({local_accounts}개 계정, {local_generated_at})"
+            )
         else:
-            logger.info("[Startup] weekly_report Sheets 백업 없음 — 기존 파일 유지")
+            logger.info(
+                f"[Startup] weekly_report 로컬이 최신 ({local_generated_at}) "
+                f"> Sheets ({sheets_generated_at}) — 로컬 유지"
+            )
     else:
-        logger.info("[Startup] weekly_report 로컬 정상 — 복원 스킵")
+        if not local_generated_at:
+            logger.warning("[Startup] weekly_report: Sheets 백업 없음 + 로컬도 없음")
+        else:
+            logger.info(f"[Startup] weekly_report Sheets 백업 없음 — 로컬 유지 ({local_generated_at})")
 
     return result
